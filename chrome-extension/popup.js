@@ -34,6 +34,109 @@ async function saveSettings(settings) {
   });
 }
 
+// 在当前1688页面执行搜索
+async function searchOn1688(keyword, tabId) {
+  await chrome.scripting.executeScript({
+    target: { tabId },
+    func: (kw) => {
+      // 找搜索框并填入关键词
+      const input = document.querySelector(
+        'input[type="text"][name="keywords"], input.search-input, input[placeholder*="搜"], #search-key, .search-bar input'
+      );
+      if (input) {
+        input.value = kw;
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+        // 触发搜索按钮
+        const btn = document.querySelector(
+          'button.search-btn, .search-button, button[type="submit"], .btn-search'
+        );
+        if (btn) btn.click();
+        else {
+          // 回车触发
+          input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", keyCode: 13, bubbles: true }));
+        }
+      } else {
+        // 直接跳转搜索结果
+        const encoded = encodeURIComponent(kw);
+        window.location.href = `https://s.1688.com/selloffer/offer_search.html?keyword=${encoded}&sortType=6`;
+      }
+    },
+    args: [keyword],
+  });
+}
+
+function renderSearch(settings, tabId, is1688) {
+  const el = document.getElementById("content");
+  el.innerHTML = `
+    <div style="margin-bottom:12px;">
+      <div style="font-size:11px;color:#94a3b8;margin-bottom:6px;">🔍 搜索选品关键词</div>
+      <div style="display:flex;gap:6px;">
+        <input type="text" id="searchInput" placeholder="输入关键词搜1688..." 
+          style="flex:1;border:1px solid #e2e8f0;border-radius:8px;padding:8px 10px;font-size:13px;outline:none;" />
+        <button id="searchBtn" style="background:#2563eb;color:white;border:none;border-radius:8px;padding:8px 12px;cursor:pointer;font-size:13px;white-space:nowrap;">搜索</button>
+      </div>
+    </div>
+
+    <div style="margin-bottom:10px;">
+      <div style="font-size:11px;color:#94a3b8;margin-bottom:6px;">⭐ 热门关键词（点击搜索）</div>
+      <div style="display:flex;flex-wrap:wrap;gap:5px;" id="hotKeywords">
+        ${[
+          "咒术回战手办", "棉花娃娃", "盲盒玩具", "毛绒公仔", "动漫摆件",
+          "积木玩具", "硅藻泥地垫", "保温杯", "磁吸支架", "卡通贴纸",
+          "发夹头饰", "手账本", "钥匙扣挂件", "LED小夜灯", "宠物玩具"
+        ].map(kw => `
+          <button class="kw-btn" data-kw="${kw}" 
+            style="background:#f1f5f9;border:1px solid #e2e8f0;border-radius:20px;padding:4px 10px;font-size:11px;cursor:pointer;color:#475569;">
+            ${kw}
+          </button>
+        `).join("")}
+      </div>
+    </div>
+
+    <div class="divider" style="height:1px;background:#e2e8f0;margin:10px 0;"></div>
+    <div style="font-size:11px;color:#94a3b8;text-align:center;">
+      ${is1688 ? "搜索将在当前1688页面执行" : "搜索将打开新的1688页面"}
+    </div>
+  `;
+
+  const doSearch = async () => {
+    const kw = document.getElementById("searchInput").value.trim();
+    if (!kw) return;
+    const btn = document.getElementById("searchBtn");
+    btn.textContent = "跳转中...";
+    
+    if (is1688) {
+      await searchOn1688(kw, tabId);
+      showToast(`正在搜索「${kw}」`);
+    } else {
+      const url = `https://s.1688.com/selloffer/offer_search.html?keyword=${encodeURIComponent(kw)}&sortType=6`;
+      chrome.tabs.create({ url });
+    }
+    btn.textContent = "搜索";
+  };
+
+  document.getElementById("searchBtn").addEventListener("click", doSearch);
+  document.getElementById("searchInput").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") doSearch();
+  });
+
+  // 热门关键词点击
+  document.getElementById("hotKeywords").addEventListener("click", async (e) => {
+    const btn = e.target.closest(".kw-btn");
+    if (!btn) return;
+    const kw = btn.dataset.kw;
+    document.getElementById("searchInput").value = kw;
+    
+    if (is1688) {
+      await searchOn1688(kw, tabId);
+      showToast(`正在搜索「${kw}」`);
+    } else {
+      const url = `https://s.1688.com/selloffer/offer_search.html?keyword=${encodeURIComponent(kw)}&sortType=6`;
+      chrome.tabs.create({ url });
+    }
+  });
+}
+
 function renderProduct(product, settings) {
   const el = document.getElementById("content");
   el.innerHTML = `
@@ -73,7 +176,6 @@ function renderProduct(product, settings) {
 }
 
 function renderManualInput(settings, pageUrl) {
-  // 从URL提取offerId
   const offerMatch = pageUrl.match(/offer\/(\d+)/) || pageUrl.match(/offerId=(\d+)/);
   const offerId = offerMatch ? offerMatch[1] : "";
 
@@ -85,7 +187,7 @@ function renderManualInput(settings, pageUrl) {
     </div>
 
     <div style="margin-bottom:10px;">
-      <label style="font-size:12px;color:#64748b;display:block;margin-bottom:4px;">商品名称（从页面复制）</label>
+      <label style="font-size:12px;color:#64748b;display:block;margin-bottom:4px;">商品名称</label>
       <input type="text" id="manualTitle" placeholder="粘贴商品标题" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:6px 8px;font-size:12px;box-sizing:border-box;" />
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
@@ -172,11 +274,7 @@ async function handleSend() {
   btn.disabled = true;
   btn.innerHTML = '<span class="loading">⏳</span> 发送中...';
 
-  const product = {
-    ...currentProduct,
-    weight,
-    sellPriceRub: sellPrice,
-  };
+  const product = { ...currentProduct, weight, sellPriceRub: sellPrice };
 
   try {
     const res = await fetch(`${siteUrl}/api/import`, {
@@ -190,74 +288,24 @@ async function handleSend() {
       btn.innerHTML = "✅ 已发送！";
       btn.disabled = false;
       showToast("商品已添加到选品列表！");
-
-      // 打开网站
-      setTimeout(() => {
-        chrome.tabs.create({ url: siteUrl });
-      }, 800);
-    } else {
-      throw new Error("服务器返回错误");
-    }
-  } catch (e) {
+      setTimeout(() => chrome.tabs.create({ url: siteUrl }), 800);
+    } else throw new Error();
+  } catch {
     btn.disabled = false;
     btn.innerHTML = "📤 发送到 Ozon 选品工具";
     showToast("❌ 发送失败，请检查网站地址");
   }
 }
 
-// 初始化
-async function init() {
-  const settings = await loadSettings();
-
-  // 获取当前Tab
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  const url = tab?.url || "";
-
-  const is1688Product = url.includes("1688.com") && (
-    url.includes("/offer/") ||
-    url.includes("detail.1688.com") ||
-    url.includes("offer_id=") ||
-    url.includes("offerId=")
-  );
-
-  if (!is1688Product) {
-    renderNotProduct();
-    return;
-  }
-
-  // 注入content script获取商品数据
-  try {
-    const results = await chrome.scripting.executeScript({
-      target: { tabId: tab.id },
-      func: extractProductData,
-    });
-
-    const product = results?.[0]?.result;
-    if (product && product.title) {
-      currentProduct = product;
-      renderProduct(product, settings);
-    } else {
-      // 提取失败，显示手动输入模式
-      renderManualInput(settings, tab.url);
-    }
-  } catch (e) {
-    // scripting注入失败，显示手动输入
-    renderManualInput(settings, tab.url);
-  }
-}
-
 // 这个函数会在页面中执行，提取商品数据
 function extractProductData() {
   try {
-    // 1688商品标题 — 专用选择器（按优先级）
     const titleSelectors = [
-      // 新版1688
       "[class*='title-container'] h1",
       "[class*='offer-title']",
       "[class*='product-title'] h1",
       ".title-text h1",
       ".mod-offer-title",
-      // 通用
       "h1[class*='title']",
       "h1",
     ];
@@ -266,7 +314,6 @@ function extractProductData() {
       const els = document.querySelectorAll(sel);
       for (const el of els) {
         const text = el.textContent.trim();
-        // 标题应该比店铺名长，且包含商品关键词
         if (text.length > 10 && !text.includes("商行") && !text.includes("有限公司") && !text.includes("工厂")) {
           title = text;
           break;
@@ -274,22 +321,17 @@ function extractProductData() {
       }
       if (title) break;
     }
-    // 最终兜底：用页面 title 标签（去掉 -1688 后缀）
     if (!title) {
       const docTitle = document.title;
       title = docTitle.replace(/[-_|].*?(1688|阿里).*$/, "").trim();
     }
 
-    // 1688价格 — 取页面上最显眼的价格数字
     let price = null;
     const priceSelectors = [
-      // 新版
       "[class*='price-common'] [class*='price-value']",
       "[class*='price-box'] [class*='value']",
       ".price-common-wrap [class*='value']",
-      // SKU选中价
       "[class*='sku'] [class*='price']",
-      // 通用
       "[class*='price']:not([class*='del']):not([class*='original']):not([class*='cross'])",
     ];
     for (const sel of priceSelectors) {
@@ -300,7 +342,6 @@ function extractProductData() {
         if (num > 0 && num < 100000) { price = num; break; }
       }
     }
-    // 兜底：找页面里 ¥ 后面的数字
     if (!price) {
       const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
       const pricePattern = /[¥￥]\s*([\d.]+)/;
@@ -311,7 +352,6 @@ function extractProductData() {
       }
     }
 
-    // 图片
     const images = [];
     const imgSelectors = [
       "[class*='gallery'] img[src*='alicdn']",
@@ -347,6 +387,63 @@ function extractProductData() {
     };
   } catch (e) {
     return { error: e.message };
+  }
+}
+
+// 初始化
+async function init() {
+  const settings = await loadSettings();
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  const url = tab?.url || "";
+
+  const is1688 = url.includes("1688.com");
+  const is1688Product = is1688 && (url.includes("/offer/") || url.includes("detail.1688.com") || url.includes("offerId="));
+
+  // 切换导航 tab
+  document.getElementById("tabSearch").addEventListener("click", () => {
+    setTab("search", settings, tab.id, is1688);
+  });
+  document.getElementById("tabImport").addEventListener("click", async () => {
+    setTab("import", settings, tab.id, is1688Product);
+  });
+
+  // 默认显示：1688商品页显示导入，其他显示搜索
+  if (is1688Product) {
+    setTab("import", settings, tab.id, true);
+  } else {
+    setTab("search", settings, tab.id, is1688);
+  }
+}
+
+async function setTab(tab, settings, tabId, condition) {
+  // 更新导航样式
+  document.getElementById("tabSearch").style.background = tab === "search" ? "#2563eb" : "#f1f5f9";
+  document.getElementById("tabSearch").style.color = tab === "search" ? "white" : "#64748b";
+  document.getElementById("tabImport").style.background = tab === "import" ? "#2563eb" : "#f1f5f9";
+  document.getElementById("tabImport").style.color = tab === "import" ? "white" : "#64748b";
+
+  if (tab === "search") {
+    renderSearch(settings, tabId, condition);
+  } else {
+    if (!condition) {
+      renderManualInput(settings, "");
+      return;
+    }
+    try {
+      const results = await chrome.scripting.executeScript({
+        target: { tabId },
+        func: extractProductData,
+      });
+      const product = results?.[0]?.result;
+      if (product && product.title) {
+        currentProduct = product;
+        renderProduct(product, settings);
+      } else {
+        renderManualInput(settings, "");
+      }
+    } catch {
+      renderManualInput(settings, "");
+    }
   }
 }
 
