@@ -483,30 +483,67 @@ function extractOzonProducts() {
     const items = [];
     const seen = new Set();
 
-    // 找所有商品链接：有标题文字（长度>20）且不以数字/价格开头
-    const links = Array.from(document.querySelectorAll("a[href*='/product/']"))
-      .filter(a => {
-        const text = a.innerText.trim();
-        return text.length > 20 && !text.match(/^[\d\s]+₽/) && !text.match(/^(отзыв|вопрос)/i);
-      });
+    // Ozon商品卡片：找带图片且有商品链接的容器
+    // 策略：找所有 /product/ 链接，取其最近的有 class 的父容器，再从容器里找标题
+    const productLinks = Array.from(document.querySelectorAll("a[href*='/product/']"));
+    
+    // 按href去重，取图片链接（包含img的那个）
+    const cardMap = new Map();
+    for (const link of productLinks) {
+      const href = link.href.split("?")[0];
+      if (!href.match(/\/product\/[^/]+-\d+/)) continue;
+      if (!cardMap.has(href)) {
+        cardMap.set(href, { href, links: [] });
+      }
+      cardMap.get(href).links.push(link);
+    }
 
-    for (const link of links) {
+    for (const [href, { links }] of cardMap) {
       if (items.length >= 20) break;
-      const href = link.href;
-      if (!href || seen.has(href)) continue;
+      if (seen.has(href)) continue;
       seen.add(href);
 
-      const name = link.innerText.trim().split('\n')[0].trim();
-      if (!name || name.length < 10) continue;
+      // 找最大的父容器（商品卡片）
+      let card = null;
+      for (const link of links) {
+        const parent = link.closest("div[class*='tile'], div[class*='card'], div[class*='item'], div[class*='product']")
+          || link.parentElement?.parentElement?.parentElement;
+        if (parent && parent.querySelectorAll("a[href*='/product/']").length <= 5) {
+          card = parent;
+          break;
+        }
+      }
+      if (!card) card = links[0]?.parentElement?.parentElement;
+      if (!card) continue;
 
-      // 找同一卡片父元素里的图片和价格
-      const card = link.closest("div[class]") || link.parentElement;
-      const img = card?.querySelector("img");
+      // 从卡片里找标题：排除价格、评分、促销标签
+      const allSpans = Array.from(card.querySelectorAll("span, a[href*='/product/']"));
+      let title = "";
+      for (const el of allSpans) {
+        const text = el.childNodes.length === 1 && el.firstChild.nodeType === 3
+          ? el.firstChild.textContent.trim()
+          : "";
+        if (
+          text.length > title.length &&
+          text.length > 15 &&
+          text.length < 300 &&
+          !text.match(/^\d/) &&           // 不以数字开头
+          !text.match(/₽/) &&             // 不含价格
+          !text.match(/отзыв|вопрос|распрод|вау.цен|скидк/i) && // 不是促销词
+          text.match(/[а-яёА-ЯЁa-zA-Z]/) // 包含字母
+        ) {
+          title = text;
+        }
+      }
+
+      if (!title) continue;
+
+      const img = card.querySelector("img");
       const image = img?.src || "";
-      const priceMatch = card?.innerText?.match(/(\d[\d\s]{1,5})\s*₽/);
+      const priceMatch = card.innerText?.match(/(\d[\d\s]{1,5})\s*₽/);
       const price = priceMatch ? priceMatch[1].replace(/\s/g, "") : "";
 
-      items.push({ name, price, image, url: href });
+      items.push({ name: title, price, image, url: href });
     }
 
     return items;
