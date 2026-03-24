@@ -250,7 +250,7 @@ export default function Home() {
           {tab === "products" && (
             <>
               {/* URL导入框 */}
-              <UrlImportBox onImport={handleAddProduct} />
+              <UrlImportBox onImport={handleAddProduct} onBatchImport={(ps) => setProducts(prev => [...ps, ...prev])} />
               {/* Stats — compact bar */}
               {products.length > 0 && (
                 <div className="flex items-center gap-4 bg-white border border-gray-200 rounded-xl px-4 py-2.5 mb-4 text-sm">

@@ -39,7 +39,11 @@ export interface Product {
   titleMs?: string;        // 马来语标题
   price: number;           // 1688进价（元）
   weight: number;          // 重量（克）
-  images: string[];        // 图片URL数组
+  images: string[];        // 主图URL数组
+  detailImages?: string[]; // 详情页描述大图（完整搬运）
+  specs?: Record<string, string>; // 规格参数（颜色/材质/尺寸等）
+  monthlySales?: number;   // 月销量
+  moq?: number;            // 最小起订量
   // 多平台售价：key为货币代码，value为对应货币售价
   sellPrices?: Record<string, number>;
   // 兼容旧字段

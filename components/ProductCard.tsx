@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Product, Settings, LANGUAGES, calcCost, getSellPrice, setSellPrice } from "@/lib/types";
-import { Trash2, ChevronDown, ChevronUp, ExternalLink, Loader2, Copy, Check, Star, Tag } from "lucide-react";
+import { Trash2, ChevronDown, ChevronUp, ExternalLink, Loader2, Copy, Check, Star, Tag, Image as ImageIcon, LayoutList } from "lucide-react";
 
 const TAGS = ["待上架", "已上架", "爆款", "观察中", "已下架"];
 
@@ -140,6 +140,7 @@ export function ProductCard({ product, settings, onUpdate, onDelete }: Props) {
 
       {/* Expanded detail */}
       {expanded && (
+        <>
         <div className="border-t border-gray-100 px-3 py-3 bg-gray-50 grid grid-cols-3 gap-3">
           {/* 成本 */}
           <div className="bg-white rounded-lg p-3 border border-gray-100 text-xs space-y-1">
@@ -234,6 +235,53 @@ export function ProductCard({ product, settings, onUpdate, onDelete }: Props) {
             </div>
           </div>
         </div>
+
+        {/* 详情图 & 规格参数 — 完整搬运区 */}
+        {((product.detailImages && product.detailImages.length > 0) ||
+          (product.specs && Object.keys(product.specs).length > 0)) && (
+          <div className="border-t border-gray-100 px-3 py-3 bg-white space-y-3">
+
+            {/* 规格参数 */}
+            {product.specs && Object.keys(product.specs).length > 0 && (
+              <div>
+                <p className="flex items-center gap-1 text-xs font-semibold text-gray-500 mb-2">
+                  <LayoutList size={11} />规格参数
+                </p>
+                <div className="flex flex-wrap gap-x-4 gap-y-1">
+                  {Object.entries(product.specs).map(([k, v]) => (
+                    <span key={k} className="text-[11px] text-gray-500">
+                      <span className="text-gray-400">{k}：</span>{v}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 详情图 */}
+            {product.detailImages && product.detailImages.length > 0 && (
+              <div>
+                <p className="flex items-center gap-1 text-xs font-semibold text-gray-500 mb-2">
+                  <ImageIcon size={11} />详情图（{product.detailImages.length}张）
+                  <span className="text-gray-300 font-normal ml-1">· 可直接搬运到平台</span>
+                </p>
+                <div className="flex gap-2 overflow-x-auto pb-1">
+                  {product.detailImages.map((src, i) => (
+                    <a key={i} href={src} target="_blank" rel="noopener noreferrer" title="点击查看原图">
+                      <img
+                        src={src}
+                        alt={`详情图${i + 1}`}
+                        referrerPolicy="no-referrer"
+                        className="h-20 w-auto object-cover rounded border border-gray-100 hover:border-blue-300 flex-shrink-0 transition-all hover:scale-105"
+                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                      />
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+        </>
       )}
     </div>
   );
