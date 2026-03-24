@@ -700,12 +700,12 @@ async function handleSend() {
 
   const product = { ...currentProduct, weight, sellPriceRub: sellPrice, sellPrices: { [currency]: sellPrice } };
 
+  const settings2 = await loadSettings();
   try {
-    const res = await fetch(`${siteUrl}/api/import`, {
+    const res = await authFetch(`${siteUrl}/api/import`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(product),
-    });
+    }, settings2.apiToken);
     if (res.ok) {
       btn.className = "btn btn-success";
       btn.innerHTML = "✅ 已发送！";
