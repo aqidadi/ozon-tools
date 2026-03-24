@@ -250,21 +250,28 @@ function extractProductData() {
     const allImgs = document.querySelectorAll("img");
     for (const img of allImgs) {
       const src = (img.src || img.dataset.src || img.dataset.lazySrc || img.dataset.original || img.getAttribute("data-lazy") || "").split("?")[0];
-      if (src && /alicdn\.com|aliyuncs\.com/i.test(src) && !seenDetail.has(src) && !seenMain.has(src) && src.match(/\.(jpg|jpeg|png|webp)/i)) {
-        // 跳过小图标（宽高<100）
-        if (img.naturalWidth && img.naturalWidth < 100) continue;
-        seenDetail.add(src);
-        detailImages.push(src);
-        if (detailImages.length >= 30) break;
-      }
+      if (!src || !/alicdn\.com|aliyuncs\.com/i.test(src)) continue;
+      if (!src.match(/\.(jpg|jpeg|png|webp)/i)) continue;
+      if (seenDetail.has(src) || seenMain.has(src)) continue;
+      // 过滤小图：naturalWidth<200 或 宽高比极端（logo一般是正方形小图）
+      const w = img.naturalWidth || img.width || 0;
+      const h = img.naturalHeight || img.height || 0;
+      if (w > 0 && w < 200) continue; // 排除小图标
+      if (w > 0 && h > 0 && Math.max(w,h)/Math.min(w,h) > 5) continue; // 排除极窄/极宽
+      seenDetail.add(src);
+      detailImages.push(src);
+      if (detailImages.length >= 30) break;
     }
 
     // 从 innerHTML 里扫懒加载图（data-src 等属性里的URL）
-    const scanEl = descContainer || document.body;
+    // 只扫描描述区或页面主体，排除顶部导航/侧边栏
+    const scanEl = descContainer || document.querySelector("[class*='content']") || document.body;
     const html = scanEl.innerHTML;
     const matches = html.matchAll(/(?:data-src|data-lazy-src|data-original|src)=["']?(https?:\/\/[^"'\s>?]+\.(?:jpg|jpeg|png|webp))/gi);
     for (const m of matches) {
       const src = m[1].split("?")[0];
+      // 过滤平台logo：通常包含特定关键词
+      if (/logo|icon|avatar|banner|taobao|tmall|jd\.com|pinduoduo|xiaohongshu|tiktok|douyin|weixin|wechat/i.test(src)) continue;
       if (src && /alicdn\.com|aliyuncs\.com/i.test(src) && !seenDetail.has(src) && !seenMain.has(src)) {
         seenDetail.add(src);
         detailImages.push(src);
