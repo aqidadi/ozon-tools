@@ -9,13 +9,30 @@ export interface Product {
   id: string;
   title: string;           // 中文标题（从1688抓取）
   titleRu: string;         // 俄语标题（AI翻译）
+  titleEn?: string;        // 英语标题
+  titleTh?: string;        // 泰语标题
+  titleVi?: string;        // 越南语标题
+  titleId?: string;        // 印尼语标题
+  titleMs?: string;        // 马来语标题
   price: number;           // 1688进价（元）
   weight: number;          // 重量（克）
   images: string[];        // 图片URL数组
   sellPriceRub: number;    // 卖家设定售价（卢布）
+  targetLang?: string;     // 当前目标语言
   note: string;            // 备注
   sourceUrl: string;       // 1688原链接
 }
+
+export const LANGUAGES = [
+  { code: "ru", label: "俄语", flag: "🇷🇺", platform: "Ozon/WB" },
+  { code: "en", label: "英语", flag: "🇺🇸", platform: "Amazon/eBay" },
+  { code: "th", label: "泰语", flag: "🇹🇭", platform: "Shopee TH" },
+  { code: "vi", label: "越南语", flag: "🇻🇳", platform: "Shopee VN" },
+  { code: "id", label: "印尼语", flag: "🇮🇩", platform: "Shopee ID" },
+  { code: "ms", label: "马来语", flag: "🇲🇾", platform: "Shopee MY" },
+  { code: "es", label: "西班牙语", flag: "🇪🇸", platform: "Amazon ES" },
+  { code: "ar", label: "阿拉伯语", flag: "🇸🇦", platform: "速卖通中东" },
+];
 
 export interface CostBreakdown {
   purchasePrice: number;   // 进价（元）

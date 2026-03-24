@@ -1,8 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { Product, Settings, calcCost } from "@/lib/types";
+import { Product, Settings, LANGUAGES, calcCost } from "@/lib/types";
 import { Trash2, ChevronDown, ChevronUp, ExternalLink, Loader2, Copy, Check } from "lucide-react";
+
+// 语言对应的标题字段
+const LANG_FIELD: Record<string, keyof Product> = {
+  ru: "titleRu",
+  en: "titleEn",
+  th: "titleTh",
+  vi: "titleVi",
+  id: "titleId",
+  ms: "titleMs",
+  es: "titleEn", // 暂时共用en字段
+  ar: "titleEn",
+};
 
 // 复制按钮
 function CopyButton({ text }: { text: string }) {
@@ -19,9 +31,10 @@ function CopyButton({ text }: { text: string }) {
   );
 }
 
-// 翻译按钮组件
+// 翻译按钮组件（带语言选择）
 function TranslateButton({ product, onUpdate }: { product: Product; onUpdate: (id: string, updates: Partial<Product>) => void }) {
   const [loading, setLoading] = useState(false);
+  const [selectedLang, setSelectedLang] = useState(product.targetLang || "ru");
 
   const handleTranslate = async () => {
     if (!product.title || loading) return;
@@ -30,40 +43,59 @@ function TranslateButton({ product, onUpdate }: { product: Product; onUpdate: (i
       const res = await fetch("/api/translate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: product.title }),
+        body: JSON.stringify({ text: product.title, to: selectedLang }),
       });
       const data = await res.json();
       if (data.result) {
-        // 更新前端状态
-        onUpdate(product.id, { titleRu: data.result });
-        // 同时保存到数据库
+        const field = LANG_FIELD[selectedLang] || "titleRu";
+        const updates: Partial<Product> = {
+          [field]: data.result,
+          targetLang: selectedLang,
+          // 默认同步俄语字段
+          ...(selectedLang === "ru" ? { titleRu: data.result } : {}),
+        };
+        onUpdate(product.id, updates);
         await fetch("/api/product-update", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: product.id, titleRu: data.result }),
+          body: JSON.stringify({ id: product.id, ...updates }),
         });
       }
     } catch {}
     finally { setLoading(false); }
   };
 
-  if (product.titleRu) {
-    return (
-      <button onClick={handleTranslate} className="text-xs text-gray-400 hover:text-blue-500 underline flex-shrink-0">
-        {loading ? "翻译中..." : "重译"}
-      </button>
-    );
-  }
+  const lang = LANGUAGES.find(l => l.code === selectedLang);
+  const field = LANG_FIELD[selectedLang] || "titleRu";
+  const translated = product[field] as string;
+  const hasTranslation = !!translated;
 
   return (
-    <button
-      onClick={handleTranslate}
-      disabled={loading}
-      className="flex items-center gap-1 text-xs bg-blue-600 text-white px-2.5 py-1 rounded-full hover:bg-blue-700 disabled:opacity-60 transition-colors flex-shrink-0"
-    >
-      {loading ? <Loader2 size={11} className="animate-spin" /> : "🌐"}
-      {loading ? "翻译中..." : "AI翻译俄语"}
-    </button>
+    <div className="flex items-center gap-1 flex-shrink-0">
+      {/* 语言下拉 */}
+      <select
+        value={selectedLang}
+        onChange={e => setSelectedLang(e.target.value)}
+        className="text-xs border border-gray-200 rounded-full px-2 py-1 bg-white focus:outline-none focus:ring-1 focus:ring-blue-400"
+      >
+        {LANGUAGES.map(l => (
+          <option key={l.code} value={l.code}>{l.flag} {l.label}</option>
+        ))}
+      </select>
+      {/* 翻译按钮 */}
+      <button
+        onClick={handleTranslate}
+        disabled={loading}
+        className={`flex items-center gap-1 text-xs px-2.5 py-1 rounded-full transition-colors flex-shrink-0 ${
+          hasTranslation
+            ? "text-gray-400 hover:text-blue-500 border border-gray-200 hover:border-blue-300"
+            : "bg-blue-600 text-white hover:bg-blue-700"
+        } disabled:opacity-60`}
+      >
+        {loading ? <Loader2 size={11} className="animate-spin" /> : "🌐"}
+        {loading ? "翻译中..." : hasTranslation ? "重译" : "AI翻译"}
+      </button>
+    </div>
   );
 }
 
@@ -76,8 +108,14 @@ interface Props {
 
 export function ProductCard({ product, settings, onUpdate, onDelete }: Props) {
   const [expanded, setExpanded] = useState(false);
+  const [selectedLang, setSelectedLang] = useState(product.targetLang || "ru");
   const cost = calcCost(product, settings);
   const isProfit = cost.profit > 0;
+
+  // 当前语言的已翻译标题
+  const field = LANG_FIELD[selectedLang] || "titleRu";
+  const translatedTitle = (product[field] as string) || product.titleRu || "";
+  const lang = LANGUAGES.find(l => l.code === selectedLang);
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
@@ -101,11 +139,12 @@ export function ProductCard({ product, settings, onUpdate, onDelete }: Props) {
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0 flex-1">
               <p className="text-sm font-medium text-gray-900 truncate">{product.title}</p>
-              {/* 俄语标题 */}
-              {product.titleRu ? (
+              {/* 翻译标题 */}
+              {translatedTitle ? (
                 <div className="flex items-center gap-1 mt-0.5">
-                  <p className="text-sm text-blue-600 truncate">{product.titleRu}</p>
-                  <CopyButton text={product.titleRu} />
+                  <span className="text-xs text-gray-400">{lang?.flag}</span>
+                  <p className="text-sm text-blue-600 truncate">{translatedTitle}</p>
+                  <CopyButton text={translatedTitle} />
                 </div>
               ) : (
                 <p className="text-xs text-gray-400 mt-0.5 italic">未翻译</p>
@@ -143,7 +182,10 @@ export function ProductCard({ product, settings, onUpdate, onDelete }: Props) {
               <span className="text-gray-400">保本价</span>
               <span className="font-semibold text-orange-600 ml-1">₽{cost.minSellPriceRub}</span>
             </div>
-            <TranslateButton product={product} onUpdate={onUpdate} />
+            <TranslateButton product={product} onUpdate={(id, updates) => {
+              onUpdate(id, updates);
+              if (updates.targetLang) setSelectedLang(updates.targetLang);
+            }} />
 
             {/* 售价输入 */}
             <div className="flex items-center gap-1.5 ml-auto">
@@ -214,12 +256,12 @@ export function ProductCard({ product, settings, onUpdate, onDelete }: Props) {
                     className="w-full border border-gray-200 rounded px-2 py-1 text-sm mt-0.5" />
                 </div>
                 <div>
-                  <label className="text-xs text-gray-500">俄语标题</label>
+                  <label className="text-xs text-gray-500">翻译标题</label>
                   <div className="flex items-center gap-1 mt-0.5">
-                    <input type="text" value={product.titleRu}
-                      onChange={(e) => onUpdate(product.id, { titleRu: e.target.value })}
+                    <input type="text" value={translatedTitle}
+                      onChange={(e) => onUpdate(product.id, { [field]: e.target.value })}
                       className="flex-1 border border-gray-200 rounded px-2 py-1 text-sm" />
-                    {product.titleRu && <CopyButton text={product.titleRu} />}
+                    {translatedTitle && <CopyButton text={translatedTitle} />}
                   </div>
                 </div>
                 <div>
