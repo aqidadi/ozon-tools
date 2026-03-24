@@ -1,22 +1,43 @@
-import { Redis } from "@upstash/redis";
 import { NextRequest, NextResponse } from "next/server";
+import { createServiceClient, getUserByToken } from "@/lib/supabase";
 
-const redis = Redis.fromEnv();
-const KEY = "ozon:products";
-
-export async function POST(req: NextRequest) {
-  const { id, ...updates } = await req.json();
-  if (!id) return NextResponse.json({ error: "No id" }, { status: 400 });
-
-  const items = await redis.lrange(KEY, 0, -1);
-  for (let i = 0; i < items.length; i++) {
-    const p = typeof items[i] === "string" ? JSON.parse(items[i] as string) : items[i];
-    if (p.id === id) {
-      const updated = { ...p, ...updates };
-      // lset 替换指定位置
-      await redis.lset(KEY, i, JSON.stringify(updated));
-      return NextResponse.json({ ok: true });
+async function getUser(req: NextRequest) {
+  const sb = createServiceClient();
+  const authHeader = req.headers.get("authorization");
+  if (authHeader?.startsWith("Bearer ")) {
+    const token = authHeader.slice(7);
+    const { data: { user } } = await sb.auth.getUser(token);
+    if (user) {
+      const { data: profile } = await sb.from("profiles").select("*").eq("id", user.id).single();
+      return profile;
     }
   }
-  return NextResponse.json({ error: "Not found" }, { status: 404 });
+  const apiToken = req.headers.get("x-api-token");
+  if (apiToken) return getUserByToken(apiToken);
+  return null;
+}
+
+export async function POST(req: NextRequest) {
+  const user = await getUser(req);
+  if (!user) return NextResponse.json({ error: "未登录" }, { status: 401 });
+
+  const { id, ...updates } = await req.json();
+  const sb = createServiceClient();
+
+  const { data: existing } = await sb
+    .from("products")
+    .select("data")
+    .eq("id", id)
+    .eq("user_id", user.id)
+    .single();
+
+  if (!existing) return NextResponse.json({ error: "商品不存在" }, { status: 404 });
+
+  const merged = { ...existing.data, ...updates };
+  await sb.from("products")
+    .update({ data: merged, updated_at: new Date().toISOString() })
+    .eq("id", id)
+    .eq("user_id", user.id);
+
+  return NextResponse.json({ ok: true });
 }

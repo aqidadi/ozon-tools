@@ -18,11 +18,13 @@ function formatPrice(price) {
 
 async function loadSettings() {
   return new Promise((resolve) => {
-    chrome.storage.local.get(["siteUrl", "weight", "sellPrice"], (data) => {
+    chrome.storage.local.get(["siteUrl", "weight", "sellPrice", "apiToken", "userEmail"], (data) => {
       resolve({
         siteUrl: data.siteUrl || DEFAULT_SITE,
         weight: data.weight || 400,
         sellPrice: data.sellPrice || 0,
+        apiToken: data.apiToken || "",
+        userEmail: data.userEmail || "",
       });
     });
   });
@@ -31,6 +33,93 @@ async function loadSettings() {
 async function saveSettings(settings) {
   return new Promise((resolve) => {
     chrome.storage.local.set(settings, resolve);
+  });
+}
+
+// 带 token 的 fetch 封装
+async function authFetch(url, options = {}, apiToken = "") {
+  return fetch(url, {
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...(apiToken ? { "X-Api-Token": apiToken } : {}),
+      ...(options.headers || {}),
+    },
+  });
+}
+
+// 登录/绑定 token 界面
+function renderLogin(settings) {
+  const el = document.getElementById("content");
+  el.innerHTML = `
+    <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px;margin-bottom:10px;">
+      <div style="font-size:12px;font-weight:600;color:#1d4ed8;margin-bottom:3px;">🔑 绑定账号</div>
+      <div style="font-size:11px;color:#3b82f6;">绑定后导入的商品会保存到你的账号</div>
+    </div>
+
+    <div style="margin-bottom:8px;">
+      <label style="font-size:11px;color:#64748b;display:block;margin-bottom:4px;">邮箱</label>
+      <input type="email" id="loginEmail" value="${settings.userEmail}" placeholder="your@email.com"
+        style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:7px 10px;font-size:12px;box-sizing:border-box;" />
+    </div>
+    <div style="margin-bottom:10px;">
+      <label style="font-size:11px;color:#64748b;display:block;margin-bottom:4px;">密码</label>
+      <input type="password" id="loginPassword" placeholder="••••••"
+        style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:7px 10px;font-size:12px;box-sizing:border-box;" />
+    </div>
+    <button id="loginBtn" style="width:100%;background:#2563eb;color:white;border:none;border-radius:8px;padding:9px;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:8px;">
+      登录绑定
+    </button>
+    <div id="loginError" style="font-size:11px;color:#ef4444;text-align:center;display:none;"></div>
+    <div style="text-align:center;margin-top:8px;">
+      <a href="${settings.siteUrl}" target="_blank" style="font-size:11px;color:#3b82f6;text-decoration:none;">还没账号？去网站注册 →</a>
+    </div>
+    <div class="divider" style="height:1px;background:#e2e8f0;margin:10px 0;"></div>
+    <div style="font-size:11px;color:#94a3b8;margin-bottom:4px;">或者直接粘贴 API Token</div>
+    <div style="display:flex;gap:6px;">
+      <input type="text" id="directToken" placeholder="粘贴 API Token..."
+        style="flex:1;border:1px solid #e2e8f0;border-radius:6px;padding:7px 8px;font-size:11px;font-family:monospace;" />
+      <button id="saveTokenBtn" style="background:#475569;color:white;border:none;border-radius:6px;padding:7px 10px;font-size:12px;cursor:pointer;">保存</button>
+    </div>
+  `;
+
+  document.getElementById("loginBtn").addEventListener("click", async () => {
+    const email = document.getElementById("loginEmail").value.trim();
+    const password = document.getElementById("loginPassword").value;
+    const siteUrl = settings.siteUrl;
+    const errEl = document.getElementById("loginError");
+    const btn = document.getElementById("loginBtn");
+
+    if (!email || !password) { errEl.textContent = "请填写邮箱和密码"; errEl.style.display = "block"; return; }
+    btn.disabled = true; btn.textContent = "登录中...";
+
+    try {
+      const res = await fetch(`${siteUrl}/api/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        errEl.textContent = data.error || "登录失败"; errEl.style.display = "block";
+        btn.disabled = false; btn.textContent = "登录绑定"; return;
+      }
+
+      await saveSettings({ apiToken: data.user.apiToken, userEmail: email });
+      showToast(`✅ 已绑定：${email}（${data.user.plan === "pro" ? "Pro" : "免费版"}）`);
+      init(); // 重新初始化
+    } catch {
+      errEl.textContent = "网络错误"; errEl.style.display = "block";
+      btn.disabled = false; btn.textContent = "登录绑定";
+    }
+  });
+
+  document.getElementById("saveTokenBtn").addEventListener("click", async () => {
+    const token = document.getElementById("directToken").value.trim();
+    if (!token) return;
+    await saveSettings({ apiToken: token });
+    showToast("✅ Token 已保存");
+    init();
   });
 }
 
@@ -292,12 +381,11 @@ async function batchImportFromUrls(urls, siteUrl, weight, onProgress) {
       const product = res?.[0]?.result;
       if (product && product.title) {
         product.weight = weight;
-        // 推送到服务器
-        await fetch(`${siteUrl}/api/import`, {
+        // 推送到服务器（带 token）
+        await authFetch(`${siteUrl}/api/import`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(product),
-        });
+        }, apiToken);
         results.push({ url, success: true, title: product.title, imageCount: product.images.length, detailCount: product.detailImages?.length || 0 });
       } else {
         results.push({ url, success: false, error: product?.error || "提取失败" });
@@ -567,11 +655,10 @@ function renderManualInput(settings, pageUrl) {
     };
 
     try {
-      const res = await fetch(`${siteUrl}/api/import`, {
+      const res = await authFetch(`${siteUrl}/api/import`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(currentProduct),
-      });
+      }, settings.apiToken);
       if (res.ok) {
         btn.className = "btn btn-success";
         btn.innerHTML = "✅ 已发送！";
@@ -727,9 +814,19 @@ async function init() {
   const is1688Product = is1688 && (url.includes("/offer/") || url.includes("detail.1688.com") || url.includes("offerId="));
   const isOzon = url.includes("ozon.ru");
 
+  // 显示登录状态
+  const headerUserEl = document.getElementById("headerUser");
+  if (headerUserEl) {
+    headerUserEl.textContent = settings.userEmail
+      ? `👤 ${settings.userEmail.split("@")[0]}`
+      : "未登录";
+    headerUserEl.style.color = settings.apiToken ? "#4ade80" : "#fbbf24";
+  }
+
   document.getElementById("tabSearch").addEventListener("click", () => setTab("search", settings, tab.id, is1688));
   document.getElementById("tabImport").addEventListener("click", () => setTab("import", settings, tab.id, is1688Product));
   document.getElementById("tabBatch").addEventListener("click", () => setTab("batch", settings, tab.id, false));
+  document.getElementById("tabAccount").addEventListener("click", () => setTab("account", settings, tab.id, false));
 
   if (isOzon) { renderOzonPicker(tab.id, settings); return; }
   if (is1688Product) { setTab("import", settings, tab.id, true); }
@@ -737,8 +834,9 @@ async function init() {
 }
 
 async function setTab(tab, settings, tabId, condition) {
-  ["tabSearch","tabImport","tabBatch"].forEach(id => {
+  ["tabSearch","tabImport","tabBatch","tabAccount"].forEach(id => {
     const el = document.getElementById(id);
+    if (!el) return;
     const active = id === `tab${tab.charAt(0).toUpperCase()}${tab.slice(1)}`;
     el.style.background = active ? "#2563eb" : "#f1f5f9";
     el.style.color = active ? "white" : "#64748b";
@@ -760,6 +858,8 @@ async function setTab(tab, settings, tabId, condition) {
         renderManualInput(settings, "");
       }
     } catch { renderManualInput(settings, ""); }
+  } else if (tab === "account") {
+    renderLogin(settings);
   }
 }
 

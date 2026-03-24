@@ -8,6 +8,9 @@ import { PickerPage } from "@/components/PickerPage";
 import { GuidePage } from "@/components/GuidePage";
 import { HotPage } from "@/components/HotPage";
 import { UrlImportBox } from "@/components/UrlImportBox";
+import { UserBar } from "@/components/UserBar";
+import { AuthModal } from "@/components/AuthModal";
+import { useAuth } from "@/lib/auth-context";
 import { exportToExcel } from "@/lib/export";
 import { Product, Settings, LANGUAGES, PLATFORMS, getPlatform } from "@/lib/types";
 import {
@@ -46,6 +49,8 @@ const COLOR_CLASSES: Record<string, { active: string; icon: string }> = {
 };
 
 export default function Home() {
+  const { user, accessToken, loading: authLoading } = useAuth();
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -82,8 +87,12 @@ export default function Home() {
   }, [products, targetLang]);
 
   const loadProducts = useCallback(async (isInitial = false) => {
+    if (!accessToken) { setLoading(false); return; }
     try {
-      const res = await fetch("/api/import");
+      const res = await fetch("/api/import", {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      if (res.status === 401) { setLoading(false); return; }
       const data = await res.json();
       if (data.products) {
         setProducts((prev) => {
@@ -94,17 +103,21 @@ export default function Home() {
         });
       }
     } catch {} finally { setLoading(false); }
-  }, []);
+  }, [accessToken]);
 
   useEffect(() => {
     try {
       const s = localStorage.getItem("ozon-settings");
       if (s) setSettings(JSON.parse(s));
     } catch {}
-    loadProducts(true);
-    const timer = setInterval(() => loadProducts(false), 5000);
-    return () => clearInterval(timer);
-  }, [loadProducts]);
+    if (!authLoading) {
+      loadProducts(true);
+      if (accessToken) {
+        const timer = setInterval(() => loadProducts(false), 5000);
+        return () => clearInterval(timer);
+      }
+    }
+  }, [loadProducts, authLoading, accessToken]);
 
   useEffect(() => {
     localStorage.setItem("ozon-settings", JSON.stringify(settings));
@@ -149,6 +162,10 @@ export default function Home() {
               <p className="text-sm font-bold text-gray-900 leading-tight">Crossly</p>
               <p className="text-xs text-gray-400">跨境卖家工具箱</p>
             </div>
+          </div>
+          {/* 用户信息 */}
+          <div className="mt-3">
+            <UserBar />
           </div>
         </div>
 
@@ -249,6 +266,27 @@ export default function Home() {
           )}
           {tab === "products" && (
             <>
+              {/* 未登录提示 */}
+              {!user && !authLoading && (
+                <div className="text-center py-20">
+                  <div className="text-5xl mb-4">🔐</div>
+                  <h2 className="text-xl font-semibold text-gray-700 mb-2">登录后开始使用</h2>
+                  <p className="text-gray-400 mb-6 text-sm max-w-sm mx-auto">
+                    免费注册即可导入最多50个商品，升级 Pro 后无限导入
+                  </p>
+                  <button
+                    onClick={() => setShowLoginPrompt(true)}
+                    className="inline-flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors"
+                  >
+                    免费注册 / 登录
+                  </button>
+                  {showLoginPrompt && <AuthModal onClose={() => setShowLoginPrompt(false)} />}
+                </div>
+              )}
+
+              {/* 已登录内容 */}
+              {user && (
+                <>
               {/* URL导入框 */}
               <UrlImportBox onImport={handleAddProduct} onBatchImport={(ps) => setProducts(prev => [...ps, ...prev])} />
               {/* Stats — compact bar */}
@@ -295,6 +333,8 @@ export default function Home() {
                     />
                   ))}
                 </div>
+              )}
+                </>
               )}
             </>
           )}
