@@ -6,11 +6,12 @@ import { SettingsPanel } from "@/components/SettingsPanel";
 import { AddProductModal } from "@/components/AddProductModal";
 import { PickerPage } from "@/components/PickerPage";
 import { GuidePage } from "@/components/GuidePage";
+import { UrlImportBox } from "@/components/UrlImportBox";
 import { exportToExcel } from "@/lib/export";
 import { Product, Settings, LANGUAGES } from "@/lib/types";
 import {
   ShoppingBag, Settings2, Download, Plus, TrendingUp,
-  BookOpen, Languages, Bell, BarChart2, Package, ChevronRight
+  BookOpen, Languages, Bell, BarChart2, Package, Globe, Zap, Shield
 } from "lucide-react";
 
 const DEFAULT_SETTINGS: Settings = {
@@ -20,9 +21,10 @@ const DEFAULT_SETTINGS: Settings = {
   packagingCost: 2,
 };
 
-type Tab = "products" | "picker" | "guide" | "monitor" | "analytics" | "settings";
+type Tab = "landing" | "products" | "picker" | "guide" | "monitor" | "analytics" | "settings";
 
 const NAV_ITEMS = [
+  { id: "landing", label: "首页", icon: Globe, color: "blue" },
   { id: "products", label: "选品列表", icon: Package, color: "blue" },
   { id: "picker", label: "选品参考", icon: TrendingUp, color: "orange" },
   { id: "guide", label: "新手指南", icon: BookOpen, color: "indigo" },
@@ -45,7 +47,7 @@ export default function Home() {
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const [showAddModal, setShowAddModal] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<Tab>("products");
+  const [tab, setTab] = useState<Tab>("landing");
   const [translatingAll, setTranslatingAll] = useState(false);
   const [targetLang, setTargetLang] = useState("ru");
 
@@ -231,6 +233,7 @@ export default function Home() {
 
         {/* Page content */}
         <main className="p-6">
+          {tab === "landing" && <LandingPage onStart={() => setTab("products")} />}
           {tab === "picker" && <PickerPage />}
           {tab === "guide" && <GuidePage />}
           {tab === "settings" && <SettingsPanel settings={settings} onChange={setSettings} />}
@@ -242,6 +245,8 @@ export default function Home() {
           )}
           {tab === "products" && (
             <>
+              {/* URL导入框 */}
+              <UrlImportBox onImport={handleAddProduct} />
               {/* Stats */}
               {products.length > 0 && (
                 <div className="grid grid-cols-4 gap-4 mb-6">
@@ -313,6 +318,89 @@ function ComingSoon({ title, icon, desc, color }: { title: string; icon: string;
       <p className="text-base text-gray-600 mb-8 max-w-md mx-auto">{desc}</p>
       <div className="inline-flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-6 py-3 text-sm font-medium text-gray-600 shadow-sm">
         🚧 即将上线，敬请期待
+      </div>
+    </div>
+  );
+}
+
+function LandingPage({ onStart }: { onStart: () => void }) {
+  const features = [
+    { icon: <Zap size={22} className="text-blue-500" />, title: "1688一键导入", desc: "粘贴链接秒抓商品信息，无需安装插件" },
+    { icon: <Globe size={22} className="text-green-500" />, title: "8国语言翻译", desc: "俄/英/泰/越/印尼/马来/西/阿拉伯一键翻译" },
+    { icon: <Package size={22} className="text-purple-500" />, title: "利润自动计算", desc: "运费+佣金+汇率，一目了然算清楚每件利润" },
+    { icon: <Shield size={22} className="text-orange-500" />, title: "导出上架模板", desc: "一键导出Ozon上架Excel，省去繁琐填表工作" },
+    { icon: <TrendingUp size={22} className="text-pink-500" />, title: "热门选品参考", desc: "按类目整理1688热销关键词，快速找到货源" },
+    { icon: <BookOpen size={22} className="text-indigo-500" />, title: "新手完整指南", desc: "从注册到运营，7大模块系统学习Ozon跨境" },
+  ];
+
+  const platforms = ["🛒 Ozon", "📦 亚马逊", "🎵 TikTok Shop", "🛍️ Lazada", "🌟 Shopee", "⚡ 速卖通"];
+
+  return (
+    <div className="max-w-4xl mx-auto">
+      {/* Hero */}
+      <div className="text-center py-12">
+        <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-600 text-xs font-medium px-3 py-1.5 rounded-full mb-4">
+          🚀 专为跨境卖家打造
+        </div>
+        <h1 className="text-4xl font-extrabold text-gray-900 mb-4">
+          跨境选品，<span className="text-blue-600">从未如此简单</span>
+        </h1>
+        <p className="text-lg text-gray-500 mb-2 max-w-xl mx-auto">
+          1688 找货 → 多语言翻译 → 利润计算 → 导出上架，全流程一站搞定
+        </p>
+        <div className="flex flex-wrap justify-center gap-2 mb-8">
+          {platforms.map((p) => (
+            <span key={p} className="text-xs bg-gray-100 text-gray-600 px-3 py-1 rounded-full">{p}</span>
+          ))}
+        </div>
+        <div className="flex items-center justify-center gap-3">
+          <button
+            onClick={onStart}
+            className="px-8 py-3 bg-blue-600 text-white rounded-xl font-semibold text-base hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200"
+          >
+            立即开始使用 →
+          </button>
+          <span className="text-sm text-gray-400">免费，无需注册</span>
+        </div>
+      </div>
+
+      {/* Features */}
+      <div className="grid grid-cols-3 gap-4 mb-10">
+        {features.map((f) => (
+          <div key={f.title} className="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md transition-shadow">
+            <div className="mb-3">{f.icon}</div>
+            <h3 className="font-semibold text-gray-900 mb-1">{f.title}</h3>
+            <p className="text-sm text-gray-500">{f.desc}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* How it works */}
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl border border-blue-100 p-8 mb-8">
+        <h2 className="text-lg font-bold text-gray-900 text-center mb-6">3步完成选品流程</h2>
+        <div className="flex items-start gap-4">
+          {[
+            { step: "01", title: "找货源", desc: "在1688找到心仪商品，复制链接粘贴到这里，一键抓取商品信息" },
+            { step: "02", title: "算利润", desc: "填入重量，设置汇率/运费/佣金参数，自动计算最低售价和利润" },
+            { step: "03", title: "导出上架", desc: "一键导出Ozon上架Excel模板，翻译好标题直接上传到Ozon卖家后台" },
+          ].map((s, i) => (
+            <div key={s.step} className="flex-1 text-center">
+              <div className="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold mx-auto mb-3">{s.step}</div>
+              <h3 className="font-semibold text-gray-900 mb-1">{s.title}</h3>
+              <p className="text-xs text-gray-500">{s.desc}</p>
+              {i < 2 && <div className="absolute text-gray-300 text-2xl">→</div>}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="text-center">
+        <button
+          onClick={onStart}
+          className="px-8 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors"
+        >
+          开始选品 →
+        </button>
       </div>
     </div>
   );
