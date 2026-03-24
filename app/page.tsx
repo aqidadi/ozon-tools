@@ -20,45 +20,35 @@ export default function Home() {
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const [showSettings, setShowSettings] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  // 从 localStorage 恢复数据
-  useEffect(() => {
+  // 从数据库加载商品
+  const loadProducts = useCallback(async () => {
     try {
-      const saved = localStorage.getItem("ozon-products");
-      if (saved) setProducts(JSON.parse(saved));
+      const res = await fetch("/api/import");
+      const data = await res.json();
+      if (data.products) setProducts(data.products);
+    } catch {} finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    // 从 localStorage 恢复设置
+    try {
       const savedSettings = localStorage.getItem("ozon-settings");
       if (savedSettings) setSettings(JSON.parse(savedSettings));
     } catch {}
-  }, []);
+    loadProducts();
+    // 每5秒轮询一次新商品（插件推送）
+    const timer = setInterval(loadProducts, 5000);
+    return () => clearInterval(timer);
+  }, [loadProducts]);
 
-  // 商品变化时保存到 localStorage
-  useEffect(() => {
-    localStorage.setItem("ozon-products", JSON.stringify(products));
-  }, [products]);
-
-  // 设置变化时保存
+  // 设置变化时保存到 localStorage
   useEffect(() => {
     localStorage.setItem("ozon-settings", JSON.stringify(settings));
   }, [settings]);
-
-  // 轮询插件推送的商品
-  useEffect(() => {
-    const poll = async () => {
-      try {
-        const res = await fetch("/api/import");
-        const data = await res.json();
-        if (data.items?.length > 0) {
-          setProducts((prev) => {
-            const updated = [...data.items, ...prev];
-            localStorage.setItem("ozon-products", JSON.stringify(updated));
-            return updated;
-          });
-        }
-      } catch {}
-    };
-    const timer = setInterval(poll, 3000);
-    return () => clearInterval(timer);
-  }, []);
 
   const handleAddProduct = useCallback((product: Product) => {
     setProducts((prev) => [product, ...prev]);
@@ -71,8 +61,13 @@ export default function Home() {
     );
   }, []);
 
-  const handleDeleteProduct = useCallback((id: string) => {
+  const handleDeleteProduct = useCallback(async (id: string) => {
     setProducts((prev) => prev.filter((p) => p.id !== id));
+    await fetch("/api/import", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id }),
+    });
   }, []);
 
   const handleExport = () => {
