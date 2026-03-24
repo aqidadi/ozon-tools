@@ -390,6 +390,123 @@ function extractProductData() {
   }
 }
 
+function renderOzonPicker(tabId, settings) {
+  const el = document.getElementById("content");
+  el.innerHTML = `
+    <div style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:8px;padding:10px;margin-bottom:10px;">
+      <div style="font-size:12px;font-weight:600;color:#2e7d32;margin-bottom:4px;">🟢 检测到 Ozon 页面</div>
+      <div style="font-size:11px;color:#388e3c;">点击下方按钮抓取页面热销商品，自动翻译并去1688搜索</div>
+    </div>
+    <button class="btn btn-primary" id="grabOzonBtn">📦 抓取当前页面热销商品</button>
+    <div id="ozonResults" style="margin-top:10px;"></div>
+  `;
+
+  document.getElementById("grabOzonBtn").addEventListener("click", async () => {
+    const btn = document.getElementById("grabOzonBtn");
+    btn.disabled = true;
+    btn.textContent = "⏳ 抓取中...";
+
+    try {
+      const results = await chrome.scripting.executeScript({
+        target: { tabId },
+        func: extractOzonProducts,
+      });
+
+      const products = results?.[0]?.result || [];
+      if (products.length === 0) {
+        document.getElementById("ozonResults").innerHTML = `
+          <div style="color:#ef4444;font-size:12px;text-align:center;padding:10px;">
+            未找到商品，请在 Ozon 商品列表页使用
+          </div>`;
+        btn.disabled = false;
+        btn.textContent = "📦 抓取当前页面热销商品";
+        return;
+      }
+
+      // 显示抓到的商品列表
+      const resultsEl = document.getElementById("ozonResults");
+      resultsEl.innerHTML = `
+        <div style="font-size:11px;color:#64748b;margin-bottom:6px;">抓到 ${products.length} 个商品，点击去1688搜索：</div>
+        <div style="max-height:200px;overflow-y:auto;">
+          ${products.map((p, i) => `
+            <div style="display:flex;align-items:center;gap:6px;padding:6px;border:1px solid #e2e8f0;border-radius:6px;margin-bottom:4px;cursor:pointer;background:white;" class="ozon-item" data-name="${p.name}" data-i="${i}">
+              ${p.image ? `<img src="${p.image}" style="width:36px;height:36px;object-fit:cover;border-radius:4px;flex-shrink:0;" />` : ''}
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:11px;color:#1e293b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.name}</div>
+                <div style="font-size:10px;color:#94a3b8;">₽${p.price || "?"} · 点击去1688找货源</div>
+              </div>
+              <span style="font-size:16px;">→</span>
+            </div>
+          `).join("")}
+        </div>
+      `;
+
+      // 点击去1688搜索
+      resultsEl.querySelectorAll(".ozon-item").forEach(item => {
+        item.addEventListener("click", async () => {
+          const name = item.dataset.name;
+          // 先翻译成中文再搜
+          item.style.background = "#f0fdf4";
+          item.querySelector("span").textContent = "⏳";
+          try {
+            const res = await fetch(`${settings.siteUrl}/api/translate`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ text: name, from: "ru", to: "zh" }),
+            });
+            const data = await res.json();
+            const zhName = data.result || name;
+            const url = `https://s.1688.com/selloffer/offer_search.html?keyword=${encodeURIComponent(zhName)}&sortType=6`;
+            chrome.tabs.create({ url });
+            item.querySelector("span").textContent = "✅";
+          } catch {
+            // 翻译失败直接用俄语搜
+            const url = `https://s.1688.com/selloffer/offer_search.html?keyword=${encodeURIComponent(name)}&sortType=6`;
+            chrome.tabs.create({ url });
+            item.querySelector("span").textContent = "✅";
+          }
+        });
+      });
+
+    } catch (e) {
+      document.getElementById("ozonResults").innerHTML = `<div style="color:#ef4444;font-size:12px;">抓取失败：${e.message}</div>`;
+    }
+
+    btn.disabled = false;
+    btn.textContent = "📦 重新抓取";
+  });
+}
+
+// 在Ozon页面执行，抓取商品列表
+function extractOzonProducts() {
+  try {
+    const items = [];
+    // Ozon商品卡片选择器
+    const cards = document.querySelectorAll(
+      "[class*='tile-root'], [class*='tileRoot'], [data-index], .widget-search-result-container [class*='item']"
+    );
+
+    for (const card of cards) {
+      if (items.length >= 15) break;
+
+      const nameEl = card.querySelector("[class*='name'], [class*='title'], h3, h2");
+      const priceEl = card.querySelector("[class*='price'], [class*='Price']");
+      const imgEl = card.querySelector("img");
+
+      const name = nameEl?.textContent?.trim();
+      const price = priceEl?.textContent?.replace(/[^\d]/g, "");
+      const image = imgEl?.src;
+
+      if (name && name.length > 3) {
+        items.push({ name, price, image });
+      }
+    }
+    return items;
+  } catch (e) {
+    return [];
+  }
+}
+
 // 初始化
 async function init() {
   const settings = await loadSettings();
@@ -398,6 +515,7 @@ async function init() {
 
   const is1688 = url.includes("1688.com");
   const is1688Product = is1688 && (url.includes("/offer/") || url.includes("detail.1688.com") || url.includes("offerId="));
+  const isOzon = url.includes("ozon.ru");
 
   // 切换导航 tab
   document.getElementById("tabSearch").addEventListener("click", () => {
@@ -406,6 +524,12 @@ async function init() {
   document.getElementById("tabImport").addEventListener("click", async () => {
     setTab("import", settings, tab.id, is1688Product);
   });
+
+  // Ozon页面：显示热销抓取界面
+  if (isOzon) {
+    renderOzonPicker(tab.id, settings);
+    return;
+  }
 
   // 默认显示：1688商品页显示导入，其他显示搜索
   if (is1688Product) {

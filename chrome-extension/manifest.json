@@ -1,11 +1,12 @@
 {
   "manifest_version": 3,
   "name": "Ozon 选品工具 - 1688采集",
-  "version": "1.0.0",
-  "description": "在1688商品页一键采集数据，自动发送到Ozon选品工具",
+  "version": "1.1.0",
+  "description": "在Ozon热销页抓取商品，自动去1688找货源；在1688商品页一键导入到选品工具",
   "permissions": ["activeTab", "storage", "clipboardWrite", "scripting"],
   "host_permissions": [
     "https://*.1688.com/*",
+    "https://*.ozon.ru/*",
     "https://localhost:3000/*",
     "https://*.vercel.app/*"
   ],
@@ -19,7 +20,7 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://*.1688.com/*"],
+      "matches": ["https://*.1688.com/*", "https://*.ozon.ru/*"],
       "js": ["content.js"],
       "run_at": "document_idle"
     }
