@@ -226,6 +226,8 @@ function extractProductData() {
       "[class*='desc-content']",
       "[data-module='detail']",
       ".description",
+      "[class*='detail-content']",
+      "[class*='detailWrapper']",
     ];
     let descContainer = null;
     for (const sel of descSelectors) {
@@ -233,28 +235,29 @@ function extractProductData() {
       if (descContainer) break;
     }
 
-    // 从描述容器里抓图
-    const descEl = descContainer || document.body;
-    for (const img of descEl.querySelectorAll("img")) {
-      const src = (img.src || img.dataset.src || img.dataset.lazySrc || "").split("?")[0];
-      if (src && /alicdn\.com|aliyuncs\.com/i.test(src) && !seenDetail.has(src) && !seenMain.has(src)) {
+    // 从整个页面扫所有图片src/data-src/data-lazy-src
+    const allImgs = document.querySelectorAll("img");
+    for (const img of allImgs) {
+      const src = (img.src || img.dataset.src || img.dataset.lazySrc || img.dataset.original || img.getAttribute("data-lazy") || "").split("?")[0];
+      if (src && /alicdn\.com|aliyuncs\.com/i.test(src) && !seenDetail.has(src) && !seenMain.has(src) && src.match(/\.(jpg|jpeg|png|webp)/i)) {
+        // 跳过小图标（宽高<100）
+        if (img.naturalWidth && img.naturalWidth < 100) continue;
         seenDetail.add(src);
         detailImages.push(src);
         if (detailImages.length >= 30) break;
       }
     }
 
-    // 也从内联 HTML（lazyload data）里扫
-    if (detailImages.length < 5 && descContainer) {
-      const html = descContainer.innerHTML;
-      const matches = html.matchAll(/https?:\/\/[^"'\s>]+\.(jpg|jpeg|png|webp)/gi);
-      for (const m of matches) {
-        const src = m[0].split("?")[0];
-        if (!seenDetail.has(src) && !seenMain.has(src) && /alicdn\.com|aliyuncs\.com/i.test(src)) {
-          seenDetail.add(src);
-          detailImages.push(src);
-          if (detailImages.length >= 30) break;
-        }
+    // 从 innerHTML 里扫懒加载图（data-src 等属性里的URL）
+    const scanEl = descContainer || document.body;
+    const html = scanEl.innerHTML;
+    const matches = html.matchAll(/(?:data-src|data-lazy-src|data-original|src)=["']?(https?:\/\/[^"'\s>?]+\.(?:jpg|jpeg|png|webp))/gi);
+    for (const m of matches) {
+      const src = m[1].split("?")[0];
+      if (src && /alicdn\.com|aliyuncs\.com/i.test(src) && !seenDetail.has(src) && !seenMain.has(src)) {
+        seenDetail.add(src);
+        detailImages.push(src);
+        if (detailImages.length >= 30) break;
       }
     }
 
