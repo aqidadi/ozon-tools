@@ -1,6 +1,6 @@
 // popup.js - Ozon 选品工具插件弹窗逻辑
 
-const DEFAULT_SITE = "https://crossly.cn";
+const DEFAULT_SITE = "https://www.crossly.cn";
 
 let currentProduct = null;
 
