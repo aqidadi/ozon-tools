@@ -477,61 +477,113 @@ function renderOzonPicker(tabId, settings) {
   });
 }
 
-// 在Ozon页面执行，抓取商品列表
+// 在Ozon页面执行，从页面JSON数据抓取商品列表
 function extractOzonProducts() {
   try {
     const items = [];
-    const seen = new Set();
 
-    // 找所有指向商品详情页的链接
-    const links = document.querySelectorAll("a[href*='/product/']");
-
-    for (const link of links) {
-      if (items.length >= 20) break;
-
-      const href = link.href;
-      // 只要 /product/ 结尾带ID的链接，过滤掉评论/问答等子页面
-      if (!href || seen.has(href)) continue;
-      if (!href.match(/\/product\/[^/]+-\d+\/?$/)) continue;
-      seen.add(href);
-
-      // 商品标题：找 link 内部最长的、不含数字/符号的文本
-      let name = "";
-      const walker = document.createTreeWalker(link, NodeFilter.SHOW_TEXT);
-      let node;
-      while ((node = walker.nextNode())) {
-        const t = node.textContent.trim();
-        // 过滤：纯数字、评分、评论数、价格、促销标签
-        if (
-          t.length > name.length &&
-          t.length > 10 &&
-          !t.match(/^\d[\d\s.,]*₽?$/) &&         // 纯数字/价格
-          !t.match(/^[\d.,]+\s*·/) &&              // "4.9 · xxx"
-          !t.match(/отзыв|вопрос|оценен|распрод|скидк|%/i) && // 评论/折扣标签
-          !t.match(/^[→←↑↓]+$/)                  // 箭头
-        ) {
-          name = t;
+    // 方法1：从页面内嵌的__NEXT_DATA__ JSON中提取（Next.js页面）
+    const nextData = document.getElementById("__NEXT_DATA__");
+    if (nextData) {
+      const json = JSON.parse(nextData.textContent || "{}");
+      // 遍历找商品列表
+      const findProducts = (obj, depth = 0) => {
+        if (depth > 8 || items.length >= 20) return;
+        if (Array.isArray(obj)) {
+          for (const item of obj) {
+            if (items.length >= 20) break;
+            // 判断是否是商品对象
+            if (item && typeof item === "object" && (item.name || item.title) && item.id) {
+              const name = item.name || item.title || "";
+              const price = item.price || item.finalPrice || item.minPrice || 0;
+              const image = item.images?.[0] || item.coverImage || item.image || "";
+              const url = item.url ? `https://www.ozon.ru${item.url}` : "";
+              if (name.length > 5) {
+                items.push({ name, price: String(price), image, url });
+              }
+            } else {
+              findProducts(item, depth + 1);
+            }
+          }
+        } else if (obj && typeof obj === "object") {
+          for (const key of Object.keys(obj)) {
+            if (items.length >= 20) break;
+            findProducts(obj[key], depth + 1);
+          }
         }
-      }
+      };
+      findProducts(json);
+    }
 
-      // 图片
-      const img = link.querySelector("img");
-      const image = img?.src || "";
+    // 方法2：从window.__INITIAL_STATE__提取
+    if (items.length === 0) {
+      try {
+        const scripts = document.querySelectorAll("script:not([src])");
+        for (const script of scripts) {
+          if (items.length >= 5) break;
+          const text = script.textContent || "";
+          if (text.includes('"finalPrice"') || text.includes('"price"')) {
+            // 找商品数组
+            const match = text.match(/"items"\s*:\s*(\[[\s\S]{10,5000}?\])/);
+            if (match) {
+              try {
+                const arr = JSON.parse(match[1]);
+                for (const item of arr.slice(0, 20)) {
+                  if (item.name || item.title) {
+                    items.push({
+                      name: item.name || item.title,
+                      price: String(item.price || item.finalPrice || ""),
+                      image: item.images?.[0] || item.image || "",
+                      url: item.url ? `https://www.ozon.ru${item.url}` : "",
+                    });
+                  }
+                }
+              } catch {}
+            }
+          }
+        }
+      } catch {}
+    }
 
-      // 价格（从父元素找）
-      let price = "";
-      const parent = link.closest("[class]") || link.parentElement;
-      const priceMatch = parent?.innerText?.match(/(\d[\d\s]{1,5})\s*₽/);
-      if (priceMatch) price = priceMatch[1].replace(/\s/g, "");
+    // 方法3：降级到DOM抓取（只抓商品链接内的标题span）
+    if (items.length === 0) {
+      const seen = new Set();
+      const links = document.querySelectorAll("a[href*='/product/']");
+      for (const link of links) {
+        if (items.length >= 20) break;
+        const href = link.href;
+        if (!href || seen.has(href) || !href.match(/\/product\/[^/]+-\d+\/?$/)) continue;
+        seen.add(href);
 
-      if (name && name.length > 10) {
-        items.push({ name, price, image, url: href });
+        // 找最像商品标题的文字：字母多、长度合理
+        const allText = Array.from(link.querySelectorAll("span, div"))
+          .map(el => el.childNodes)
+          .reduce((acc, nodes) => {
+            nodes.forEach(n => { if (n.nodeType === 3) acc.push(n.textContent.trim()); });
+            return acc;
+          }, [] as string[])
+          .filter(t =>
+            t.length > 15 &&
+            !t.match(/^\d[\d\s.,]*₽?$/) &&
+            !t.match(/отзыв|вопрос|распрод|скидк|\d+%/i)
+          )
+          .sort((a, b) => b.length - a.length);
+
+        if (allText[0]) {
+          const img = link.querySelector("img");
+          items.push({
+            name: allText[0],
+            price: "",
+            image: img?.src || "",
+            url: href,
+          });
+        }
       }
     }
 
     return items;
   } catch (e) {
-    return [];
+    return [{ error: String(e) }];
   }
 }
 
