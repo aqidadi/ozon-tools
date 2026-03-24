@@ -85,7 +85,8 @@ export function PickerPage() {
   const [search, setSearch] = useState("");
 
   const open1688 = (kw: string) => {
-    const url = `https://s.1688.com/selloffer/offer_search.htm?keywords=${encodeURIComponent(kw)}&sortField=monthSold&sortType=desc`;
+    const sortParam = sort.value === "monthSold" ? "6" : sort.value === "price" ? "2" : "0";
+    const url = `https://search.1688.com/search/product.do?SearchText=${encodeURIComponent(kw)}&sortType=${sortParam}`;
     window.open(url, "_blank");
   };
 
