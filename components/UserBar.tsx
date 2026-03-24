@@ -5,6 +5,22 @@ import { useAuth } from "@/lib/auth-context";
 import { AuthModal } from "@/components/AuthModal";
 import { LogOut, Crown, Copy, Check, ExternalLink, User, Camera, Pencil, X, Loader2 } from "lucide-react";
 
+function formatExpiry(expiresAt?: string): string {
+  if (!expiresAt) return "永久有效";
+  const exp = new Date(expiresAt);
+  const now = new Date();
+  const diffMs = exp.getTime() - now.getTime();
+  if (diffMs <= 0) return "已过期";
+  const diffMin = Math.floor(diffMs / 60000);
+  if (diffMin < 60) return `剩余 ${diffMin} 分钟`;
+  const diffHour = Math.floor(diffMin / 60);
+  if (diffHour < 24) return `剩余 ${diffHour} 小时 ${diffMin % 60} 分`;
+  const diffDay = Math.floor(diffHour / 24);
+  if (diffDay < 365) return `剩余 ${diffDay} 天 ${diffHour % 24} 小时`;
+  const diffYear = Math.floor(diffDay / 365);
+  return `剩余 ${diffYear} 年`;
+}
+
 // ── 个人中心弹窗 ──────────────────────────────────────────
 function ProfileModal({ onClose }: { onClose: () => void }) {
   const { user, accessToken, refreshUser } = useAuth();
@@ -254,7 +270,7 @@ export function UserBar() {
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-xs font-medium text-gray-800 truncate">{displayName}</p>
-          <p className="text-[10px] text-gray-400 truncate">{isPro ? "✨ Pro 会员" : `免费版 ${user.productCount}/${user.quota}`}</p>
+          <p className="text-[10px] text-gray-400 truncate">{isPro ? `✨ Pro · ${formatExpiry(user.planExpiresAt)}` : `免费版 ${user.productCount}/${user.quota}`}</p>
         </div>
         <Pencil size={11} className="text-gray-300 flex-shrink-0" />
       </button>
