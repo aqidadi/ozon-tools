@@ -141,8 +141,8 @@ export default function Home() {
               <ShoppingBag size={16} className="text-white" />
             </div>
             <div>
-              <p className="text-sm font-bold text-gray-900 leading-tight">Ozon 选品工具</p>
-              <p className="text-xs text-gray-400">1688 → Ozon</p>
+              <p className="text-sm font-bold text-gray-900 leading-tight">Crossly</p>
+              <p className="text-xs text-gray-400">跨境卖家工具箱</p>
             </div>
           </div>
         </div>

@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Ozon 选品工具",
-  description: "1688 商品一键转 Ozon 上架",
+  title: "Crossly — 跨境卖家工具箱",
+  description: "1688选品、多语言翻译、利润计算、Ozon/亚马逊/TikTok Shop 一站式跨境工具",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
