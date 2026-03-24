@@ -79,9 +79,8 @@ export function ProductCard({ product, settings, onUpdate, onDelete }: Props) {
       <div className="flex items-center gap-2 px-3 py-2">
         {/* Thumbnail */}
         <img
-          src={product.images[0] || ""}
+          src={product.images[0] ? `/api/imgproxy?url=${encodeURIComponent(product.images[0])}` : ""}
           alt=""
-          referrerPolicy="no-referrer"
           className="w-9 h-9 object-cover rounded-md flex-shrink-0 bg-gray-100"
           onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
           style={{ display: product.images[0] ? undefined : 'none' }}
@@ -268,9 +267,8 @@ export function ProductCard({ product, settings, onUpdate, onDelete }: Props) {
                   {product.detailImages.map((src, i) => (
                     <a key={i} href={src} target="_blank" rel="noopener noreferrer" title="点击查看原图">
                       <img
-                        src={src}
+                        src={`/api/imgproxy?url=${encodeURIComponent(src)}`}
                         alt={`详情图${i + 1}`}
-                        referrerPolicy="no-referrer"
                         className="h-20 w-auto object-cover rounded border border-gray-100 hover:border-blue-300 flex-shrink-0 transition-all hover:scale-105"
                         onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
                       />
