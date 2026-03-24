@@ -1,0 +1,32 @@
+{
+  "manifest_version": 3,
+  "name": "Ozon 选品工具 - 1688采集",
+  "version": "1.0.0",
+  "description": "在1688商品页一键采集数据，自动发送到Ozon选品工具",
+  "permissions": ["activeTab", "storage", "clipboardWrite"],
+  "host_permissions": [
+    "https://*.1688.com/*",
+    "https://localhost:3000/*",
+    "https://*.vercel.app/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://*.1688.com/offer/*", "https://detail.1688.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

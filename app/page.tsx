@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { ProductCard } from "@/components/ProductCard";
 import { SettingsPanel } from "@/components/SettingsPanel";
 import { AddProductModal } from "@/components/AddProductModal";
@@ -20,6 +20,21 @@ export default function Home() {
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const [showSettings, setShowSettings] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
+
+  // 轮询插件推送的商品
+  useEffect(() => {
+    const poll = async () => {
+      try {
+        const res = await fetch("/api/import");
+        const data = await res.json();
+        if (data.items?.length > 0) {
+          setProducts((prev) => [...data.items, ...prev]);
+        }
+      } catch {}
+    };
+    const timer = setInterval(poll, 3000);
+    return () => clearInterval(timer);
+  }, []);
 
   const handleAddProduct = useCallback((product: Product) => {
     setProducts((prev) => [product, ...prev]);
