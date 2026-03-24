@@ -481,11 +481,8 @@ function renderOzonPicker(tabId, settings) {
             // 复制到剪贴板
             await navigator.clipboard.writeText(zhName).catch(() => {});
 
-            // 打开1688搜索结果页（用GBK编码，与1688原生一致）
-            // 直接把中文放进URL，让浏览器用GBK处理（1688页面charset=gbk）
-            const searchUrl = `https://s.1688.com/selloffer/offer_search.html?keywords=${encodeURIComponent(zhName)}&sortType=6`;
-            const newTab = await chrome.tabs.create({ url: searchUrl });
-            // 等页面加载完后自动点搜索按钮触发真正搜索
+            // 打开1688搜索结果页，等加载完注入关键词触发搜索
+            const newTab = await chrome.tabs.create({ url: "https://s.1688.com/selloffer/offer_search.html" });
             setTimeout(async () => {
               await chrome.scripting.executeScript({
                 target: { tabId: newTab.id },
@@ -493,11 +490,14 @@ function renderOzonPicker(tabId, settings) {
                   const input = document.querySelector('input[name="keywords"], #search-key, .search-input');
                   const btn = document.querySelector('.search-btn, button[type="submit"], .searchbtn');
                   if (input && btn) {
-                    // 用nativeInputValueSetter绕过React
                     const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
-                    setter.call(input, kw);
+                    setter.call(input, ""); // 先清空
                     input.dispatchEvent(new Event('input', { bubbles: true }));
-                    btn.click();
+                    setTimeout(() => {
+                      setter.call(input, kw); // 再写入新词
+                      input.dispatchEvent(new Event('input', { bubbles: true }));
+                      setTimeout(() => btn.click(), 200);
+                    }, 100);
                   }
                 },
                 args: [zhName],
