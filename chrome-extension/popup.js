@@ -72,6 +72,83 @@ function renderProduct(product, settings) {
   document.getElementById("sendBtn").addEventListener("click", handleSend);
 }
 
+function renderManualInput(settings, pageUrl) {
+  // 从URL提取offerId
+  const offerMatch = pageUrl.match(/offer\/(\d+)/) || pageUrl.match(/offerId=(\d+)/);
+  const offerId = offerMatch ? offerMatch[1] : "";
+
+  const el = document.getElementById("content");
+  el.innerHTML = `
+    <div class="status-box" style="border-color:#fbbf24;background:#fffbeb;">
+      <div class="status-label" style="color:#d97706;">⚠️ 自动识别失败，请手动填写</div>
+      <div style="font-size:11px;color:#92400e;margin-top:4px;">商品ID: ${offerId || "未识别"}</div>
+    </div>
+
+    <div style="margin-bottom:10px;">
+      <label style="font-size:12px;color:#64748b;display:block;margin-bottom:4px;">商品名称（从页面复制）</label>
+      <input type="text" id="manualTitle" placeholder="粘贴商品标题" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:6px 8px;font-size:12px;box-sizing:border-box;" />
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+      <div>
+        <label style="font-size:12px;color:#64748b;display:block;margin-bottom:4px;">进价（元）</label>
+        <input type="number" id="manualPrice" placeholder="如：4.5" min="0" step="0.01" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:6px 8px;font-size:12px;box-sizing:border-box;" />
+      </div>
+      <div>
+        <label style="font-size:12px;color:#64748b;display:block;margin-bottom:4px;">重量（克）</label>
+        <input type="number" id="manualWeight" value="${settings.weight}" min="1" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:6px 8px;font-size:12px;box-sizing:border-box;" />
+      </div>
+    </div>
+
+    <button class="btn btn-primary" id="manualSendBtn">📤 发送到 Ozon 选品工具</button>
+
+    <div class="divider"></div>
+    <div class="site-row">
+      <label>网站地址</label>
+      <input type="text" id="siteInput" value="${settings.siteUrl}" />
+    </div>
+  `;
+
+  document.getElementById("manualSendBtn").addEventListener("click", async () => {
+    const title = document.getElementById("manualTitle").value.trim();
+    const price = parseFloat(document.getElementById("manualPrice").value) || 0;
+    const weight = parseInt(document.getElementById("manualWeight").value) || 400;
+    const siteUrl = document.getElementById("siteInput").value.trim() || DEFAULT_SITE;
+
+    if (!title) { showToast("请填写商品名称"); return; }
+
+    const btn = document.getElementById("manualSendBtn");
+    btn.disabled = true;
+    btn.innerHTML = "⏳ 发送中...";
+
+    await saveSettings({ weight, siteUrl });
+
+    currentProduct = {
+      id: crypto.randomUUID(),
+      title, titleRu: "", price, weight,
+      images: [], sellPriceRub: 0, note: "",
+      sourceUrl: pageUrl,
+    };
+
+    try {
+      const res = await fetch(`${siteUrl}/api/import`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(currentProduct),
+      });
+      if (res.ok) {
+        btn.className = "btn btn-success";
+        btn.innerHTML = "✅ 已发送！";
+        showToast("商品已添加！");
+        setTimeout(() => chrome.tabs.create({ url: siteUrl }), 800);
+      } else throw new Error();
+    } catch {
+      btn.disabled = false;
+      btn.innerHTML = "📤 发送到 Ozon 选品工具";
+      showToast("❌ 发送失败");
+    }
+  });
+}
+
 function renderNotProduct() {
   document.getElementById("content").innerHTML = `
     <div class="not-1688">
@@ -160,10 +237,12 @@ async function init() {
       currentProduct = product;
       renderProduct(product, settings);
     } else {
-      renderNotProduct();
+      // 提取失败，显示手动输入模式
+      renderManualInput(settings, tab.url);
     }
   } catch (e) {
-    renderNotProduct();
+    // scripting注入失败，显示手动输入
+    renderManualInput(settings, tab.url);
   }
 }
 

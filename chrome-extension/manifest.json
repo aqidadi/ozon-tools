@@ -3,7 +3,7 @@
   "name": "Ozon 选品工具 - 1688采集",
   "version": "1.0.0",
   "description": "在1688商品页一键采集数据，自动发送到Ozon选品工具",
-  "permissions": ["activeTab", "storage", "clipboardWrite"],
+  "permissions": ["activeTab", "storage", "clipboardWrite", "scripting"],
   "host_permissions": [
     "https://*.1688.com/*",
     "https://localhost:3000/*",
