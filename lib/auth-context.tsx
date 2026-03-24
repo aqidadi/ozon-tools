@@ -10,6 +10,7 @@ interface User {
   productCount: number;
   apiToken: string;
   displayName?: string;
+  avatarUrl?: string;
   planExpiresAt?: string;
 }
 
