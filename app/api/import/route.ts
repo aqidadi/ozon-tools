@@ -1,6 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient, getUserByToken, checkQuota } from "@/lib/supabase";
 
+const CORS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET,POST,DELETE,PATCH,OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type,Authorization,X-Api-Token",
+};
+
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 204, headers: CORS });
+}
+
 // 从请求中获取用户身份
 // 支持两种方式：
 //   1. Authorization: Bearer <supabase_access_token>  （网页登录态）
