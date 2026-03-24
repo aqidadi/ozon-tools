@@ -859,6 +859,8 @@ async function setTab(tab, settings, tabId, condition) {
     renderSearch(settings, tabId, condition);
   } else if (tab === "batch") {
     renderBatchImport(settings);
+  } else if (tab === "account") {
+    renderLogin(settings);
   } else {
     if (!condition) { renderManualInput(settings, ""); return; }
     try {
@@ -871,8 +873,6 @@ async function setTab(tab, settings, tabId, condition) {
         renderManualInput(settings, "");
       }
     } catch { renderManualInput(settings, ""); }
-  } else if (tab === "account") {
-    renderLogin(settings);
   }
 }
 
