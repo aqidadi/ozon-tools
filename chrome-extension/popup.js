@@ -445,10 +445,10 @@ function renderOzonPicker(tabId, settings) {
       resultsEl.querySelectorAll(".ozon-item").forEach(item => {
         item.addEventListener("click", async () => {
           const name = item.dataset.name;
-          // 先翻译成中文再搜
           item.style.background = "#f0fdf4";
           item.querySelector("span").textContent = "⏳";
           try {
+            // 翻译成中文
             const res = await fetch(`${settings.siteUrl}/api/translate`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -456,14 +456,76 @@ function renderOzonPicker(tabId, settings) {
             });
             const data = await res.json();
             const zhName = data.result || name;
-            const url = `https://s.1688.com/selloffer/offer_search.html?keyword=${encodeURIComponent(zhName)}&sortType=6`;
-            chrome.tabs.create({ url });
+
+            // 复制到剪贴板
+            await navigator.clipboard.writeText(zhName).catch(() => {});
+
+            // 检查当前是否已有1688标签页
+            const tabs = await chrome.tabs.query({ url: "*://*.1688.com/*" });
+            if (tabs.length > 0) {
+              // 已有1688页面，在那里注入搜索
+              const tab = tabs[0];
+              await chrome.tabs.update(tab.id, { active: true });
+              await chrome.scripting.executeScript({
+                target: { tabId: tab.id },
+                func: (kw) => {
+                  const input = document.querySelector(
+                    '#search-key, input[name="keywords"], .search-input input, input[type="text"]'
+                  );
+                  if (input) {
+                    input.focus();
+                    // 用 execCommand 设置值（绕过 React 的 state）
+                    input.value = "";
+                    document.execCommand("selectAll");
+                    document.execCommand("insertText", false, kw);
+                    // 触发搜索
+                    setTimeout(() => {
+                      const btn = document.querySelector(
+                        '.search-btn, button[type="submit"], .btn-search, .searchbtn'
+                      );
+                      if (btn) btn.click();
+                      else {
+                        input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", keyCode: 13, bubbles: true }));
+                        input.dispatchEvent(new KeyboardEvent("keyup", { key: "Enter", keyCode: 13, bubbles: true }));
+                      }
+                    }, 100);
+                  } else {
+                    // 找不到输入框就跳转
+                    window.location.href = `https://s.1688.com/selloffer/offer_search.html?keyword=${encodeURIComponent(kw)}&sortType=6`;
+                  }
+                },
+                args: [zhName],
+              });
+            } else {
+              // 没有1688页面，打开新标签并注入
+              const newTab = await chrome.tabs.create({
+                url: `https://s.1688.com/selloffer/offer_search.html`
+              });
+              // 等页面加载完再注入
+              await new Promise(resolve => setTimeout(resolve, 2500));
+              await chrome.scripting.executeScript({
+                target: { tabId: newTab.id },
+                func: (kw) => {
+                  const input = document.querySelector(
+                    '#search-key, input[name="keywords"], .search-input input, input[type="text"]'
+                  );
+                  if (input) {
+                    input.value = kw;
+                    document.execCommand("selectAll");
+                    document.execCommand("insertText", false, kw);
+                    const btn = document.querySelector('.search-btn, button[type="submit"]');
+                    if (btn) btn.click();
+                  }
+                },
+                args: [zhName],
+              }).catch(() => {});
+            }
+
             item.querySelector("span").textContent = "✅";
-          } catch {
-            // 翻译失败直接用俄语搜
-            const url = `https://s.1688.com/selloffer/offer_search.html?keyword=${encodeURIComponent(name)}&sortType=6`;
-            chrome.tabs.create({ url });
-            item.querySelector("span").textContent = "✅";
+          } catch(e) {
+            // 失败就复制到剪贴板提示手动粘贴
+            item.querySelector("span").textContent = "📋";
+            showToast("已复制关键词，请手动粘贴到1688搜索框");
           }
         });
       });
