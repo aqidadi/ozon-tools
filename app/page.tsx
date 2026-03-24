@@ -278,7 +278,7 @@ export default function Home() {
                   </button>
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-1">
                   {products.map((product) => (
                     <ProductCard
                       key={product.id}

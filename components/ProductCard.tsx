@@ -56,61 +56,60 @@ export function ProductCard({ product, settings, onUpdate, onDelete }: Props) {
   };
 
   return (
-    <div className={`bg-white border rounded-xl overflow-hidden transition-shadow hover:shadow-sm ${expanded ? "border-blue-200" : "border-gray-200"}`}>
-      {/* Compact row */}
-      <div className="flex items-center gap-3 px-3 py-2.5">
-        {/* Thumbnail — 用 referrerPolicy 绕过1688防盗链 */}
-        {product.images[0]
-          ? <img src={product.images[0]} alt="" referrerPolicy="no-referrer" className="w-10 h-10 object-cover rounded-lg flex-shrink-0 bg-gray-100" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
-          : <div className="w-10 h-10 bg-gray-100 rounded-lg flex-shrink-0 flex items-center justify-center text-gray-300 text-[10px]">无图</div>
-        }
+    <div className={`bg-white border rounded-lg overflow-hidden transition-shadow hover:shadow-sm ${expanded ? "border-blue-200" : "border-gray-200"}`}>
+      {/* Compact single row */}
+      <div className="flex items-center gap-2 px-3 py-2">
+        {/* Thumbnail — 图片失败时隐藏不占位 */}
+        <img
+          src={product.images[0] || ""}
+          alt=""
+          referrerPolicy="no-referrer"
+          className="w-9 h-9 object-cover rounded-md flex-shrink-0 bg-gray-100"
+          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+          style={{ display: product.images[0] ? undefined : 'none' }}
+        />
 
-        {/* Title + translation */}
+        {/* Title + translation — 主要内容 */}
         <div className="flex-1 min-w-0">
-          <p className="text-sm text-gray-900 truncate leading-tight">{product.title}</p>
+          <p className="text-xs text-gray-800 truncate leading-tight font-medium">{product.title}</p>
           {translatedTitle
-            ? <div className="flex items-center gap-1"><p className="text-xs text-blue-500 truncate">{translatedTitle}</p><CopyButton text={translatedTitle} /></div>
-            : <p className="text-xs text-gray-300 italic">未翻译</p>
+            ? <div className="flex items-center gap-0.5"><p className="text-xs text-blue-500 truncate">{translatedTitle}</p><CopyButton text={translatedTitle} /></div>
+            : <p className="text-[11px] text-gray-300 italic">未翻译</p>
           }
         </div>
 
-        {/* Price + cost */}
-        <div className="flex items-center gap-3 flex-shrink-0 text-sm">
-          <span className="text-gray-400 text-xs">¥{product.price}</span>
-          <span className="text-orange-500 text-xs font-medium">₽{cost.minSellPriceRub}起</span>
-
-          {/* 售价输入 */}
-          <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden focus-within:border-blue-400">
-            <span className="bg-gray-50 px-1.5 py-1 text-xs text-gray-400 border-r border-gray-200">₽</span>
-            <input
-              type="number" min={0}
+        {/* Price info + sell price + profit */}
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <span className="text-gray-400 text-[11px]">¥{product.price}</span>
+          <span className="text-orange-500 text-[11px] font-medium">₽{cost.minSellPriceRub}起</span>
+          <div className="flex items-center border border-gray-200 rounded-md overflow-hidden focus-within:border-blue-400">
+            <span className="bg-gray-50 px-1.5 py-1 text-[11px] text-gray-400 border-r border-gray-200">₽</span>
+            <input type="number" min={0}
               value={product.sellPriceRub || ""}
               onChange={(e) => onUpdate(product.id, { sellPriceRub: parseFloat(e.target.value) || 0 })}
               placeholder="售价"
-              className="w-16 px-1.5 py-1 text-xs focus:outline-none"
+              className="w-14 px-1.5 py-1 text-[11px] focus:outline-none"
             />
           </div>
-
-          {/* 利润 badge */}
           {product.sellPriceRub > 0 && (
-            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap ${isProfit ? "bg-green-100 text-green-700" : "bg-red-100 text-red-500"}`}>
+            <span className={`text-[11px] font-semibold px-1.5 py-0.5 rounded-full whitespace-nowrap ${isProfit ? "bg-green-100 text-green-700" : "bg-red-100 text-red-500"}`}>
               {isProfit ? "+" : ""}{cost.profit.toFixed(0)}元
             </span>
           )}
         </div>
 
         {/* Actions */}
-        <div className="flex items-center gap-0.5 flex-shrink-0">
+        <div className="flex items-center gap-0 flex-shrink-0">
           {product.sourceUrl && (
-            <a href={product.sourceUrl} target="_blank" rel="noopener noreferrer" className="p-1.5 text-gray-300 hover:text-blue-500 transition-colors">
-              <ExternalLink size={14} />
+            <a href={product.sourceUrl} target="_blank" rel="noopener noreferrer" className="p-1 text-gray-300 hover:text-blue-500 transition-colors">
+              <ExternalLink size={13} />
             </a>
           )}
-          <button onClick={() => onDelete(product.id)} className="p-1.5 text-gray-300 hover:text-red-500 transition-colors">
-            <Trash2 size={14} />
+          <button onClick={() => onDelete(product.id)} className="p-1 text-gray-300 hover:text-red-500 transition-colors">
+            <Trash2 size={13} />
           </button>
-          <button onClick={() => setExpanded(!expanded)} className="p-1.5 text-gray-300 hover:text-gray-700 transition-colors">
-            {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+          <button onClick={() => setExpanded(!expanded)} className="p-1 text-gray-300 hover:text-gray-700 transition-colors">
+            {expanded ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
           </button>
         </div>
       </div>
