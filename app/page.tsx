@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { ProductCard } from "@/components/ProductCard";
 import { SettingsPanel } from "@/components/SettingsPanel";
 import { AddProductModal } from "@/components/AddProductModal";
@@ -8,7 +8,10 @@ import { PickerPage } from "@/components/PickerPage";
 import { GuidePage } from "@/components/GuidePage";
 import { exportToExcel } from "@/lib/export";
 import { Product, Settings, LANGUAGES } from "@/lib/types";
-import { ShoppingBag, Settings2, Download, Plus, TrendingUp, BookOpen, Languages, Bell, BarChart2, Search } from "lucide-react";
+import {
+  ShoppingBag, Settings2, Download, Plus, TrendingUp,
+  BookOpen, Languages, Bell, BarChart2, Package, ChevronRight
+} from "lucide-react";
 
 const DEFAULT_SETTINGS: Settings = {
   exchangeRate: 10,
@@ -17,17 +20,35 @@ const DEFAULT_SETTINGS: Settings = {
   packagingCost: 2,
 };
 
+type Tab = "products" | "picker" | "guide" | "monitor" | "analytics" | "settings";
+
+const NAV_ITEMS = [
+  { id: "products", label: "选品列表", icon: Package, color: "blue" },
+  { id: "picker", label: "选品参考", icon: TrendingUp, color: "orange" },
+  { id: "guide", label: "新手指南", icon: BookOpen, color: "indigo" },
+  { id: "monitor", label: "价格监控", icon: Bell, color: "yellow", badge: "即将上线" },
+  { id: "analytics", label: "竞品分析", icon: BarChart2, color: "pink", badge: "即将上线" },
+  { id: "settings", label: "参数设置", icon: Settings2, color: "gray" },
+] as { id: Tab; label: string; icon: React.ElementType; color: string; badge?: string }[];
+
+const COLOR_CLASSES: Record<string, { active: string; icon: string }> = {
+  blue:   { active: "bg-blue-50 text-blue-700 border-l-2 border-blue-600",   icon: "text-blue-500" },
+  orange: { active: "bg-orange-50 text-orange-700 border-l-2 border-orange-500", icon: "text-orange-500" },
+  indigo: { active: "bg-indigo-50 text-indigo-700 border-l-2 border-indigo-600", icon: "text-indigo-500" },
+  yellow: { active: "bg-yellow-50 text-yellow-700 border-l-2 border-yellow-500", icon: "text-yellow-500" },
+  pink:   { active: "bg-pink-50 text-pink-700 border-l-2 border-pink-500",   icon: "text-pink-500" },
+  gray:   { active: "bg-gray-100 text-gray-800 border-l-2 border-gray-500",  icon: "text-gray-500" },
+};
+
 export default function Home() {
   const [products, setProducts] = useState<Product[]>([]);
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
-  const [showSettings, setShowSettings] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<"products" | "picker" | "guide" | "monitor" | "analytics">("products");
+  const [tab, setTab] = useState<Tab>("products");
   const [translatingAll, setTranslatingAll] = useState(false);
   const [targetLang, setTargetLang] = useState("ru");
 
-  // 批量翻译所有未翻译商品
   const handleTranslateAll = useCallback(async () => {
     const untranslated = products.filter((p) => !p.titleRu);
     if (untranslated.length === 0) { alert("所有商品已翻译完成！"); return; }
@@ -49,13 +70,12 @@ export default function Home() {
             body: JSON.stringify({ id: p.id, ...updates }),
           });
         }
-        await new Promise((r) => setTimeout(r, 500)); // 限速
+        await new Promise((r) => setTimeout(r, 500));
       } catch {}
     }
     setTranslatingAll(false);
   }, [products, targetLang]);
 
-  // 从数据库加载商品
   const loadProducts = useCallback(async (isInitial = false) => {
     try {
       const res = await fetch("/api/import");
@@ -63,30 +83,24 @@ export default function Home() {
       if (data.products) {
         setProducts((prev) => {
           if (isInitial || prev.length === 0) return data.products;
-          // 轮询时只合并新商品，不覆盖已有商品（保留用户正在编辑的数据）
           const prevIds = new Set(prev.map((p: Product) => p.id));
           const newItems = data.products.filter((p: Product) => !prevIds.has(p.id));
           return newItems.length > 0 ? [...newItems, ...prev] : prev;
         });
       }
-    } catch {} finally {
-      setLoading(false);
-    }
+    } catch {} finally { setLoading(false); }
   }, []);
 
   useEffect(() => {
-    // 从 localStorage 恢复设置
     try {
-      const savedSettings = localStorage.getItem("ozon-settings");
-      if (savedSettings) setSettings(JSON.parse(savedSettings));
+      const s = localStorage.getItem("ozon-settings");
+      if (s) setSettings(JSON.parse(s));
     } catch {}
     loadProducts(true);
-    // 每5秒轮询一次新商品（插件推送），但不覆盖已有数据
     const timer = setInterval(() => loadProducts(false), 5000);
     return () => clearInterval(timer);
   }, [loadProducts]);
 
-  // 设置变化时保存到 localStorage
   useEffect(() => {
     localStorage.setItem("ozon-settings", JSON.stringify(settings));
   }, [settings]);
@@ -97,9 +111,7 @@ export default function Home() {
   }, []);
 
   const handleUpdateProduct = useCallback((id: string, updates: Partial<Product>) => {
-    setProducts((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, ...updates } : p))
-    );
+    setProducts((prev) => prev.map((p) => (p.id === id ? { ...p, ...updates } : p)));
   }, []);
 
   const handleDeleteProduct = useCallback(async (id: string) => {
@@ -112,134 +124,94 @@ export default function Home() {
   }, []);
 
   const handleExport = () => {
-    if (products.length === 0) {
-      alert("请先添加商品");
-      return;
-    }
+    if (products.length === 0) { alert("请先添加商品"); return; }
     exportToExcel(products, settings);
   };
 
+  const untranslatedCount = products.filter((p) => !p.titleRu).length;
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* Sidebar */}
+      <aside className="w-56 bg-white border-r border-gray-200 flex flex-col fixed h-full z-20">
+        {/* Logo */}
+        <div className="px-4 py-4 border-b border-gray-100">
           <div className="flex items-center gap-2">
-            <ShoppingBag className="text-blue-600" size={24} />
-            <h1 className="text-xl font-bold text-gray-900">Ozon 选品工具</h1>
-            <span className="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full">
-              1688 → Ozon
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setTab(tab === "picker" ? "products" : "picker")}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                tab === "picker" ? "bg-orange-100 text-orange-700" : "text-gray-600 hover:bg-gray-100"
-              }`}
-            >
-              <TrendingUp size={16} />
-              选品参考
-            </button>
-            <button
-              onClick={() => setTab(tab === "guide" ? "products" : "guide")}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                tab === "guide" ? "bg-indigo-100 text-indigo-700" : "text-gray-600 hover:bg-gray-100"
-              }`}
-            >
-              <BookOpen size={16} />
-              新手指南
-            </button>
-            <button
-              onClick={() => setTab(tab === "monitor" ? "products" : "monitor")}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                tab === "monitor" ? "bg-yellow-100 text-yellow-700" : "text-gray-600 hover:bg-gray-100"
-              }`}
-            >
-              <Bell size={16} />
-              价格监控
-            </button>
-            <button
-              onClick={() => setTab(tab === "analytics" ? "products" : "analytics")}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                tab === "analytics" ? "bg-pink-100 text-pink-700" : "text-gray-600 hover:bg-gray-100"
-              }`}
-            >
-              <BarChart2 size={16} />
-              竞品分析
-            </button>
-            <button
-              onClick={() => setShowSettings(!showSettings)}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                showSettings
-                  ? "bg-blue-100 text-blue-700"
-                  : "text-gray-600 hover:bg-gray-100"
-              }`}
-            >
-              <Settings2 size={16} />
-              参数设置
-            </button>
-            <button
-              onClick={handleExport}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors"
-            >
-              <Download size={16} />
-              导出 Excel
-            </button>
-            <button
-              onClick={() => setShowAddModal(true)}
-              className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
-            >
-              <Plus size={16} />
-              添加商品
-            </button>
+            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+              <ShoppingBag size={16} className="text-white" />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-gray-900 leading-tight">Ozon 选品工具</p>
+              <p className="text-xs text-gray-400">1688 → Ozon</p>
+            </div>
           </div>
         </div>
-      </header>
 
-      <main className="max-w-6xl mx-auto px-4 py-6">
-        {tab === "picker" ? (
-          <PickerPage />
-        ) : tab === "guide" ? (
-          <GuidePage />
-        ) : tab === "monitor" ? (
-          <ComingSoon title="价格监控" icon="🔔" desc="自动监控竞品价格变动，价格下跌时及时提醒，帮你抓住调价时机。" color="yellow" />
-        ) : tab === "analytics" ? (
-          <ComingSoon title="竞品分析" icon="📊" desc="输入 Ozon 商品链接，查看月销量趋势、评价分析、关键词排名，知己知彼。" color="pink" />
-        ) : (
-          <>
-        {showSettings && (
-          <div className="mb-6">
-            <SettingsPanel settings={settings} onChange={setSettings} />
+        {/* Nav */}
+        <nav className="flex-1 py-3 px-2 space-y-0.5 overflow-y-auto">
+          {NAV_ITEMS.map((item) => {
+            const isActive = tab === item.id;
+            const colors = COLOR_CLASSES[item.color];
+            const Icon = item.icon;
+            return (
+              <button
+                key={item.id}
+                onClick={() => setTab(item.id as Tab)}
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                  isActive ? colors.active : "text-gray-600 hover:bg-gray-50 border-l-2 border-transparent"
+                }`}
+              >
+                <div className="flex items-center gap-2.5">
+                  <Icon size={16} className={isActive ? "" : "text-gray-400"} />
+                  <span>{item.label}</span>
+                </div>
+                {item.badge ? (
+                  <span className="text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-full">{item.badge}</span>
+                ) : item.id === "products" && products.length > 0 ? (
+                  <span className="text-[10px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded-full font-semibold">{products.length}</span>
+                ) : null}
+              </button>
+            );
+          })}
+        </nav>
+
+        {/* Bottom actions */}
+        <div className="p-3 border-t border-gray-100 space-y-2">
+          <button
+            onClick={handleExport}
+            className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+          >
+            <Download size={15} className="text-gray-400" />
+            导出 Excel
+          </button>
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+          >
+            <Plus size={15} />
+            添加商品
+          </button>
+        </div>
+      </aside>
+
+      {/* Main content */}
+      <div className="flex-1 ml-56">
+        {/* Top bar */}
+        <header className="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between sticky top-0 z-10">
+          <div>
+            <h2 className="text-base font-semibold text-gray-900">
+              {NAV_ITEMS.find((n) => n.id === tab)?.label}
+            </h2>
+            {tab === "products" && (
+              <p className="text-xs text-gray-400">共 {products.length} 个商品，{untranslatedCount} 个待翻译</p>
+            )}
           </div>
-        )}
-
-        {/* Stats Bar */}
-        {products.length > 0 && (
-          <div className="bg-white rounded-xl border border-gray-200 p-4 mb-6 flex items-center gap-4 flex-wrap">
-            <div>
-              <span className="text-sm text-gray-500">共</span>
-              <span className="text-2xl font-bold text-gray-900 mx-1">{products.length}</span>
-              <span className="text-sm text-gray-500">个商品</span>
-            </div>
-            <div className="h-6 w-px bg-gray-200" />
-            <div className="text-sm text-gray-500">
-              汇率：<span className="font-medium text-gray-800">1元 = {settings.exchangeRate} 卢布</span>
-            </div>
-            <div className="h-6 w-px bg-gray-200" />
-            <div className="text-sm text-gray-500">
-              运费：<span className="font-medium text-gray-800">{settings.shippingRatePerGram} 元/克</span>
-            </div>
-            <div className="h-6 w-px bg-gray-200" />
-            <div className="text-sm text-gray-500">
-              平台佣金：<span className="font-medium text-gray-800">{(settings.platformFeeRate * 100).toFixed(0)}%</span>
-            </div>
-            {/* 批量翻译 */}
-            <div className="ml-auto flex items-center gap-2">
+          {tab === "products" && products.length > 0 && (
+            <div className="flex items-center gap-2">
               <select
                 value={targetLang}
                 onChange={(e) => setTargetLang(e.target.value)}
-                className="text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white focus:outline-none"
+                className="text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white focus:outline-none focus:ring-1 focus:ring-blue-400"
               >
                 {LANGUAGES.map((l) => (
                   <option key={l.code} value={l.code}>{l.flag} {l.label}</option>
@@ -247,77 +219,101 @@ export default function Home() {
               </select>
               <button
                 onClick={handleTranslateAll}
-                disabled={translatingAll}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-60 transition-colors"
+                disabled={translatingAll || untranslatedCount === 0}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
               >
-                <Languages size={14} />
-                {translatingAll ? "翻译中..." : `批量翻译 (${products.filter(p => !p.titleRu).length}个未译)`}
+                <Languages size={13} />
+                {translatingAll ? "翻译中..." : `批量翻译 (${untranslatedCount})`}
               </button>
             </div>
-          </div>
-        )}
+          )}
+        </header>
 
-        {/* Product List */}
-        {products.length === 0 ? (
-          <div className="text-center py-24">
-            <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
-              <ShoppingBag className="text-blue-400" size={36} />
-            </div>
-            <h2 className="text-xl font-semibold text-gray-700 mb-2">还没有商品</h2>
-            <p className="text-gray-400 mb-6 text-sm">
-              点击「添加商品」手动录入，或安装 Chrome 插件从 1688 一键导入
-            </p>
-            <button
-              onClick={() => setShowAddModal(true)}
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
-            >
-              <Plus size={18} />
-              添加第一个商品
-            </button>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {products.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                settings={settings}
-                onUpdate={handleUpdateProduct}
-                onDelete={handleDeleteProduct}
-              />
-            ))}
-          </div>
-        )}
-        </>
-        )}
-      </main>
+        {/* Page content */}
+        <main className="p-6">
+          {tab === "picker" && <PickerPage />}
+          {tab === "guide" && <GuidePage />}
+          {tab === "settings" && <SettingsPanel settings={settings} onChange={setSettings} />}
+          {tab === "monitor" && (
+            <ComingSoon title="价格监控" icon="🔔" desc="自动监控竞品价格变动，价格下跌时及时提醒，帮你抓住调价时机。" color="yellow" />
+          )}
+          {tab === "analytics" && (
+            <ComingSoon title="竞品分析" icon="📊" desc="输入 Ozon 商品链接，查看月销量趋势、评价分析、关键词排名，知己知彼。" color="pink" />
+          )}
+          {tab === "products" && (
+            <>
+              {/* Stats */}
+              {products.length > 0 && (
+                <div className="grid grid-cols-4 gap-4 mb-6">
+                  {[
+                    { label: "商品数量", value: products.length, unit: "个" },
+                    { label: "汇率", value: settings.exchangeRate, unit: "卢/元" },
+                    { label: "运费", value: `${settings.shippingRatePerGram}`, unit: "元/克" },
+                    { label: "平台佣金", value: `${(settings.platformFeeRate * 100).toFixed(0)}`, unit: "%" },
+                  ].map((s) => (
+                    <div key={s.label} className="bg-white rounded-xl border border-gray-200 p-4">
+                      <p className="text-xs text-gray-400 mb-1">{s.label}</p>
+                      <p className="text-2xl font-bold text-gray-900">{s.value}<span className="text-sm font-normal text-gray-400 ml-1">{s.unit}</span></p>
+                    </div>
+                  ))}
+                </div>
+              )}
 
-      {/* Add Product Modal */}
+              {/* Product list */}
+              {products.length === 0 ? (
+                <div className="text-center py-24">
+                  <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <ShoppingBag className="text-blue-300" size={36} />
+                  </div>
+                  <h2 className="text-xl font-semibold text-gray-700 mb-2">还没有商品</h2>
+                  <p className="text-gray-400 mb-6 text-sm max-w-sm mx-auto">
+                    点击「添加商品」手动录入，或安装 Chrome 插件从 1688 一键导入
+                  </p>
+                  <button
+                    onClick={() => setShowAddModal(true)}
+                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                  >
+                    <Plus size={18} />添加第一个商品
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {products.map((product) => (
+                    <ProductCard
+                      key={product.id}
+                      product={product}
+                      settings={settings}
+                      onUpdate={handleUpdateProduct}
+                      onDelete={handleDeleteProduct}
+                    />
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+        </main>
+      </div>
+
       {showAddModal && (
-        <AddProductModal
-          onAdd={handleAddProduct}
-          onClose={() => setShowAddModal(false)}
-        />
+        <AddProductModal onAdd={handleAddProduct} onClose={() => setShowAddModal(false)} />
       )}
     </div>
   );
 }
 
-// 即将上线占位页
 function ComingSoon({ title, icon, desc, color }: { title: string; icon: string; desc: string; color: string }) {
   const colorMap: Record<string, string> = {
-    yellow: "from-yellow-50 to-orange-50 border-yellow-200 text-yellow-800",
-    pink: "from-pink-50 to-purple-50 border-pink-200 text-pink-800",
+    yellow: "from-yellow-50 to-orange-50 border-yellow-200",
+    pink: "from-pink-50 to-purple-50 border-pink-200",
   };
   return (
     <div className={`max-w-2xl mx-auto mt-16 text-center bg-gradient-to-br ${colorMap[color]} border rounded-2xl p-12`}>
       <div className="text-6xl mb-4">{icon}</div>
-      <h2 className="text-2xl font-bold mb-3">{title}</h2>
-      <p className="text-base opacity-80 mb-8 max-w-md mx-auto">{desc}</p>
+      <h2 className="text-2xl font-bold text-gray-800 mb-3">{title}</h2>
+      <p className="text-base text-gray-600 mb-8 max-w-md mx-auto">{desc}</p>
       <div className="inline-flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-6 py-3 text-sm font-medium text-gray-600 shadow-sm">
         🚧 即将上线，敬请期待
       </div>
-      <p className="text-xs opacity-60 mt-4">此功能正在开发中，上线后将第一时间通知您</p>
     </div>
   );
 }
