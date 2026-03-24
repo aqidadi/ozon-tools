@@ -6,12 +6,13 @@ import { SettingsPanel } from "@/components/SettingsPanel";
 import { AddProductModal } from "@/components/AddProductModal";
 import { PickerPage } from "@/components/PickerPage";
 import { GuidePage } from "@/components/GuidePage";
+import { HotPage } from "@/components/HotPage";
 import { UrlImportBox } from "@/components/UrlImportBox";
 import { exportToExcel } from "@/lib/export";
 import { Product, Settings, LANGUAGES } from "@/lib/types";
 import {
   ShoppingBag, Settings2, Download, Plus, TrendingUp,
-  BookOpen, Languages, Bell, BarChart2, Package, Globe, Zap, Shield
+  BookOpen, Languages, Bell, BarChart2, Package, Globe, Zap, Shield, Flame
 } from "lucide-react";
 
 const DEFAULT_SETTINGS: Settings = {
@@ -21,16 +22,17 @@ const DEFAULT_SETTINGS: Settings = {
   packagingCost: 2,
 };
 
-type Tab = "landing" | "products" | "picker" | "guide" | "monitor" | "analytics" | "settings";
+type Tab = "landing" | "products" | "hot" | "picker" | "guide" | "monitor" | "analytics" | "settings";
 
 const NAV_ITEMS = [
-  { id: "landing", label: "首页", icon: Globe, color: "blue" },
-  { id: "products", label: "选品列表", icon: Package, color: "blue" },
-  { id: "picker", label: "选品参考", icon: TrendingUp, color: "orange" },
-  { id: "guide", label: "新手指南", icon: BookOpen, color: "indigo" },
-  { id: "monitor", label: "价格监控", icon: Bell, color: "yellow", badge: "即将上线" },
-  { id: "analytics", label: "竞品分析", icon: BarChart2, color: "pink", badge: "即将上线" },
-  { id: "settings", label: "参数设置", icon: Settings2, color: "gray" },
+  { id: "landing",   label: "首页",     icon: Globe,      color: "blue" },
+  { id: "products",  label: "选品列表", icon: Package,    color: "blue" },
+  { id: "hot",       label: "爆品榜单", icon: Flame,      color: "red" },
+  { id: "picker",    label: "选品参考", icon: TrendingUp, color: "orange" },
+  { id: "guide",     label: "新手指南", icon: BookOpen,   color: "indigo" },
+  { id: "monitor",   label: "价格监控", icon: Bell,       color: "yellow", badge: "即将上线" },
+  { id: "analytics", label: "竞品分析", icon: BarChart2,  color: "pink",   badge: "即将上线" },
+  { id: "settings",  label: "参数设置", icon: Settings2,  color: "gray" },
 ] as { id: Tab; label: string; icon: React.ElementType; color: string; badge?: string }[];
 
 const COLOR_CLASSES: Record<string, { active: string; icon: string }> = {
@@ -234,6 +236,7 @@ export default function Home() {
         {/* Page content */}
         <main className="p-6">
           {tab === "landing" && <LandingPage onStart={() => setTab("products")} />}
+          {tab === "hot" && <HotPage />}
           {tab === "picker" && <PickerPage />}
           {tab === "guide" && <GuidePage />}
           {tab === "settings" && <SettingsPanel settings={settings} onChange={setSettings} />}
