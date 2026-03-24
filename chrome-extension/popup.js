@@ -481,9 +481,19 @@ function renderOzonPicker(tabId, settings) {
             // 复制到剪贴板
             await navigator.clipboard.writeText(zhName).catch(() => {});
 
-            // 直接跳转到带关键词的搜索结果页（绕过1688缓存）
-            const searchUrl = `https://s.1688.com/selloffer/offer_search.html?keywords=${encodeURIComponent(zhName)}&sortType=6&spm=a2638t.b_63710112.0.0`;
-            chrome.tabs.create({ url: searchUrl });
+            // 打开1688搜索结果页
+            const searchUrl = `https://s.1688.com/selloffer/offer_search.html?keywords=${encodeURIComponent(zhName)}&sortType=6`;
+            const newTab = await chrome.tabs.create({ url: searchUrl });
+            // 等页面加载完后自动点搜索按钮
+            setTimeout(async () => {
+              await chrome.scripting.executeScript({
+                target: { tabId: newTab.id },
+                func: () => {
+                  const btn = document.querySelector('.search-btn, button.btn-search, button[type="submit"]');
+                  if (btn) btn.click();
+                }
+              }).catch(() => {});
+            }, 2000);
 
             item.querySelector("span").textContent = "✅";
           } catch(e) {
