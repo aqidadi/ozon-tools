@@ -25,11 +25,19 @@ export default function Home() {
   const [tab, setTab] = useState<"products" | "picker">("products");
 
   // 从数据库加载商品
-  const loadProducts = useCallback(async () => {
+  const loadProducts = useCallback(async (isInitial = false) => {
     try {
       const res = await fetch("/api/import");
       const data = await res.json();
-      if (data.products) setProducts(data.products);
+      if (data.products) {
+        setProducts((prev) => {
+          if (isInitial || prev.length === 0) return data.products;
+          // 轮询时只合并新商品，不覆盖已有商品（保留用户正在编辑的数据）
+          const prevIds = new Set(prev.map((p: Product) => p.id));
+          const newItems = data.products.filter((p: Product) => !prevIds.has(p.id));
+          return newItems.length > 0 ? [...newItems, ...prev] : prev;
+        });
+      }
     } catch {} finally {
       setLoading(false);
     }
@@ -41,9 +49,9 @@ export default function Home() {
       const savedSettings = localStorage.getItem("ozon-settings");
       if (savedSettings) setSettings(JSON.parse(savedSettings));
     } catch {}
-    loadProducts();
-    // 每5秒轮询一次新商品（插件推送）
-    const timer = setInterval(loadProducts, 5000);
+    loadProducts(true);
+    // 每5秒轮询一次新商品（插件推送），但不覆盖已有数据
+    const timer = setInterval(() => loadProducts(false), 5000);
     return () => clearInterval(timer);
   }, [loadProducts]);
 
