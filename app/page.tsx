@@ -5,9 +5,10 @@ import { ProductCard } from "@/components/ProductCard";
 import { SettingsPanel } from "@/components/SettingsPanel";
 import { AddProductModal } from "@/components/AddProductModal";
 import { PickerPage } from "@/components/PickerPage";
+import { GuidePage } from "@/components/GuidePage";
 import { exportToExcel } from "@/lib/export";
 import { Product, Settings } from "@/lib/types";
-import { ShoppingBag, Settings2, Download, Plus, TrendingUp } from "lucide-react";
+import { ShoppingBag, Settings2, Download, Plus, TrendingUp, BookOpen } from "lucide-react";
 
 const DEFAULT_SETTINGS: Settings = {
   exchangeRate: 10,
@@ -22,7 +23,7 @@ export default function Home() {
   const [showSettings, setShowSettings] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<"products" | "picker">("products");
+  const [tab, setTab] = useState<"products" | "picker" | "guide">("products");
 
   // 从数据库加载商品
   const loadProducts = useCallback(async (isInitial = false) => {
@@ -111,6 +112,15 @@ export default function Home() {
               选品参考
             </button>
             <button
+              onClick={() => setTab(tab === "guide" ? "products" : "guide")}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                tab === "guide" ? "bg-indigo-100 text-indigo-700" : "text-gray-600 hover:bg-gray-100"
+              }`}
+            >
+              <BookOpen size={16} />
+              新手指南
+            </button>
+            <button
               onClick={() => setShowSettings(!showSettings)}
               className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                 showSettings
@@ -142,6 +152,8 @@ export default function Home() {
       <main className="max-w-6xl mx-auto px-4 py-6">
         {tab === "picker" ? (
           <PickerPage />
+        ) : tab === "guide" ? (
+          <GuidePage />
         ) : (
           <>
         {showSettings && (
