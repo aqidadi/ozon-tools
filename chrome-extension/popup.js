@@ -34,32 +34,53 @@ async function saveSettings(settings) {
   });
 }
 
-// 在当前1688页面执行搜索
-async function searchOn1688(keyword, tabId) {
+// 在1688页面注入搜索关键词
+async function injectSearch1688(tabId, keyword) {
   await chrome.scripting.executeScript({
     target: { tabId },
     func: (kw) => {
-      // 找搜索框并填入关键词
-      const input = document.querySelector(
-        'input[type="text"][name="keywords"], input.search-input, input[placeholder*="搜"], #search-key, .search-bar input'
-      );
-      if (input) {
-        input.value = kw;
-        input.dispatchEvent(new Event("input", { bubbles: true }));
-        // 触发搜索按钮
-        const btn = document.querySelector(
-          'button.search-btn, .search-button, button[type="submit"], .btn-search'
-        );
-        if (btn) btn.click();
-        else {
-          // 回车触发
-          input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", keyCode: 13, bubbles: true }));
-        }
-      } else {
-        // 直接跳转搜索结果
-        const encoded = encodeURIComponent(kw);
-        window.location.href = `https://s.1688.com/selloffer/offer_search.html?keyword=${encoded}&sortType=6`;
+      // 找搜索输入框
+      const selectors = [
+        'input[name="keywords"]',
+        '#search-key',
+        '.search-box input[type="text"]',
+        'input.search-input',
+        'input[placeholder*="搜"]',
+        'input[type="text"]',
+      ];
+      let input = null;
+      for (const sel of selectors) {
+        input = document.querySelector(sel);
+        if (input) break;
       }
+      if (!input) return false;
+
+      // 聚焦清空
+      input.focus();
+      input.select();
+
+      // 模拟用户输入（绕过React）
+      const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+        window.HTMLInputElement.prototype, 'value'
+      ).set;
+      nativeInputValueSetter.call(input, kw);
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+
+      // 点搜索按钮
+      setTimeout(() => {
+        const btn = document.querySelector(
+          '.search-btn, button.btn-search, button[type="submit"], .searchBtn, [class*="search"] button'
+        );
+        if (btn) {
+          btn.click();
+        } else {
+          input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', keyCode: 13, bubbles: true }));
+          input.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter', keyCode: 13, bubbles: true }));
+          input.form?.submit();
+        }
+      }, 300);
+      return true;
     },
     args: [keyword],
   });
@@ -463,62 +484,17 @@ function renderOzonPicker(tabId, settings) {
             // 检查当前是否已有1688标签页
             const tabs = await chrome.tabs.query({ url: "*://*.1688.com/*" });
             if (tabs.length > 0) {
-              // 已有1688页面，在那里注入搜索
               const tab = tabs[0];
               await chrome.tabs.update(tab.id, { active: true });
-              await chrome.scripting.executeScript({
-                target: { tabId: tab.id },
-                func: (kw) => {
-                  const input = document.querySelector(
-                    '#search-key, input[name="keywords"], .search-input input, input[type="text"]'
-                  );
-                  if (input) {
-                    input.focus();
-                    // 用 execCommand 设置值（绕过 React 的 state）
-                    input.value = "";
-                    document.execCommand("selectAll");
-                    document.execCommand("insertText", false, kw);
-                    // 触发搜索
-                    setTimeout(() => {
-                      const btn = document.querySelector(
-                        '.search-btn, button[type="submit"], .btn-search, .searchbtn'
-                      );
-                      if (btn) btn.click();
-                      else {
-                        input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", keyCode: 13, bubbles: true }));
-                        input.dispatchEvent(new KeyboardEvent("keyup", { key: "Enter", keyCode: 13, bubbles: true }));
-                      }
-                    }, 100);
-                  } else {
-                    // 找不到输入框就跳转
-                    window.location.href = `https://s.1688.com/selloffer/offer_search.html?keyword=${encodeURIComponent(kw)}&sortType=6`;
-                  }
-                },
-                args: [zhName],
-              });
+              await new Promise(r => setTimeout(r, 500));
+              await injectSearch1688(tab.id, zhName);
             } else {
-              // 没有1688页面，打开新标签并注入
+              // 打开1688搜索页，等加载完再注入
               const newTab = await chrome.tabs.create({
                 url: `https://s.1688.com/selloffer/offer_search.html`
               });
-              // 等页面加载完再注入
-              await new Promise(resolve => setTimeout(resolve, 2500));
-              await chrome.scripting.executeScript({
-                target: { tabId: newTab.id },
-                func: (kw) => {
-                  const input = document.querySelector(
-                    '#search-key, input[name="keywords"], .search-input input, input[type="text"]'
-                  );
-                  if (input) {
-                    input.value = kw;
-                    document.execCommand("selectAll");
-                    document.execCommand("insertText", false, kw);
-                    const btn = document.querySelector('.search-btn, button[type="submit"]');
-                    if (btn) btn.click();
-                  }
-                },
-                args: [zhName],
-              }).catch(() => {});
+              await new Promise(r => setTimeout(r, 3000));
+              await injectSearch1688(newTab.id, zhName);
             }
 
             item.querySelector("span").textContent = "✅";
