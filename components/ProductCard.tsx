@@ -2,7 +2,49 @@
 
 import { useState } from "react";
 import { Product, Settings, calcCost } from "@/lib/types";
-import { Trash2, ChevronDown, ChevronUp, ExternalLink } from "lucide-react";
+import { Trash2, ChevronDown, ChevronUp, ExternalLink, Loader2 } from "lucide-react";
+
+// 翻译按钮组件
+function TranslateButton({ product, onUpdate }: { product: Product; onUpdate: (id: string, updates: Partial<Product>) => void }) {
+  const [loading, setLoading] = useState(false);
+
+  const handleTranslate = async () => {
+    if (!product.title || loading) return;
+    setLoading(true);
+    try {
+      const res = await fetch("/api/translate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: product.title }),
+      });
+      const data = await res.json();
+      if (data.result) onUpdate(product.id, { titleRu: data.result });
+    } catch {}
+    finally { setLoading(false); }
+  };
+
+  if (product.titleRu) {
+    return (
+      <button
+        onClick={handleTranslate}
+        className="text-xs text-blue-500 hover:text-blue-700 underline"
+      >
+        {loading ? "翻译中..." : "重新翻译"}
+      </button>
+    );
+  }
+
+  return (
+    <button
+      onClick={handleTranslate}
+      disabled={loading}
+      className="flex items-center gap-1 text-xs bg-blue-600 text-white px-2.5 py-1 rounded-full hover:bg-blue-700 disabled:opacity-60 transition-colors"
+    >
+      {loading ? <Loader2 size={11} className="animate-spin" /> : "🌐"}
+      {loading ? "翻译中..." : "AI翻译俄语"}
+    </button>
+  );
+}
 
 interface Props {
   product: Product;
@@ -80,6 +122,8 @@ export function ProductCard({ product, settings, onUpdate, onDelete }: Props) {
               <span className="text-gray-400">保本价</span>
               <span className="font-semibold text-orange-600 ml-1">₽{cost.minSellPriceRub}</span>
             </div>
+            {/* 翻译按钮 */}
+            <TranslateButton product={product} onUpdate={onUpdate} />
 
             {/* 售价输入 */}
             <div className="flex items-center gap-1.5 ml-auto">
