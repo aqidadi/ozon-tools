@@ -134,80 +134,63 @@ function UpgradeModal({ onClose, user }: { onClose: () => void; user: { email: s
   const AFDIAN_URL = process.env.NEXT_PUBLIC_AFDIAN_URL || "https://afdian.com/a/your-account";
 
   const plans = [
-    { name: "24小时体验", price: "¥5.99", period: "24小时", tag: "新手试用", saving: "体验全部Pro功能" },
-    { name: "周卡", price: "¥19.9", period: "7天", tag: "", saving: "适合短期选品" },
-    { name: "月度 Pro", price: "¥39", period: "/月", tag: "", saving: "到期后自动降为免费版" },
-    { name: "年度 Pro", price: "¥299.99", period: "/年", tag: "省¥168", saving: "相当于每月¥25" },
-    { name: "终身 Pro", price: "¥999", period: "一次性", tag: "推荐", saving: "买断永久使用" },
+    { name: "24小时体验", price: "¥5.99", period: "24h", tag: "试用" },
+    { name: "周卡", price: "¥19.9", period: "7天", tag: "" },
+    { name: "月度 Pro", price: "¥39", period: "/月", tag: "" },
+    { name: "年度 Pro", price: "¥299.99", period: "/年", tag: "省¥168" },
   ];
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
-        <div className="px-6 pt-6 pb-4 flex items-start justify-between">
-          <div>
-            <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-              <Crown size={18} className="text-yellow-500" />升级 Pro
-            </h2>
-            <p className="text-sm text-gray-500 mt-1">解锁无限商品导入 + 批量功能</p>
-          </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-1 rounded-lg hover:bg-gray-100">
-            <X size={18} />
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-xs">
+        <div className="px-4 pt-4 pb-2 flex items-center justify-between">
+          <h2 className="text-sm font-bold text-gray-900 flex items-center gap-1.5">
+            <Crown size={14} className="text-yellow-500" />升级 Pro
+          </h2>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+            <X size={16} />
           </button>
         </div>
 
-        {/* Pro 特性 */}
-        <div className="mx-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 mb-4">
-          <p className="text-xs font-semibold text-blue-700 mb-2">Pro 会员特权</p>
-          <div className="grid grid-cols-2 gap-1.5">
-            {[
-              "✅ 无限商品导入",
-              "✅ 批量导入（最多50个）",
-              "✅ 完整详情图搬运",
-              "✅ 导出 Excel 无限制",
-              "✅ 全平台多货币",
-              "✅ 优先客服支持",
-            ].map(f => (
-              <p key={f} className="text-xs text-blue-600">{f}</p>
-            ))}
-          </div>
+        {/* 特权一行 */}
+        <div className="mx-4 bg-blue-50 rounded-lg px-3 py-2 mb-2 flex flex-wrap gap-x-3 gap-y-0.5">
+          {["✅ 无限导入", "✅ 批量搬运", "✅ 多平台货币", "✅ Excel导出"].map(f => (
+            <span key={f} className="text-[11px] text-blue-600">{f}</span>
+          ))}
         </div>
 
-        {/* 套餐 */}
-        <div className="px-6 pb-4 space-y-2">
+        {/* 套餐列表 */}
+        <div className="px-4 pb-2 space-y-1.5">
           {plans.map(plan => (
-            <div key={plan.name} className={`border rounded-xl p-3 flex items-center justify-between ${plan.tag === "推荐" ? "border-blue-400 bg-blue-50" : "border-gray-200"}`}>
+            <div key={plan.name} className={`border rounded-lg px-3 py-2 flex items-center justify-between ${plan.tag === "省¥168" ? "border-blue-300 bg-blue-50" : "border-gray-200"}`}>
               <div>
-                <p className="text-sm font-semibold text-gray-800">
-                  {plan.name}
-                  {plan.tag && <span className={`ml-2 text-[10px] px-1.5 py-0.5 rounded-full ${plan.tag === "推荐" ? "bg-blue-600 text-white" : "bg-green-100 text-green-700"}`}>{plan.tag}</span>}
-                </p>
-                <p className="text-xs text-gray-400 mt-0.5">{plan.saving || "到期后自动降为免费版"}</p>
+                <span className="text-sm font-semibold text-gray-800">{plan.name}</span>
+                {plan.tag && <span className="ml-1.5 text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full">{plan.tag}</span>}
               </div>
               <div className="text-right">
-                <p className="text-xl font-bold text-gray-900">{plan.price}</p>
-                <p className="text-[10px] text-gray-400">{plan.period}</p>
+                <span className="text-sm font-bold text-gray-900">{plan.price}</span>
+                <span className="text-[10px] text-gray-400 ml-1">{plan.period}</span>
               </div>
             </div>
           ))}
         </div>
 
-        {/* 购买步骤 */}
-        <div className="mx-6 mb-4 bg-amber-50 border border-amber-100 rounded-xl p-3">
-          <p className="text-xs font-semibold text-amber-700 mb-1.5">购买步骤：</p>
-          <p className="text-xs text-amber-600">1. 点击下方按钮前往爱发电选择套餐</p>
-          <p className="text-xs text-amber-600">2. <strong>在备注里填写你的邮箱：{user.email}</strong></p>
-          <p className="text-xs text-amber-600">3. 支付后系统自动激活（5分钟内）</p>
+        {/* 购买提示 */}
+        <div className="mx-4 mb-3 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
+          <p className="text-[11px] text-amber-700 font-semibold mb-0.5">购买步骤</p>
+          <p className="text-[11px] text-amber-600">1. 点击下方前往爱发电选套餐</p>
+          <p className="text-[11px] text-amber-600">2. 备注填写邮箱：<strong>{user.email}</strong></p>
+          <p className="text-[11px] text-amber-600">3. 支付后5分钟内自动激活</p>
         </div>
 
-        <div className="px-6 pb-6 flex gap-2">
-          <button onClick={onClose} className="flex-1 py-2.5 border border-gray-200 text-gray-600 rounded-xl text-sm hover:bg-gray-50">
+        <div className="px-4 pb-4 flex gap-2">
+          <button onClick={onClose} className="flex-1 py-2 border border-gray-200 text-gray-500 rounded-xl text-xs hover:bg-gray-50">
             以后再说
           </button>
           <a href={AFDIAN_URL} target="_blank" rel="noopener noreferrer"
-            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-xl text-sm font-semibold hover:opacity-90"
+            className="flex-1 flex items-center justify-center gap-1 py-2 bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-xl text-xs font-semibold hover:opacity-90"
           >
-            <ExternalLink size={14} />去爱发电购买
+            <ExternalLink size={12} />去爱发电购买
           </a>
         </div>
       </div>
