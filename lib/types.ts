@@ -21,6 +21,8 @@ export interface Product {
   targetLang?: string;     // 当前目标语言
   note: string;            // 备注
   sourceUrl: string;       // 1688原链接
+  tags?: string[];         // 标签：待上架/已上架/爆款/观察中
+  starred?: boolean;       // 收藏
 }
 
 export const LANGUAGES = [

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Settings } from "@/lib/types";
-import { Save, RotateCcw } from "lucide-react";
+import { Save, RotateCcw, RefreshCw } from "lucide-react";
 
 interface Props {
   settings: Settings;
@@ -19,6 +19,7 @@ const DEFAULT: Settings = {
 export function SettingsPanel({ settings, onChange }: Props) {
   const [local, setLocal] = useState(settings);
   const [saved, setSaved] = useState(false);
+  const [fetchingRate, setFetchingRate] = useState(false);
 
   const update = (key: keyof Settings, value: number) => {
     setLocal((prev) => ({ ...prev, [key]: value }));
@@ -33,6 +34,19 @@ export function SettingsPanel({ settings, onChange }: Props) {
   const handleReset = () => {
     setLocal(DEFAULT);
     onChange(DEFAULT);
+  };
+
+  const fetchRates = async () => {
+    setFetchingRate(true);
+    try {
+      const res = await fetch("/api/rates");
+      const data = await res.json();
+      if (data.rates?.RUB) {
+        const rate = parseFloat(data.rates.RUB.toFixed(2));
+        setLocal(prev => ({ ...prev, exchangeRate: rate }));
+      }
+    } catch {}
+    setFetchingRate(false);
   };
 
   const fields = [
@@ -104,6 +118,13 @@ export function SettingsPanel({ settings, onChange }: Props) {
                   className="w-28 border border-gray-300 rounded-lg px-3 py-2 text-sm text-right font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 <span className="text-sm text-gray-400 w-16">{field.suffix}</span>
+                {field.key === "exchangeRate" && (
+                  <button onClick={fetchRates} disabled={fetchingRate}
+                    className="flex items-center gap-1 text-xs px-3 py-2 border border-gray-200 rounded-lg text-blue-600 hover:bg-blue-50 disabled:opacity-50 transition-colors">
+                    <RefreshCw size={12} className={fetchingRate ? "animate-spin" : ""} />
+                    {fetchingRate ? "获取中..." : "自动获取"}
+                  </button>
+                )}
               </div>
             </div>
           </div>

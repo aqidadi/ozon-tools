@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import { Product, Settings, LANGUAGES, calcCost } from "@/lib/types";
-import { Trash2, ChevronDown, ChevronUp, ExternalLink, Loader2, Copy, Check } from "lucide-react";
+import { Trash2, ChevronDown, ChevronUp, ExternalLink, Loader2, Copy, Check, Star, Tag } from "lucide-react";
+
+const TAGS = ["待上架", "已上架", "爆款", "观察中", "已下架"];
 
 const LANG_FIELD: Record<string, keyof Product> = {
   ru: "titleRu", en: "titleEn", th: "titleTh",
@@ -100,6 +102,11 @@ export function ProductCard({ product, settings, onUpdate, onDelete }: Props) {
 
         {/* Actions */}
         <div className="flex items-center gap-0 flex-shrink-0">
+          {/* 收藏 */}
+          <button onClick={() => onUpdate(product.id, { starred: !product.starred })}
+            className={`p-1 transition-colors ${product.starred ? "text-yellow-400" : "text-gray-200 hover:text-yellow-400"}`}>
+            <Star size={13} fill={product.starred ? "currentColor" : "none"} />
+          </button>
           {product.sourceUrl && (
             <a href={product.sourceUrl} target="_blank" rel="noopener noreferrer" className="p-1 text-gray-300 hover:text-blue-500 transition-colors">
               <ExternalLink size={13} />
@@ -180,6 +187,24 @@ export function ProductCard({ product, settings, onUpdate, onDelete }: Props) {
               <input type="text" value={product.note}
                 onChange={e => onUpdate(product.id, { note: e.target.value })}
                 className="w-full border border-gray-200 rounded px-1.5 py-1 text-xs mt-0.5" />
+            </div>
+            {/* 标签 */}
+            <div>
+              <label className="text-gray-400 flex items-center gap-1"><Tag size={10} />状态标签</label>
+              <div className="flex flex-wrap gap-1 mt-1">
+                {TAGS.map(tag => {
+                  const active = product.tags?.includes(tag);
+                  return (
+                    <button key={tag} onClick={() => {
+                      const tags = product.tags || [];
+                      const next = active ? tags.filter(t => t !== tag) : [...tags, tag];
+                      onUpdate(product.id, { tags: next });
+                    }} className={`text-[10px] px-2 py-0.5 rounded-full border transition-colors ${
+                      active ? "bg-blue-600 text-white border-blue-600" : "border-gray-200 text-gray-500 hover:border-blue-400"
+                    }`}>{tag}</button>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>
