@@ -109,6 +109,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ acti
     productCount: profile?.product_count || 0,
     apiToken: profile?.api_token,
     displayName: profile?.display_name,
+    avatarUrl: profile?.avatar_url,
     planExpiresAt: profile?.plan_expires_at,
   });
 }

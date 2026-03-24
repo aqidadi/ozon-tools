@@ -134,10 +134,10 @@ function UpgradeModal({ onClose, user }: { onClose: () => void; user: { email: s
   const AFDIAN_URL = process.env.NEXT_PUBLIC_AFDIAN_URL || "https://afdian.com/a/your-account";
 
   const plans = [
-    { name: "24小时体验", price: "¥5.99", period: "24h", tag: "试用" },
+    { name: "24小时体验", price: "¥5.9", period: "24h", tag: "试用" },
     { name: "周卡", price: "¥19.9", period: "7天", tag: "" },
-    { name: "月度 Pro", price: "¥39", period: "/月", tag: "" },
-    { name: "年度 Pro", price: "¥299.99", period: "/年", tag: "省¥168" },
+    { name: "月度 Pro", price: "¥39.9", period: "/月", tag: "" },
+    { name: "年度 Pro", price: "¥299.9", period: "/年", tag: "省¥179" },
   ];
 
   return (
