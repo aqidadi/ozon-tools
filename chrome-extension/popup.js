@@ -572,8 +572,20 @@ function renderProduct(product, settings) {
       <input type="number" id="weightInput" value="${settings.weight}" min="1" />
     </div>
     <div class="setting-row">
-      <label>期望售价（目标货币，选填）</label>
-      <input type="number" id="sellPriceInput" value="${settings.sellPrice || ""}" placeholder="留空后填" min="0" />
+      <label>期望售价（选填）</label>
+      <div style="display:flex;gap:6px;">
+        <select id="currencySelect" style="border:1px solid #e2e8f0;border-radius:6px;padding:6px 8px;font-size:12px;background:white;">
+          <option value="RUB">₽ 卢布</option>
+          <option value="USD">$ 美元</option>
+          <option value="THB">฿ 泰铢</option>
+          <option value="VND">₫ 越南盾</option>
+          <option value="IDR">Rp 印尼盾</option>
+          <option value="MYR">RM 马币</option>
+          <option value="AED">د.إ 迪拉姆</option>
+          <option value="BRL">R$ 巴西雷亚尔</option>
+        </select>
+        <input type="number" id="sellPriceInput" value="${settings.sellPrice || ""}" placeholder="留空后填" min="0" style="flex:1;" />
+      </div>
     </div>
 
     <div class="divider"></div>
@@ -638,7 +650,7 @@ function renderManualInput(settings, pageUrl) {
     const title = document.getElementById("manualTitle").value.trim();
     const price = parseFloat(document.getElementById("manualPrice").value) || 0;
     const weight = parseInt(document.getElementById("manualWeight").value) || 400;
-    const siteUrl = document.getElementById("siteInput").value.trim() || DEFAULT_SITE;
+    const siteUrl = (document.getElementById("siteInput").value.trim() || DEFAULT_SITE).replace(/\/$/, "");
     if (!title) { showToast("请填写商品名称"); return; }
 
     const btn = document.getElementById("manualSendBtn");
@@ -678,14 +690,15 @@ async function handleSend() {
   const btn = document.getElementById("sendBtn");
   const weight = parseInt(document.getElementById("weightInput").value) || 400;
   const sellPrice = parseFloat(document.getElementById("sellPriceInput").value) || 0;
-  const siteUrl = document.getElementById("siteInput").value.trim() || DEFAULT_SITE;
+  const currency = document.getElementById("currencySelect")?.value || "RUB";
+  const siteUrl = (document.getElementById("siteInput").value.trim() || DEFAULT_SITE).replace(/\/$/, "");
 
   await saveSettings({ weight, sellPrice, siteUrl });
 
   btn.disabled = true;
   btn.innerHTML = "⏳ 发送中...";
 
-  const product = { ...currentProduct, weight, sellPriceRub: sellPrice };
+  const product = { ...currentProduct, weight, sellPriceRub: sellPrice, sellPrices: { [currency]: sellPrice } };
 
   try {
     const res = await fetch(`${siteUrl}/api/import`, {
