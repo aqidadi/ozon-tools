@@ -85,7 +85,9 @@ export function PickerPage() {
   const [search, setSearch] = useState("");
 
   const open1688 = (kw: string) => {
-    const url = `https://s.1688.com/selloffer/offer_search.htm?keywords=${encodeURIComponent(kw)}&${sort.param}`;
+    const encoded = encodeURIComponent(kw);
+    // 用1688标准搜索URL
+    const url = `https://www.1688.com/chanpin/${encoded}.html?sortType=${sort.value === "monthSold" ? "ga_desc" : sort.value === "price" ? "price_asc" : "credit_desc"}`;
     window.open(url, "_blank");
   };
 
