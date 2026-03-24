@@ -481,24 +481,21 @@ function renderOzonPicker(tabId, settings) {
             // 复制到剪贴板
             await navigator.clipboard.writeText(zhName).catch(() => {});
 
-            // 打开1688搜索结果页，等加载完注入关键词触发搜索
+            // 打开1688搜索页，等加载完直接替换关键词并搜索
             const newTab = await chrome.tabs.create({ url: "https://s.1688.com/selloffer/offer_search.html" });
             setTimeout(async () => {
               await chrome.scripting.executeScript({
                 target: { tabId: newTab.id },
                 func: (kw) => {
-                  const input = document.querySelector('input[name="keywords"], #search-key, .search-input');
-                  const btn = document.querySelector('.search-btn, button[type="submit"], .searchbtn');
-                  if (input && btn) {
-                    const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
-                    setter.call(input, ""); // 先清空
-                    input.dispatchEvent(new Event('input', { bubbles: true }));
-                    setTimeout(() => {
-                      setter.call(input, kw); // 再写入新词
-                      input.dispatchEvent(new Event('input', { bubbles: true }));
-                      setTimeout(() => btn.click(), 200);
-                    }, 100);
-                  }
+                  const input = document.querySelector('input[name="keywords"], #search-key');
+                  if (!input) return;
+                  input.focus();
+                  input.select();
+                  document.execCommand("selectAll", false, null);
+                  document.execCommand("insertText", false, kw);
+                  // 点搜索按钮
+                  const btn = document.querySelector('.search-btn, button[type="submit"]');
+                  if (btn) btn.click();
                 },
                 args: [zhName],
               }).catch(() => {});
