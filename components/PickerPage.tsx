@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Copy, Check, ExternalLink, Search, TrendingUp, Flame } from "lucide-react";
+import { ExternalLink, Copy, Check } from "lucide-react";
 
 const CATEGORIES = [
   {
     name: "动漫周边",
     icon: "🎌",
+    color: "purple",
     keywords: [
       { label: "咒术回战手办", kw: "咒术回战 手办", hot: true },
       { label: "鬼灭之刃公仔", kw: "鬼灭之刃 公仔", hot: true },
@@ -15,194 +16,317 @@ const CATEGORIES = [
       { label: "龙珠手办", kw: "龙珠 手办", hot: true },
       { label: "火影忍者摆件", kw: "火影忍者 摆件", hot: false },
       { label: "原神周边", kw: "原神 周边 摆件", hot: true },
-      { label: "棉花娃娃", kw: "动漫 棉花娃娃 八寸", hot: true },
-      { label: "亚克力立牌", kw: "动漫 亚克力立牌", hot: false },
-      { label: "手办盲盒", kw: "动漫手办 盲盒", hot: true },
+      { label: "我的英雄学院", kw: "僕のヒーローアカデミア 手办", hot: false },
+      { label: "鬼灭亚克力立牌", kw: "鬼灭之刃 亚克力 立牌", hot: false },
+      { label: "动漫抱枕", kw: "动漫 抱枕 长条枕", hot: true },
+      { label: "二次元徽章", kw: "动漫 徽章 胸章", hot: false },
+      { label: "蓝色监狱周边", kw: "蓝色监狱 周边", hot: true },
     ],
   },
   {
-    name: "玩具/儿童",
+    name: "棉花娃娃",
     icon: "🧸",
+    color: "pink",
     keywords: [
-      { label: "盲盒玩具", kw: "盲盒 潮玩", hot: true },
-      { label: "积木玩具", kw: "兼容乐高 积木 小颗粒", hot: true },
-      { label: "毛绒玩具", kw: "毛绒玩具 公仔 批发", hot: true },
-      { label: "遥控车", kw: "遥控车 儿童玩具", hot: false },
-      { label: "芭比娃娃", kw: "换装娃娃 女孩玩具", hot: true },
-      { label: "磁力片", kw: "磁力片 儿童益智玩具", hot: false },
-      { label: "抓机娃娃", kw: "抓机公仔 可爱玩偶 批发", hot: true },
-      { label: "泡泡解压玩具", kw: "pop it 解压玩具", hot: false },
+      { label: "棉花娃娃素体", kw: "棉花娃娃 素体 20cm", hot: true },
+      { label: "娃衣套装", kw: "棉花娃娃 娃衣 套装", hot: true },
+      { label: "娃娃配件", kw: "棉花娃娃 配件 背包", hot: false },
+      { label: "中华娘娃衣", kw: "棉花娃娃 汉服 娃衣", hot: true },
+      { label: "娃娃展示盒", kw: "棉花娃娃 展示盒 亚克力", hot: false },
+      { label: "娃娃包包", kw: "棉花娃娃 手提包 收纳", hot: false },
     ],
   },
   {
-    name: "生活用品",
+    name: "盲盒玩具",
+    icon: "🎁",
+    color: "blue",
+    keywords: [
+      { label: "泡泡玛特同款", kw: "盲盒 手办 潮玩 摆件", hot: true },
+      { label: "动漫盲盒", kw: "动漫 盲盒 手办", hot: true },
+      { label: "卡片盲盒", kw: "盲盒 卡片 收藏", hot: false },
+      { label: "迷你公仔盲盒", kw: "迷你 公仔 盲盒 5cm", hot: true },
+      { label: "海洋动物盲盒", kw: "海洋 动物 盲盒 模型", hot: false },
+    ],
+  },
+  {
+    name: "毛绒玩具",
+    icon: "🐻",
+    color: "yellow",
+    keywords: [
+      { label: "猫咪毛绒公仔", kw: "猫咪 毛绒 公仔 抱枕", hot: true },
+      { label: "熊猫公仔", kw: "熊猫 毛绒 玩具", hot: true },
+      { label: "草莓熊同款", kw: "草莓熊 毛绒 抱枕", hot: true },
+      { label: "长条枕鳄鱼", kw: "鳄鱼 长条枕 毛绒", hot: true },
+      { label: "可爱兔子公仔", kw: "兔子 毛绒 公仔 玩具", hot: false },
+      { label: "大号抱抱熊", kw: "抱抱熊 大号 毛绒 1米", hot: false },
+      { label: "小恐龙玩偶", kw: "恐龙 毛绒 玩偶", hot: false },
+      { label: "火龙果抱枕", kw: "火龙果 毛绒 抱枕", hot: true },
+    ],
+  },
+  {
+    name: "儿童玩具",
+    icon: "🚀",
+    color: "orange",
+    keywords: [
+      { label: "积木玩具", kw: "儿童 积木 益智 玩具", hot: true },
+      { label: "遥控车", kw: "儿童 遥控车 玩具", hot: true },
+      { label: "芭比娃娃同款", kw: "换装 娃娃 女孩 玩具", hot: true },
+      { label: "水枪玩具", kw: "儿童 水枪 夏天 玩具", hot: false },
+      { label: "磁力片拼图", kw: "磁力片 儿童 益智 拼图", hot: true },
+      { label: "过家家厨房", kw: "儿童 过家家 厨房 玩具", hot: false },
+      { label: "手工DIY套装", kw: "儿童 手工 DIY 材料包", hot: false },
+      { label: "泡泡枪", kw: "儿童 泡泡枪 玩具", hot: true },
+      { label: "陀螺玩具", kw: "儿童 陀螺 战斗 玩具", hot: false },
+    ],
+  },
+  {
+    name: "美妆工具",
+    icon: "💄",
+    color: "rose",
+    keywords: [
+      { label: "化妆刷套装", kw: "化妆刷 套装 全套", hot: true },
+      { label: "美容仪", kw: "美容仪 脸部 按摩", hot: true },
+      { label: "假睫毛", kw: "假睫毛 自然 浓密", hot: true },
+      { label: "睫毛夹", kw: "睫毛夹 卷翘 持久", hot: false },
+      { label: "粉扑美妆蛋", kw: "美妆蛋 粉扑 不吃粉", hot: true },
+      { label: "眉笔眉粉", kw: "眉笔 防水 持久", hot: false },
+      { label: "卸妆油巾", kw: "卸妆 湿巾 温和", hot: false },
+      { label: "美甲贴纸", kw: "美甲 贴纸 指甲贴", hot: true },
+      { label: "香薰蜡烛", kw: "香薰 蜡烛 礼盒", hot: true },
+    ],
+  },
+  {
+    name: "家居生活",
     icon: "🏠",
+    color: "teal",
     keywords: [
-      { label: "硅藻泥吸水垫", kw: "硅藻泥 速干地垫", hot: true },
-      { label: "折叠收纳箱", kw: "折叠收纳箱 家用", hot: true },
-      { label: "保温杯", kw: "316不锈钢 保温杯", hot: true },
-      { label: "硅胶厨具套装", kw: "硅胶 锅铲 厨具套装", hot: false },
-      { label: "磁吸手机支架", kw: "磁吸 手机车载支架", hot: true },
-      { label: "LED小夜灯", kw: "LED 小夜灯 氛围灯", hot: false },
-      { label: "无线充电器", kw: "三合一 无线充电器", hot: true },
-      { label: "宠物玩具", kw: "猫咪玩具 宠物用品", hot: false },
+      { label: "硅藻泥地垫", kw: "硅藻泥 地垫 吸水", hot: true },
+      { label: "收纳盒套装", kw: "收纳盒 抽屉 整理", hot: true },
+      { label: "氛围灯夜灯", kw: "LED 氛围灯 夜灯 小夜灯", hot: true },
+      { label: "创意厨房小物", kw: "厨房 创意 小工具 切菜", hot: false },
+      { label: "保温杯", kw: "保温杯 不锈钢 大容量", hot: true },
+      { label: "香薰扩香器", kw: "香薰 扩香 精油 无水", hot: false },
+      { label: "挂钩无痕贴", kw: "无痕 挂钩 强力 粘贴", hot: false },
+      { label: "桌面收纳架", kw: "桌面 收纳架 文具 整理", hot: false },
+      { label: "手提购物袋", kw: "环保 购物袋 折叠 手提", hot: false },
+      { label: "多功能剪刀", kw: "多功能 剪刀 厨房", hot: false },
     ],
   },
   {
-    name: "潮流饰品",
-    icon: "💎",
+    name: "手机配件",
+    icon: "📱",
+    color: "slate",
     keywords: [
-      { label: "ins风项链", kw: "ins风 不锈钢项链 女", hot: true },
-      { label: "珍珠发夹", kw: "珍珠 发夹 头饰 批发", hot: true },
-      { label: "手链套装", kw: "编织手链 波西米亚", hot: false },
-      { label: "耳环套装", kw: "耳环套装 耳钉 批发", hot: true },
-      { label: "卡通钥匙扣", kw: "动漫 钥匙扣 挂件 批发", hot: true },
+      { label: "磁吸手机支架", kw: "磁吸 手机支架 MagSafe", hot: true },
+      { label: "手机壳", kw: "手机壳 透明 防摔", hot: true },
+      { label: "数据线快充", kw: "数据线 快充 多功能 三合一", hot: true },
+      { label: "无线充电器", kw: "无线充电器 磁吸 快充", hot: true },
+      { label: "耳机收纳盒", kw: "AirPods 保护壳 硅胶", hot: false },
+      { label: "手机屏幕保护膜", kw: "钢化膜 全屏 防指纹", hot: false },
+      { label: "移动电源", kw: "充电宝 大容量 轻薄", hot: true },
+      { label: "手机支架懒人", kw: "手机 懒人支架 桌面", hot: false },
     ],
   },
   {
-    name: "文创/办公",
+    name: "文创文具",
     icon: "✏️",
+    color: "indigo",
     keywords: [
-      { label: "卡通贴纸", kw: "防水贴纸 手账贴", hot: true },
-      { label: "手账本", kw: "手账本 日记本 可爱", hot: false },
-      { label: "荧光笔套装", kw: "莫兰迪 荧光笔 文具套装", hot: true },
-      { label: "桌面收纳", kw: "桌面收纳盒 文具整理", hot: false },
+      { label: "手账本套装", kw: "手账本 套装 贴纸", hot: true },
+      { label: "贴纸套装", kw: "贴纸 手账 装饰 DIY", hot: true },
+      { label: "钢笔墨水", kw: "钢笔 彩色墨水 书写", hot: false },
+      { label: "胶带和纸", kw: "和纸胶带 装饰 手账", hot: true },
+      { label: "印章套装", kw: "印章 复古 装饰 手账", hot: false },
+      { label: "荧光笔套装", kw: "荧光笔 学生 多色套装", hot: false },
+      { label: "画册速写本", kw: "速写本 画册 素描", hot: false },
+    ],
+  },
+  {
+    name: "饰品首饰",
+    icon: "💍",
+    color: "amber",
+    keywords: [
+      { label: "Y2K辣妹项链", kw: "Y2K 项链 辣妹 夸张", hot: true },
+      { label: "耳环套装", kw: "耳环 套装 小众 设计", hot: true },
+      { label: "发夹发饰", kw: "发夹 鲨鱼夹 头饰 发饰", hot: true },
+      { label: "戒指套装", kw: "戒指 套装 小众 叠戴", hot: false },
+      { label: "手链串珠", kw: "手链 串珠 DIY 天然石", hot: true },
+      { label: "发带发箍", kw: "发箍 发带 宽边 时尚", hot: false },
+      { label: "包包挂件", kw: "包包 挂件 钥匙扣 装饰", hot: true },
+    ],
+  },
+  {
+    name: "宠物用品",
+    icon: "🐾",
+    color: "green",
+    keywords: [
+      { label: "猫咪玩具", kw: "猫咪 逗猫棒 玩具 羽毛", hot: true },
+      { label: "狗狗玩具", kw: "狗狗 玩具 磨牙 耐咬", hot: true },
+      { label: "宠物项圈", kw: "宠物 项圈 猫咪 小狗", hot: false },
+      { label: "猫粮零食", kw: "猫咪 零食 冻干 营养", hot: true },
+      { label: "宠物衣服", kw: "猫咪 狗狗 衣服 可爱", hot: false },
+      { label: "宠物外出包", kw: "宠物 外出包 猫包 透气", hot: true },
+      { label: "自动饮水机", kw: "宠物 自动饮水机 循环过滤", hot: true },
+      { label: "猫咪抓板", kw: "猫咪 抓板 剑麻 纸板", hot: false },
+    ],
+  },
+  {
+    name: "运动户外",
+    icon: "⚽",
+    color: "lime",
+    keywords: [
+      { label: "瑜伽垫", kw: "瑜伽垫 防滑 加厚", hot: true },
+      { label: "跳绳计数", kw: "跳绳 计数 智能", hot: false },
+      { label: "健身手套", kw: "健身 手套 防滑 男女", hot: false },
+      { label: "户外折叠椅", kw: "户外 折叠椅 露营 便携", hot: true },
+      { label: "运动水壶", kw: "运动 水壶 大容量 便携", hot: false },
+      { label: "骑行手套", kw: "骑行 手套 自行车 防风", hot: false },
+      { label: "登山包", kw: "登山包 户外 大容量 防水", hot: false },
+      { label: "钓鱼配件", kw: "钓鱼 配件 鱼钩 浮漂", hot: false },
+    ],
+  },
+  {
+    name: "节日礼品",
+    icon: "🎄",
+    color: "red",
+    keywords: [
+      { label: "新年礼盒", kw: "新年 礼盒 节日 送礼", hot: true },
+      { label: "妇女节礼品", kw: "妇女节 礼品 女神节", hot: true },
+      { label: "生日礼物", kw: "生日 礼物 创意 实用", hot: false },
+      { label: "圣诞装饰", kw: "圣诞 装饰 挂件 摆件", hot: true },
+      { label: "情人节礼品", kw: "情人节 礼品 浪漫", hot: true },
+      { label: "儿童节玩具礼", kw: "儿童节 礼物 玩具 套装", hot: false },
+      { label: "婚庆伴手礼", kw: "婚庆 伴手礼 小礼品", hot: false },
+    ],
+  },
+  {
+    name: "数码周边",
+    icon: "💻",
+    color: "cyan",
+    keywords: [
+      { label: "键盘腕托", kw: "键盘 腕托 硅胶 护腕", hot: false },
+      { label: "游戏手柄", kw: "游戏 手柄 手机 连接", hot: true },
+      { label: "LED桌面灯", kw: "LED 桌面灯 护眼 阅读", hot: true },
+      { label: "摄像头支架", kw: "摄像头 支架 电脑 桌面", hot: false },
+      { label: "鼠标垫大号", kw: "鼠标垫 超大 防滑 游戏", hot: true },
+      { label: "手机散热器", kw: "手机 散热器 游戏 降温", hot: true },
+      { label: "Type-C集线器", kw: "Type-C 集线器 扩展坞 多口", hot: true },
+    ],
+  },
+  {
+    name: "汽车用品",
+    icon: "🚗",
+    color: "stone",
+    keywords: [
+      { label: "车载手机支架", kw: "车载 手机支架 磁吸 出风口", hot: true },
+      { label: "车载香薰", kw: "车载 香薰 出风口 持久", hot: true },
+      { label: "方向盘套", kw: "方向盘套 防滑 四季通用", hot: false },
+      { label: "座椅靠垫", kw: "汽车 座椅靠垫 腰靠 护颈", hot: false },
+      { label: "车内遮阳板", kw: "汽车 遮阳 前挡 遮阳板", hot: false },
+      { label: "行车记录仪", kw: "行车记录仪 高清 夜视", hot: true },
     ],
   },
 ];
 
-export function PickerPage() {
-  const [search, setSearch] = useState("");
-  const [copiedKw, setCopiedKw] = useState("");
-  const [activeKw, setActiveKw] = useState("");
+const COLOR_MAP: Record<string, { bg: string; badge: string; btn: string; search: string }> = {
+  purple: { bg: "bg-purple-50 border-purple-200", badge: "bg-purple-100 text-purple-700", btn: "hover:bg-purple-100 hover:text-purple-700", search: "bg-purple-600 hover:bg-purple-700" },
+  pink:   { bg: "bg-pink-50 border-pink-200",     badge: "bg-pink-100 text-pink-700",     btn: "hover:bg-pink-100 hover:text-pink-700",     search: "bg-pink-600 hover:bg-pink-700" },
+  blue:   { bg: "bg-blue-50 border-blue-200",     badge: "bg-blue-100 text-blue-700",     btn: "hover:bg-blue-100 hover:text-blue-700",     search: "bg-blue-600 hover:bg-blue-700" },
+  yellow: { bg: "bg-yellow-50 border-yellow-200", badge: "bg-yellow-100 text-yellow-800", btn: "hover:bg-yellow-100 hover:text-yellow-800", search: "bg-yellow-600 hover:bg-yellow-700" },
+  orange: { bg: "bg-orange-50 border-orange-200", badge: "bg-orange-100 text-orange-700", btn: "hover:bg-orange-100 hover:text-orange-700", search: "bg-orange-600 hover:bg-orange-700" },
+  rose:   { bg: "bg-rose-50 border-rose-200",     badge: "bg-rose-100 text-rose-700",     btn: "hover:bg-rose-100 hover:text-rose-700",     search: "bg-rose-600 hover:bg-rose-700" },
+  teal:   { bg: "bg-teal-50 border-teal-200",     badge: "bg-teal-100 text-teal-700",     btn: "hover:bg-teal-100 hover:text-teal-700",     search: "bg-teal-600 hover:bg-teal-700" },
+  slate:  { bg: "bg-slate-50 border-slate-200",   badge: "bg-slate-100 text-slate-700",   btn: "hover:bg-slate-100 hover:text-slate-700",   search: "bg-slate-600 hover:bg-slate-700" },
+  indigo: { bg: "bg-indigo-50 border-indigo-200", badge: "bg-indigo-100 text-indigo-700", btn: "hover:bg-indigo-100 hover:text-indigo-700", search: "bg-indigo-600 hover:bg-indigo-700" },
+  amber:  { bg: "bg-amber-50 border-amber-200",   badge: "bg-amber-100 text-amber-800",   btn: "hover:bg-amber-100 hover:text-amber-800",   search: "bg-amber-600 hover:bg-amber-700" },
+  green:  { bg: "bg-green-50 border-green-200",   badge: "bg-green-100 text-green-700",   btn: "hover:bg-green-100 hover:text-green-700",   search: "bg-green-600 hover:bg-green-700" },
+  lime:   { bg: "bg-lime-50 border-lime-200",     badge: "bg-lime-100 text-lime-800",     btn: "hover:bg-lime-100 hover:text-lime-800",     search: "bg-lime-600 hover:bg-lime-700" },
+  red:    { bg: "bg-red-50 border-red-200",       badge: "bg-red-100 text-red-700",       btn: "hover:bg-red-100 hover:text-red-700",       search: "bg-red-600 hover:bg-red-700" },
+  cyan:   { bg: "bg-cyan-50 border-cyan-200",     badge: "bg-cyan-100 text-cyan-700",     btn: "hover:bg-cyan-100 hover:text-cyan-700",     search: "bg-cyan-600 hover:bg-cyan-700" },
+  stone:  { bg: "bg-stone-50 border-stone-200",   badge: "bg-stone-100 text-stone-700",   btn: "hover:bg-stone-100 hover:text-stone-700",   search: "bg-stone-600 hover:bg-stone-700" },
+};
 
-  const copyKw = (kw: string) => {
-    navigator.clipboard.writeText(kw).catch(() => {});
+export function PickerPage() {
+  const [copiedKw, setCopiedKw] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+
+  const copyKw = async (kw: string) => {
+    await navigator.clipboard.writeText(kw);
     setCopiedKw(kw);
-    setActiveKw(kw);
-    setTimeout(() => setCopiedKw(""), 2000);
+    setTimeout(() => setCopiedKw(null), 2000);
   };
 
   const searchOn1688 = (kw: string) => {
-    window.open(`https://s.1688.com/selloffer/offer_search.html?keywords=${encodeURIComponent(kw)}&sortType=6`, "_blank");
+    window.open(`https://search.1688.com/search/product.do?SearchText=${encodeURIComponent(kw)}&sortType=6`, "_blank");
   };
 
-  const filteredCategories = CATEGORIES.map((cat) => ({
-    ...cat,
-    keywords: cat.keywords.filter(
-      (k) => !search || k.label.includes(search) || k.kw.includes(search)
-    ),
-  })).filter((cat) => cat.keywords.length > 0);
+  const filtered = search.trim()
+    ? CATEGORIES.map(cat => ({
+        ...cat,
+        keywords: cat.keywords.filter(k => k.label.includes(search) || k.kw.includes(search)),
+      })).filter(cat => cat.keywords.length > 0)
+    : CATEGORIES;
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-6">
-      {/* Header */}
-      <div className="mb-6">
-        <div className="flex items-center gap-2 mb-1">
-          <TrendingUp className="text-blue-600" size={20} />
-          <h2 className="text-lg font-bold text-gray-900">热销选品参考</h2>
-        </div>
-        <p className="text-sm text-gray-500">点「复制」→ 去 1688 粘贴搜索；点「搜索」→ 直接打开 1688 结果页</p>
-      </div>
-
-      {/* Search bar */}
-      <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-3 py-2 mb-6">
-        <Search size={15} className="text-gray-400" />
+    <div className="max-w-5xl mx-auto">
+      <div className="mb-5">
+        <h2 className="text-lg font-bold text-gray-900 mb-1">选品参考</h2>
+        <p className="text-sm text-gray-500 mb-3">点「复制」粘贴到1688搜索框，或直接点「搜索」打开1688</p>
         <input
           type="text"
-          placeholder="搜索关键词..."
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="flex-1 text-sm outline-none"
+          onChange={e => setSearch(e.target.value)}
+          placeholder="搜索品类或关键词..."
+          className="w-full max-w-sm border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
         />
       </div>
 
-      {/* 当前选中的关键词提示 */}
-      {activeKw && (
-        <div className="mb-4 flex items-center gap-3 bg-green-50 border border-green-200 rounded-xl px-4 py-3">
-          <Check size={16} className="text-green-600 flex-shrink-0" />
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-green-800">已复制：<span className="font-bold">{activeKw}</span></p>
-            <p className="text-xs text-green-600 mt-0.5">打开 1688 后直接 Ctrl+V 粘贴到搜索框即可</p>
-          </div>
-          <button
-            onClick={() => searchOn1688(activeKw)}
-            className="flex items-center gap-1.5 bg-orange-500 text-white text-xs px-3 py-1.5 rounded-lg hover:bg-orange-600 transition-colors flex-shrink-0"
-          >
-            <ExternalLink size={12} />
-            去1688搜索
-          </button>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {filtered.map((cat) => {
+          const colors = COLOR_MAP[cat.color] || COLOR_MAP.blue;
+          return (
+            <div key={cat.name} className={`border rounded-xl overflow-hidden ${colors.bg}`}>
+              <div className="px-4 py-2.5 flex items-center gap-2">
+                <span className="text-lg">{cat.icon}</span>
+                <span className="font-semibold text-gray-900">{cat.name}</span>
+                <span className={`text-xs px-2 py-0.5 rounded-full ml-auto ${colors.badge}`}>{cat.keywords.length} 个词</span>
+              </div>
+              <div className="bg-white border-t border-gray-100 px-3 py-2 flex flex-wrap gap-1.5">
+                {cat.keywords.map(({ label, kw, hot }) => (
+                  <div key={kw} className="flex items-center gap-0.5">
+                    <button
+                      onClick={() => copyKw(kw)}
+                      className={`flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg border border-gray-200 bg-white transition-colors ${colors.btn}`}
+                    >
+                      {hot && <span className="text-red-400 text-[10px]">🔥</span>}
+                      {copiedKw === kw ? <Check size={10} className="text-green-500" /> : <Copy size={10} className="text-gray-300" />}
+                      {label}
+                    </button>
+                    <button
+                      onClick={() => searchOn1688(kw)}
+                      title="在1688搜索"
+                      className={`text-xs px-2 py-1.5 rounded-lg text-white transition-colors ${colors.search}`}
+                    >
+                      搜
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {copiedKw && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-sm px-4 py-2 rounded-xl shadow-lg flex items-center gap-2 z-50">
+          <Check size={14} className="text-green-400" />
+          已复制「{copiedKw}」，去1688粘贴搜索
+          <a href="https://www.1688.com" target="_blank" rel="noopener noreferrer"
+            className="ml-2 text-blue-300 underline text-xs flex items-center gap-1">
+            打开1688 <ExternalLink size={11} />
+          </a>
         </div>
       )}
-
-      {/* Categories */}
-      <div className="space-y-6">
-        {filteredCategories.map((cat) => (
-          <div key={cat.name}>
-            <div className="flex items-center gap-2 mb-3">
-              <span className="text-xl">{cat.icon}</span>
-              <h3 className="font-semibold text-gray-800">{cat.name}</h3>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-              {cat.keywords.map((item) => (
-                <div
-                  key={item.kw}
-                  className={`flex items-center justify-between bg-white border rounded-xl px-3 py-2.5 transition-all ${
-                    copiedKw === item.kw ? "border-green-400 bg-green-50" : "border-gray-200"
-                  }`}
-                >
-                  {/* 关键词名称 */}
-                  <div className="flex items-center gap-2 min-w-0 flex-1">
-                    {item.hot && (
-                      <span className="flex items-center gap-0.5 text-xs bg-red-100 text-red-500 px-1.5 py-0.5 rounded font-medium flex-shrink-0">
-                        <Flame size={10} />热
-                      </span>
-                    )}
-                    <span className="text-sm text-gray-800 truncate">{item.label}</span>
-                  </div>
-
-                  {/* 操作按钮 */}
-                  <div className="flex items-center gap-1 flex-shrink-0 ml-2">
-                    {/* 复制按钮 */}
-                    <button
-                      onClick={() => copyKw(item.kw)}
-                      title="复制关键词"
-                      className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg transition-colors ${
-                        copiedKw === item.kw
-                          ? "bg-green-100 text-green-600"
-                          : "bg-gray-100 text-gray-500 hover:bg-blue-100 hover:text-blue-600"
-                      }`}
-                    >
-                      {copiedKw === item.kw ? <Check size={11} /> : <Copy size={11} />}
-                      {copiedKw === item.kw ? "已复制" : "复制"}
-                    </button>
-                    {/* 搜索按钮 */}
-                    <button
-                      onClick={() => searchOn1688(item.kw)}
-                      title="在1688搜索"
-                      className="flex items-center gap-1 text-xs px-2 py-1 rounded-lg bg-orange-50 text-orange-600 hover:bg-orange-100 transition-colors"
-                    >
-                      <ExternalLink size={11} />
-                      搜索
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Tips */}
-      <div className="mt-8 bg-blue-50 border border-blue-100 rounded-xl p-4">
-        <p className="text-sm font-medium text-blue-800 mb-2">💡 使用技巧</p>
-        <ul className="text-sm text-blue-700 space-y-1">
-          <li>• <strong>复制</strong> → 去已登录的 1688 粘贴搜索，结果最准确</li>
-          <li>• <strong>搜索</strong> → 直接跳转，若搜索框显示旧词请手动粘贴</li>
-          <li>• 找到好产品后点浏览器插件 → 一键导入选品列表</li>
-          <li>• 优先选「🔥热」标签，Ozon 市场验证过的热销类目</li>
-        </ul>
-      </div>
     </div>
   );
 }
