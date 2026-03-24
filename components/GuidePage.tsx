@@ -1,496 +1,516 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, ChevronRight, BookOpen, Store, TrendingUp, Package, Truck, Star, ExternalLink, Wrench, Globe, BarChart2 } from "lucide-react";
+import {
+  ChevronDown, ChevronRight, BookOpen, Store, TrendingUp,
+  Package, Truck, Star, ExternalLink, Wrench, Globe, BarChart2, ShoppingCart
+} from "lucide-react";
 
 const GUIDES = [
   {
-    id: "open-store",
-    icon: <Store size={20} />,
-    title: "如何在 Ozon 开店",
+    id: "platforms",
+    icon: <Globe size={20} />,
+    title: "主流跨境平台对比选择",
     color: "blue",
     sections: [
       {
-        title: "开店前必读",
+        title: "各平台核心特点",
         content: [
-          "Ozon 是俄罗斯最大电商平台之一，月活用户超 5000 万，竞争比速卖通小很多",
-          "国内卖家以「境外法人」身份入驻，不需要俄罗斯公司，用中国营业执照即可",
-          "结算币种：卢布，Ozon 每月两次打款，通过 SWIFT 转到你的外币账户",
-          "新手建议先用 RFBS（跨境直发模式）测品，不需要提前备货",
-          "平台语言：俄语。商品标题、描述必须用俄语，不能用中文",
+          "🛒 Ozon（俄罗斯）：月活5000万+，竞争小，中国卖家少，溢价高，强烈推荐新手",
+          "📦 亚马逊：全球最大，流量大但竞争极激烈，入门门槛高，需要品牌备案",
+          "🎵 TikTok Shop：视频带货新风口，东南亚+美国市场，内容驱动，爆单快但不稳定",
+          "🌟 Shopee（虾皮）：东南亚+台湾，中小卖家友好，物流便宜，竞争日趋激烈",
+          "🛍️ Lazada：东南亚，阿里旗下，和Shopee互补，马来西亚/泰国市场强",
+          "⚡ 速卖通（AliExpress）：全球覆盖，适合库存清货，单价低竞争大",
+          "🇧🇷 Mercado Libre：拉美第一电商，巴西/墨西哥市场，增长快，竞争少",
         ],
       },
       {
-        title: "注册步骤详解",
+        title: "新手最推荐的平台路线",
         content: [
-          "1. 访问 seller.ozon.ru，点击「Стать продавцом」（成为卖家）",
-          "2. 选择「Иностранное юридическое лицо」（境外法人）",
-          "3. 填写公司名称（拼音即可）、注册地址、法人代表姓名",
-          "4. 上传营业执照扫描件（需要英文翻译，翻译宝/CNKI翻译均可）",
-          "5. 上传法人护照或身份证（正反面，需英文翻译）",
-          "6. 填写银行账户信息（支持中国银行外币账户）",
-          "7. 等待审核 1-5 个工作日",
-          "8. 审核通过后充值广告预算（最低 500 卢布），上架商品",
+          "路线A（稳健）：Ozon起步 → 站稳后扩Shopee → 再考虑亚马逊",
+          "路线B（内容型）：TikTok Shop起步（会拍视频的人）→ 再开独立站",
+          "路线C（大众）：速卖通起步（门槛最低）→ 积累经验后迁移Ozon/Shopee",
+          "❌ 不建议：一开始就多平台同时做，精力分散，哪个都做不好",
+          "✅ 建议：先把一个平台跑通，月销100单以上再考虑第二个平台",
         ],
       },
       {
-        title: "仓储模式对比",
+        title: "平台费用对比",
         content: [
-          "RFBS（跨境直发）：中国发货→买家，时效15-35天，适合新手测款，无备货压力",
-          "FBS（本地第三方仓）：发到俄罗斯第三方仓，时效2-5天，需提前备货",
-          "FBO（Ozon官方仓）：发到Ozon仓，Ozon负责配送，时效最快，需最低库存",
-          "新手必选 RFBS，跑通后再考虑 FBS/FBO",
-          "RFBS 下单后 5 天内必须发货并上传物流追踪号，否则取消订单扣分",
+          "Ozon：佣金4-15%，无月租，跨境直发无仓储费",
+          "亚马逊：月租$39.99（专业版），佣金8-15%，FBA仓储费另计",
+          "TikTok Shop：佣金2-8%（新手期优惠），无月租",
+          "Shopee：佣金2-6%，无月租，部分市场有交易服务费",
+          "Lazada：佣金2-4%，无月租，但物流费由平台控制",
+          "速卖通：佣金5-8%，无月租，旺季流量费另计",
         ],
       },
       {
-        title: "平台费用明细",
+        title: "目标市场消费习惯",
         content: [
-          "佣金：按类目4%-15%，玩具/动漫周边约8-12%，数码类约4-8%",
-          "配送费：FBO模式下按重量和体积收取，跨境直发不收",
-          "仓储费：FBO超期收费，标准品30天内免费，超期按天计费",
-          "退货处理费：买家退货后Ozon会收取检验费",
-          "广告费：按点击付费，自行设置预算，不投广告也能出单但慢",
-          "提现手续费：SWIFT 转账约 0.5-1%，加上银行手续费约 100-300 元/次",
-        ],
-      },
-      {
-        title: "开店常见问题",
-        content: [
-          "Q：没有俄罗斯公司能开吗？ A：可以，境外法人模式",
-          "Q：需要VAT税号吗？ A：跨境直发不需要，FBO模式建议办理",
-          "Q：人民币能直接结算吗？ A：不能，Ozon结算卢布，需要外币账户换汇",
-          "Q：账号被封怎么办？ A：联系Ozon中文客服（有微信群），说明情况申诉",
-          "Q：可以开几个账号？ A：一个主体只能开一个，多开会封号",
+          "俄罗斯：喜欢动漫/二次元，节日购物力强（妇女节3月8日最大），价格敏感但认质量",
+          "东南亚：价格极敏感，喜欢凑满减，直播带货渗透率高，退货率低",
+          "美国（亚马逊/TikTok）：品质要求高，售后严格，一旦信任建立复购率高",
+          "拉美（Mercado）：价格敏感，物流期望低，市场增长快，竞争最少",
+          "欧洲（速卖通欧洲站）：环保意识强，认证要求多（CE/RoHS），利润高",
         ],
       },
     ],
     links: [
-      { text: "Ozon 卖家注册入口", url: "https://seller.ozon.ru" },
-      { text: "Ozon 卖家帮助中心", url: "https://seller-edu.ozon.ru" },
+      { text: "Ozon 卖家入口", url: "https://seller.ozon.ru" },
+      { text: "亚马逊卖家中心", url: "https://sellercentral.amazon.com" },
+      { text: "TikTok Shop 卖家", url: "https://seller.tiktok.com" },
+      { text: "Shopee 卖家中心", url: "https://seller.shopee.cn" },
+      { text: "Lazada 卖家中心", url: "https://sellercenter.lazada.com" },
+      { text: "速卖通卖家中心", url: "https://sell.aliexpress.com" },
+    ],
+  },
+  {
+    id: "open-store",
+    icon: <Store size={20} />,
+    title: "开店流程（各平台）",
+    color: "green",
+    sections: [
+      {
+        title: "Ozon 开店步骤",
+        content: [
+          "1. 访问 seller.ozon.ru，选「境外法人」身份注册",
+          "2. 上传营业执照（需英文翻译）+ 法人身份证",
+          "3. 填写银行账户（支持中国外币账户SWIFT收款）",
+          "4. 审核1-5个工作日，通过后选仓储模式",
+          "5. 新手选 RFBS（跨境直发），不需要提前备货",
+          "6. 上架商品（俄语标题必须），开搜索广告，开始跑单",
+          "推荐收款：PingPong、连连支付（Ozon官方推荐）",
+        ],
+      },
+      {
+        title: "亚马逊开店步骤",
+        content: [
+          "1. 注册亚马逊卖家账号（需要信用卡+银行账户+身份证）",
+          "2. 选择站点：美国站/欧洲站/日本站（新手推荐美国站）",
+          "3. 品牌备案（Brand Registry）：有商标可以做，无商标先卖跟卖",
+          "4. 发货方式：FBA（亚马逊仓储）或 FBM（自发货）",
+          "5. 新手建议先FBM测款，爆款再转FBA",
+          "注意：亚马逊对账号关联极敏感，一台电脑只登一个账号",
+          "推荐收款：Payoneer、WorldFirst万里汇",
+        ],
+      },
+      {
+        title: "TikTok Shop 开店步骤",
+        content: [
+          "1. 访问 seller.tiktok.com，用手机号注册",
+          "2. 选择销售地区（美国/英国/东南亚各国）",
+          "3. 上传营业执照 + 法人身份证",
+          "4. 审核通过后，连接TikTok账号（必须有TikTok账号）",
+          "5. 上传商品，可以自己拍视频带货，或找达人合作",
+          "6. 参与「联盟计划」：让达人帮你带货，按销售分佣",
+          "关键：内容质量决定成败，产品要上镜，视觉要好",
+        ],
+      },
+      {
+        title: "Shopee 开店步骤",
+        content: [
+          "1. 访问 seller.shopee.cn（中国卖家专属入口）",
+          "2. 用手机号注册，填写基本信息",
+          "3. 选择销售市场（新手推荐马来西亚/泰国/菲律宾）",
+          "4. 上传商品，图片和描述可以用中文，系统自动翻译",
+          "5. 选择物流：虾皮官方物流（SLS）最方便，新手必选",
+          "6. 开店初期参与「新手礼包」活动，获取平台流量扶持",
+          "推荐收款：连连支付、PingPong",
+        ],
+      },
+    ],
+    links: [
       { text: "Ozon 费用计算器", url: "https://seller.ozon.ru/app/calculators" },
-      { text: "Ozon 中文卖家社区", url: "https://t.me/ozon_sellers_cn" },
+      { text: "亚马逊FBA费用计算", url: "https://sellercentral.amazon.com/hz/fba/profitabilitycalculator" },
+      { text: "Shopee 新手指南", url: "https://seller.shopee.cn/edu/home" },
     ],
   },
   {
     id: "product-selection",
     icon: <TrendingUp size={20} />,
-    title: "选品策略与爆品方法",
-    color: "green",
+    title: "选品策略（全平台通用）",
+    color: "purple",
     sections: [
       {
         title: "选品黄金标准",
         content: [
           "重量 ≤ 500g（跨境运费最经济，超重利润大幅压缩）",
-          "体积小，不超过 30×20×10cm（节省包装成本）",
-          "进价 ¥3-50，Ozon 售价 300-2000 卢布（约 ¥20-140）",
-          "毛利率目标 ≥ 50%（刨除运费、佣金、广告后还有得赚）",
+          "体积小，最好不超过 30×20×10cm",
+          "进价 ¥3-50，售价是进价的3-8倍（毛利率目标≥50%）",
           "非易碎、非液体、非危险品（避免破损和海关麻烦）",
-          "俄罗斯本地不容易买到，或比本地便宜 50% 以上",
-          "有复购需求或可延伸品类（做成系列，一个用户买多件）",
+          "目标市场不容易买到，或比本地便宜50%以上",
+          "有复购需求或可延伸品类（做成系列，提升客单价）",
+          "无强烈季节性（或提前1-2个月布局季节性商品）",
         ],
       },
       {
-        title: "找爆品的具体方法",
+        title: "各平台爆品特点",
         content: [
-          "方法1：看 Ozon 热销榜 — ozon.ru/bestsellers，按类目筛选，记录月销>500的商品",
-          "方法2：看竞品店铺 — 找到一个爆款，点击卖家主页，看他还卖什么",
-          "方法3：速卖通反向推导 — 速卖通月销1000+的商品，Ozon上大概率也有需求",
-          "方法4：看1688销量榜 — 1688月销>10000的商品，考虑能否上Ozon",
-          "方法5：用本工具 — 从Ozon热销页抓商品→中文翻译→1688找货→计算利润",
-          "方法6：关注动漫新番 — 新番开播前2-3周备周边货，踩准时机能爆单",
-          "方法7：节日选品日历 — 提前1个月备节日商品（见下面的节日表）",
+          "Ozon爆品：动漫周边/棉花娃娃/儿童玩具/家居小物（单价300-2000卢布）",
+          "亚马逊爆品：创意家居/户外用品/宠物用品/美妆工具（单价$15-50）",
+          "TikTok爆品：视觉冲击强的商品，美妆/家居/厨具/新奇小物（爆品无规律）",
+          "Shopee爆品：价格极低的日用品/时尚配件/手机配件（单价$2-15）",
+          "通用规律：在一个平台卖得好的商品，其他平台也值得试",
         ],
       },
       {
-        title: "俄罗斯重要节日选品日历",
+        title: "找爆品的方法",
         content: [
-          "🎄 1月1日：新年 — 12月开始备货，装饰/礼盒/玩具",
-          "💙 2月14日：情人节 — 1月备货，毛绒/首饰/香薰",
-          "🪖 2月23日：祖国保卫者日（男人节）— 男性礼品/运动/电子配件",
-          "🌺 3月8日：妇女节 ⭐全年最重要节日 — 2月开始备货，美妆/鲜花/首饰/毛绒",
-          "🐣 4月：复活节 — 装饰/巧克力/礼篮",
-          "🌟 6月1日：儿童节 — 玩具/文具/童装",
-          "🛒 11月11日：双11 — Ozon也做，全品类",
-          "🎁 12月：圣诞+新年 — 全年最大购物季，12月销量是平时2-3倍",
+          "方法1：看平台热销榜 — Ozon/亚马逊/Shopee都有Best Sellers榜",
+          "方法2：速卖通反推 — 速卖通月销1000+商品，其他平台大概率也有需求",
+          "方法3：TikTok选品 — 刷TikTok/抖音，看什么商品视频点赞10万+",
+          "方法4：1688销量榜 — 月销>10000的商品，研究能否跨境",
+          "方法5：竞品店铺分析 — 找到爆款卖家，看他的其他商品",
+          "方法6：Google Trends — 查搜索趋势，提前布局上升品类",
+          "方法7：用本工具 — 从Ozon抓热销→中文翻译→1688找货",
         ],
       },
       {
-        title: "利润计算公式",
+        title: "俄罗斯选品节日日历",
         content: [
-          "总成本 = 进价 + 运费(克数×运费率) + 包装费",
-          "最低售价(卢布) = 总成本(元) × 汇率 ÷ (1 - 佣金率)",
-          "建议售价 = 最低售价 × 1.5（留广告、退货、波动空间）",
-          "实际利润 = 售价 × (1-佣金) ÷ 汇率 - 总成本",
-          "示例：进价¥5，重300g，运费¥7.5，包装¥2，汇率10，佣金12%",
-          "成本=¥14.5，最低售价≈165卢布，建议售价250卢布，利润约¥6.5",
+          "🎄 1月1日：新年 — 12月备货，装饰/礼盒/玩具",
+          "💙 2月14日：情人节 — 毛绒/首饰/香薰",
+          "🪖 2月23日：祖国保卫者日（男人节）— 男性礼品",
+          "🌺 3月8日：妇女节 ⭐全年最重要 — 2月备货，美妆/鲜花/首饰",
+          "🐣 4月：复活节 — 装饰/礼篮",
+          "🌟 6月1日：儿童节 — 玩具/文具",
+          "🎁 12月：圣诞+新年 — 全年销量最高，12月是平时2-3倍",
         ],
       },
       {
-        title: "适合做的类目",
+        title: "东南亚选品节日日历",
         content: [
-          "✅ 动漫周边（手办/公仔/亚克力/抱枕）— 俄罗斯动漫迷多，溢价高",
-          "✅ 棉花娃娃/盲盒 — 女性消费者最爱，复购率极高",
-          "✅ 儿童玩具（毛绒/积木）— 需求稳定，客单价适中",
-          "✅ 家居小物（收纳/创意厨具）— 大众需求，不受季节影响",
-          "✅ 美妆工具（化妆刷/美容仪）— 俄罗斯女性消费力强",
-          "✅ 手机配件（支架/数据线/充电宝）— 竞争大但需求永远有",
-          "✅ 宠物用品 — 俄罗斯养宠物比例极高，增长快",
-          "❌ 服装鞋帽 — 尺码退货率超高，慎入",
-          "❌ 电子产品 — 认证复杂，售后麻烦，资金压力大",
-          "❌ 食品保健品 — 海关检验严，极易扣货",
+          "🧧 1-2月：春节 — 东南亚华人多，红包袋/年货/装饰",
+          "❤️ 2月14日：情人节 — 全平台大促",
+          "🌙 3-4月：斋月（Ramadan）— 马来/印尼必备，礼品/服饰",
+          "👧 5月：母亲节 — 美妆/首饰/家居礼品",
+          "🛒 6月18日：618 — Shopee/Lazada跟进做大促",
+          "🎉 9月9日/10月10日/11月11日：连续大促季",
+          "🎄 12月：圣诞 — 东南亚基督徒多，装饰/礼品",
         ],
       },
     ],
     links: [
       { text: "Ozon 热销榜", url: "https://www.ozon.ru/bestsellers/" },
-      { text: "1688 热销排行", url: "https://www.1688.com/huo/--B6B4C2CCB7C9D0D0B0F7.html" },
-      { text: "速卖通畅销商品", url: "https://www.aliexpress.com/wholesale" },
+      { text: "亚马逊 Best Sellers", url: "https://www.amazon.com/Best-Sellers/zgbs" },
+      { text: "Google Trends", url: "https://trends.google.com" },
+      { text: "1688 热销排行", url: "https://www.1688.com" },
     ],
   },
   {
     id: "listing",
     icon: <Package size={20} />,
-    title: "商品上架与优化",
-    color: "purple",
-    sections: [
-      {
-        title: "俄语标题写法",
-        content: [
-          "格式：[品类关键词] [核心卖点] [规格/材质] [适用人群/场景]",
-          "好标题示例：Мягкая игрушка кот Батон подушка антистресс 40см — 猫咪抱枕40cm",
-          "好标题示例：Фигурка аниме Наруто ПВХ 15см коллекционная — 鸣人手办15cm",
-          "前60字符最重要（搜索结果显示的长度）",
-          "必须包含俄罗斯买家真实搜索词，用 Ozon 搜索联想验证",
-          "不要堆砌关键词，会被算法降权",
-          "可用 DeepL/本工具翻译后，再用 ChatGPT 优化俄语表达",
-        ],
-      },
-      {
-        title: "主图与详情图要求",
-        content: [
-          "主图：白底或浅色背景，商品占 75% 以上，最低 1000×1000px",
-          "主图不能有文字水印、平台LOGO（Ozon严格审核）",
-          "最少5张图：主图+4角度细节图+1尺寸对比图",
-          "建议加生活场景图（商品使用中的样子，转化率提升30%+）",
-          "尺寸图必须标注，俄罗斯买家很在意实际大小",
-          "1688商家提供的图可以用，但要去掉中文水印",
-          "去水印工具：watermarkremover.io（免费在线）",
-        ],
-      },
-      {
-        title: "商品描述要点",
-        content: [
-          "描述必须用俄语，可以用本工具翻译后人工检查",
-          "必填：材质、尺寸（长宽高/重量）、包装内容物",
-          "玩具类必填：适用年龄（3岁以下/以上）、安全认证",
-          "加入FAQ：常见问题提前回答，减少买家咨询和差评",
-          "描述不要夸大（如「最好的/第一的」），Ozon会处罚",
-          "可以加表情符号让描述更易读（俄语买家接受度高）",
-        ],
-      },
-      {
-        title: "定价技巧",
-        content: [
-          "新品期定低价（接近成本线）冲量，积累评价后涨价",
-          "设置促销价格（原价1000，促销价799）显示划线价，点击率+40%",
-          "参考竞品定价，不要做最便宜的，定中间价显得更可信",
-          "尾数定价：799卢布比800卢布转化率更高",
-          "同款商品可以出不同规格套餐（单件/2件装/3件装），提升客单价",
-        ],
-      },
-      {
-        title: "Ozon 新品期规则",
-        content: [
-          "上架后14天是新品期，搜索排名有额外加权",
-          "新品期内尽量保证每天有订单（哪怕亏本），维持活跃度",
-          "前20个评价最关键，决定商品能否持续上升",
-          "新品期结束后排名会下降，需要用广告维持曝光",
-        ],
-      },
-    ],
-    links: [
-      { text: "Ozon 商品上架规范", url: "https://docs.ozon.ru/seller/en/" },
-      { text: "DeepL 俄语翻译", url: "https://www.deepl.com/translator" },
-      { text: "Canva 商品图设计", url: "https://www.canva.com" },
-      { text: "去水印工具", url: "https://watermarkremover.io" },
-    ],
-  },
-  {
-    id: "operations",
-    icon: <Star size={20} />,
-    title: "店铺运营与广告",
+    title: "商品上架与标题优化",
     color: "orange",
     sections: [
       {
-        title: "新品期运营策略",
+        title: "标题写法（各平台）",
         content: [
-          "上架即开广告：「搜索广告」设置每天100-200卢布预算",
-          "核心关键词：商品类名（俄语）+ 材质/尺寸 + 适用人群",
-          "前7天重点看：点击率（>1%正常）、加购率（>5%正常）",
-          "如果点击率低 → 换主图；如果加购率低 → 检查价格",
-          "刷好评：可请真实买家购买后留评（违规风险低，但别批量刷）",
-          "跟进发货：RFBS模式下订单5天内必须发货，否则取消扣分",
+          "通用格式：[品类关键词] + [核心卖点] + [规格/材质] + [适用人群]",
+          "Ozon（俄语）：Мягкая игрушка кот 40см антистресс подушка — 猫咪抱枕40cm",
+          "亚马逊（英语）：Anime Figure Naruto PVC 15cm Collectible Action Figure Toy",
+          "TikTok/Shopee：简短直白，突出价格优势和卖点，「超可爱」「爆款」「限时」",
+          "翻译工具：DeepL（俄语最准）、ChatGPT（优化表达）、本工具（批量翻译）",
+          "关键词来源：在目标平台搜索框输入品类，看下拉联想词就是真实搜索词",
         ],
       },
       {
-        title: "广告类型与策略",
+        title: "主图要求",
         content: [
-          "搜索广告（Трафаретная）：按关键词出价，最直接，新品必开",
-          "展示广告（Медийная）：按曝光收费，适合做品牌认知",
-          "商品促销广告（Продвижение товаров）：Ozon新出，按销售额收费",
-          "ACoS目标：广告费/销售额，建议控制在15-25%以内",
-          "每周优化：关掉不出单的关键词，加大出单关键词的预算",
-          "大促前2周：提前加预算，大促期间流量是平时5-10倍",
+          "Ozon：白底图，商品占75%以上，最低1000×1000px，不能有中文水印",
+          "亚马逊：纯白背景，主图无文字，最低1000px（建议2000px），JPEG格式",
+          "TikTok Shop：可以有场景图，视频封面图更重要，要视觉冲击感",
+          "Shopee/Lazada：可以有产品文字说明，场景图+白底图各1-2张",
+          "通用：至少5张图（主图+细节+尺寸+场景+包装），提升转化率30%+",
+          "工具：Canva做设计，Remove.bg抠图，Watermarkremover去水印",
         ],
       },
       {
-        title: "评价管理",
+        title: "定价策略",
         content: [
-          "目标评分：4.5分以上，低于4.0会被降权",
-          "所有差评都要回复，态度诚恳，说明处理方案",
-          "包裹里放卡片：「好评返现/小礼品」引导留评（不违规）",
-          "差评内容分析：是产品质量问题还是物流问题？分开处理",
-          "物流慢差评：不可避免，回复说明跨境时效，提供补偿",
-          "产品质量差评：联系1688换货源，或者改进包装防损",
-        ],
-      },
-      {
-        title: "参与平台活动",
-        content: [
-          "Ozon 全年大促：双11(11月)/元旦(1月)/妇女节(3月)/暑期(7月)",
-          "参与方式：卖家后台「促销活动」报名，需要提前2-4周",
-          "报名条件：设置活动价格（需比平时低10%+），库存充足",
-          "活动期间流量暴增，提前备货，避免断货",
-          "Ozon Premium（付费会员）：参与会员专属活动，流量更大",
-        ],
-      },
-      {
-        title: "数据分析要点",
-        content: [
-          "每日必看：订单量、广告花费、退货率",
-          "每周必看：关键词排名变化、竞品价格变化、库存预警",
-          "转化漏斗：曝光→点击→加购→下单，找每个环节的问题",
-          "利润核算：每月做一次真实利润核算（别忘了广告费和汇损）",
-        ],
-      },
-    ],
-    links: [
-      { text: "Ozon 广告投放指南", url: "https://seller-edu.ozon.ru/advertising" },
-      { text: "Ozon 卖家数据分析后台", url: "https://seller.ozon.ru/app/analytics" },
-    ],
-  },
-  {
-    id: "logistics",
-    icon: <Truck size={20} />,
-    title: "物流与供应链",
-    color: "teal",
-    sections: [
-      {
-        title: "跨境直发（RFBS）推荐渠道",
-        content: [
-          "云途物流（YunExpress）：价格实惠，俄罗斯专线，追踪稳定 ⭐推荐",
-          "燕文物流：老牌，俄罗斯小包专线，价格适中",
-          "广东联邑：俄罗斯专线，时效较快",
-          "4PX递四方：覆盖广，支持多种服务",
-          "运费参考：500g以内 ¥15-25，1kg约 ¥30-45（视渠道和时效）",
-          "时效：普通小包15-35天，特快小包7-15天（贵3-5倍）",
-          "追踪号必须72小时内上传到Ozon系统",
-        ],
-      },
-      {
-        title: "备货到俄仓",
-        content: [
-          "头程物流公司推荐：菜鸟国际、递四方、出口易、万邑通",
-          "海运：30-45天，费用约¥5-15/kg，适合大批量",
-          "空运：7-15天，费用约¥25-45/kg，适合紧急补货",
-          "俄罗斯清关：需要申报商品价值，建议如实申报，低报风险高",
-          "注意：进入俄罗斯需要支付关税（进口税率约15-20%）",
-          "第三方海外仓：可以用速卖通菜鸟仓或专业俄罗斯仓",
-        ],
-      },
-      {
-        title: "包装与标签要求",
-        content: [
-          "每件商品贴 Ozon 条形码标签（在卖家后台「商品标签」生成）",
-          "RFBS模式：纸箱或气泡袋，加充气填充，防止运输挤压",
-          "FBO模式：严格按Ozon包装规范，尺寸超标会被拒收",
-          "易碎品：双层气泡膜，4个角重点保护",
-          "包裹重量/尺寸如实填报，抽查不符会扣费",
-        ],
-      },
-      {
-        title: "退货处理",
-        content: [
-          "Ozon允许30天无理由退货，退货率是跨境卖家最大痛点",
-          "RFBS退货：买家退回到Ozon本地仓，Ozon会转给你的代理或销毁",
-          "退货率高（>5%）的原因：描述与实物不符、质量差、尺寸标注错",
-          "降低退货率：主图真实不P太多图，尺寸图必须有，材质如实写",
-          "申诉机制：如果退货是买家原因（说谎），可以申诉不退款",
-        ],
-      },
-      {
-        title: "供应链管理",
-        content: [
-          "1688找货：选择有「实力商家」标志的，看近30天销量和评价",
-          "拿样：先拍一件测质量，满意再批量下单",
-          "谈判：单量大可以谈价格，500件以上一般能砍10-20%",
-          "备货量：参考月销量 × 2（覆盖跨境运输周期）",
-          "质检：备货到国内仓时做质检，不合格品当场退换",
-        ],
-      },
-    ],
-    links: [
-      { text: "云途物流官网", url: "https://www.yunexpress.cn" },
-      { text: "燕文物流官网", url: "https://www.yanwen.com" },
-      { text: "递四方物流", url: "https://www.4px.com" },
-      { text: "1688 找货源", url: "https://www.1688.com" },
-    ],
-  },
-  {
-    id: "tools",
-    icon: <Wrench size={20} />,
-    title: "必备工具与软件推荐",
-    color: "cyan",
-    sections: [
-      {
-        title: "🛒 选品数据工具",
-        content: [
-          "本工具（ozon-tools）：1688→Ozon一键导入，利润计算，批量翻译 ⭐免费",
-          "选品大师：Ozon选品数据分析，月销量/趋势/竞品，约¥199/月",
-          "Seller Assistant App：Ozon卖家数据分析，有免费版",
-          "Moneyplace.io：俄语Ozon分析工具，数据准，需翻墙",
-          "MPStats.ru：俄罗斯本土数据工具，很准，需会俄语",
-          "魔方格：跨境数据工具，支持Ozon，有免费版",
-        ],
-      },
-      {
-        title: "🌐 翻译工具",
-        content: [
-          "DeepL：俄语翻译最准确，强烈推荐 deepl.com，有免费版",
-          "Google翻译：备用，准确率稍差但免费",
-          "ChatGPT/Claude：优化俄语标题和描述，效果最好",
-          "本工具翻译：批量翻译商品标题，支持8种语言 ⭐",
-          "百度翻译APP：手机端扫图翻译俄语商品",
-          "Yandex翻译：俄罗斯本土翻译，俄语细节更准",
-        ],
-      },
-      {
-        title: "🎨 图片处理工具",
-        content: [
-          "Canva：设计详情图/场景图，有大量模板，免费版够用 canva.com",
-          "Remove.bg：一键抠图做白底图，免费 remove.bg",
-          "Watermarkremover.io：去除1688商品图水印，免费",
-          "美图秀秀/PicsArt：手机端修图，批量处理方便",
-          "Photoshop：专业修图，需要订阅 ¥88/月",
-          "Squoosh：图片压缩工具，不影响质量，在线免费 squoosh.app",
-        ],
-      },
-      {
-        title: "📦 ERP/店铺管理",
-        content: [
-          "店小秘（ECCANG）：支持Ozon，多平台订单管理，¥99起/月",
-          "马帮ERP：老牌跨境ERP，功能全，适合有一定规模的卖家",
-          "万里牛：国内老牌ERP，支持Ozon接入",
-          "Ozon卖家后台：seller.ozon.ru 自带基础数据分析和订单管理",
-          "新手阶段用Ozon自带后台就够，月销100单以内不需要ERP",
-        ],
-      },
-      {
-        title: "🚚 物流工具",
-        content: [
-          "17Track：全球物流追踪，支持俄罗斯所有物流 17track.net",
-          "云途物流官网：yunexpress.cn（俄罗斯专线首选）",
-          "燕文物流：yanwen.com（老牌小包）",
-          "递四方4PX：4px.com（覆盖广）",
-          "菜鸟国际：跨境物流，阿里旗下，和1688联动方便",
-          "AfterShip：物流追踪+买家通知自动化",
-        ],
-      },
-      {
-        title: "💬 卖家社群",
-        content: [
-          "Ozon中文卖家Telegram群：搜「Ozon中文卖家」加群，资源最多",
-          "闲鱼/微信群：很多老卖家分享经验，搜「Ozon卖家交流」",
-          "知无不言：跨境电商论坛，有专门的俄罗斯电商板块 zhiwubuyan.com",
-          "雨果网：跨境电商媒体，有Ozon专题内容 cifnews.com",
-          "跨境知道：视频教程多，B站有大量免费课程",
-        ],
-      },
-      {
-        title: "💰 收款与汇率",
-        content: [
-          "PingPong：跨境收款，支持卢布→人民币，手续费1% pingpongx.com",
-          "连连支付：Ozon官方推荐收款，手续费约1% lianlianpay.com",
-          "万里汇（WorldFirst）：老牌跨境收款，汇率好 worldfirst.com",
-          "招商银行：外币账户，SWIFT收款，汇率透明",
-          "注意：卢布波动大，建议及时换汇，不要囤卢布",
+          "成本计算：进价 + 运费（克数×运费率）+ 包装费 = 总成本",
+          "最低售价：总成本(元) × 汇率 ÷ (1 - 佣金率)",
+          "建议售价：最低售价 × 1.5倍（留广告和退货空间）",
+          "新品期：定低价冲销量，积累评价后逐步涨价",
+          "尾数定价：999/199/49.9比整数转化率高",
+          "亚马逊：参考竞品定价，比头部竞品低5-10%，比尾部高10%",
+          "Shopee：价格战激烈，建议薄利多销+凑单满减策略",
         ],
       },
     ],
     links: [
       { text: "DeepL 翻译", url: "https://www.deepl.com" },
-      { text: "Canva 设计", url: "https://www.canva.com" },
+      { text: "Canva 设计工具", url: "https://www.canva.com" },
       { text: "Remove.bg 抠图", url: "https://www.remove.bg" },
-      { text: "17Track 物流追踪", url: "https://www.17track.net" },
-      { text: "PingPong 收款", url: "https://www.pingpongx.com" },
-      { text: "知无不言论坛", url: "https://www.zhiwubuyan.com" },
+      { text: "Watermarkremover 去水印", url: "https://watermarkremover.io" },
     ],
   },
   {
-    id: "analytics-guide",
-    icon: <BarChart2 size={20} />,
-    title: "数据分析与进阶运营",
-    color: "rose",
+    id: "operations",
+    icon: <Star size={20} />,
+    title: "运营技巧（各平台）",
+    color: "teal",
     sections: [
       {
-        title: "核心数据指标",
+        title: "Ozon 运营要点",
         content: [
-          "曝光量（Показы）：你的商品被多少人看到，主要受搜索排名影响",
-          "点击率（CTR）：曝光→点击的比例，正常值1-5%，低说明主图不吸引人",
-          "加购率：点击→加购比例，低说明价格或详情页有问题",
-          "转化率（Конверсия）：加购→下单比例，正常3-10%",
-          "退货率：低于5%为优秀，超过10%需要立即整改",
-          "ACoS：广告费/广告销售额，目标15-25%",
+          "新品期14天：开搜索广告（100-200卢布/天），快速积累评价",
+          "广告ACoS目标15-25%：超过说明选词或定价有问题",
+          "评分必须4.5+：差评率超10%会被限流",
+          "参与平台活动：妇女节/新年大促，提前2周报名",
+          "RFBS模式：下单后5天内发货，超时取消订单扣分",
+          "包裹放好评卡片：不违规，可引导留评",
         ],
       },
       {
-        title: "搜索排名提升方法",
+        title: "亚马逊 运营要点",
         content: [
-          "销量是最大权重：销量越高排名越靠前，形成正循环",
-          "评分权重：4.5分以上有加权，低于4.0会被惩罚",
-          "关键词相关性：标题和描述里必须包含核心搜索词",
-          "点击率：主图好看→点击多→排名上升",
-          "广告可以间接提升排名（广告带来销量，销量提升自然排名）",
-          "完播率/浏览时长：详情页做得好，买家看得久，有加权",
+          "A9算法核心：销量、评价、转化率、关键词相关性",
+          "新品Vine计划：花钱换真实评价，新品必做（前30天）",
+          "PPC广告：自动广告跑2周找关键词，手动广告精准投放",
+          "避免跟卖：注册品牌，防止别人抢你的Buy Box",
+          "FBA库存：保持60天库存，断货会损失排名",
+          "A+内容：用品牌注册后可以做，转化率提升10-15%",
         ],
       },
       {
-        title: "竞品分析方法",
+        title: "TikTok Shop 运营要点",
         content: [
-          "找到竞品：Ozon搜索你的类目，按「销量排序」，看前5名",
-          "分析竞品：主图风格、定价、评价内容、关键词",
-          "看竞品差评：找到买家最不满意的点，你的商品避免这些问题",
-          "看竞品好评：找到买家最喜欢的点，你的详情页重点强调",
-          "价格跟踪：记录竞品价格变化，大促前后对比",
-          "MPStats/Moneyplace 可以看竞品的历史销量曲线",
+          "内容为王：产品展示视频要真实，展示使用过程和效果",
+          "达人合作：联盟计划给达人10-30%佣金，让达人帮带货",
+          "直播带货：东南亚用户爱看直播，每天1-2小时直播转化率高",
+          "爆款逻辑：一个视频火了要立刻备货，机会窗口只有1-2周",
+          "账号矩阵：主账号+多个达人号，分散风险提升覆盖",
+          "选品标准：上镜感强、演示效果好、有话题性",
         ],
       },
       {
-        title: "账号健康度管理",
+        title: "Shopee 运营要点",
         content: [
-          "Ozon会评分你的账号：发货准时率、退货率、差评率",
-          "发货准时率必须>95%（RFBS模式5天内必须发货）",
-          "差评率必须<5%，超过会被限制推广",
-          "账号评分高的卖家，同等条件下搜索排名更高",
-          "不要尝试刷单、刷评（Ozon AI检测很强），封号损失惨重",
+          "新手礼包：开店初期有平台流量补贴，新品免费推广",
+          "参与大促：9.9/10.10/11.11/12.12是Shopee最大促销节",
+          "免运费活动：设置满额免运，提升客单价",
+          "直播带货：Shopee Live功能，东南亚用户活跃度高",
+          "粉丝营销：积累店铺粉丝，发优惠券给粉丝，复购率高",
+          "关键词排名：商品标题包含热门搜索词，每天刷新商品",
         ],
       },
     ],
     links: [
-      { text: "Ozon 卖家数据后台", url: "https://seller.ozon.ru/app/analytics" },
-      { text: "MPStats 俄语数据工具", url: "https://mpstats.ru" },
-      { text: "Moneyplace 分析工具", url: "https://moneyplace.io" },
+      { text: "Ozon 广告后台", url: "https://seller.ozon.ru" },
+      { text: "亚马逊广告平台", url: "https://advertising.amazon.com" },
+      { text: "TikTok Shop 联盟", url: "https://affiliate.tiktok.com" },
+    ],
+  },
+  {
+    id: "logistics",
+    icon: <Truck size={20} />,
+    title: "物流方案（各平台）",
+    color: "cyan",
+    sections: [
+      {
+        title: "跨境直发小包（通用）",
+        content: [
+          "云途物流（YunExpress）：俄罗斯/东南亚专线，追踪稳定 ⭐推荐",
+          "燕文物流：老牌，覆盖俄罗斯/东南亚，价格适中",
+          "广东联邑：俄罗斯专线，时效快",
+          "递四方4PX：全球覆盖，东南亚有本地配送",
+          "菜鸟国际：和1688/速卖通联动，1688发货最方便",
+          "运费参考：500g以内到俄罗斯约¥15-25，到东南亚约¥10-20",
+          "时效：普通15-35天，特快7-15天（贵3-5倍）",
+        ],
+      },
+      {
+        title: "亚马逊FBA头程",
+        content: [
+          "海运：30-45天，¥5-15/kg，适合大批量，成本最低",
+          "空运：7-15天，¥25-45/kg，适合新品测款和紧急补货",
+          "FBA货件标准：每件必须贴FNSKU条码，外箱贴FBA标签",
+          "推荐头程：递四方、4PX、出口易（有亚马逊仓库直送服务）",
+          "注意：美国站FBA收取存储费，超过180天收长期存储费",
+          "库存周转：保持60天库存，过多库存积压成本",
+        ],
+      },
+      {
+        title: "Shopee官方物流（SLS）",
+        content: [
+          "Shopee Logistics Service：平台官方物流，新手必选",
+          "从中国直发到东南亚各国，无需自己找物流公司",
+          "时效：7-15天，运费系统自动计算，买家承担",
+          "限重：大部分订单限重2kg，超重联系平台",
+          "Shopee国内仓：可以把货发到Shopee中国仓，加速出单",
+          "COD（货到付款）：东南亚用户偏爱，必须开通",
+        ],
+      },
+      {
+        title: "TikTok Shop物流",
+        content: [
+          "美国TikTok Shop：支持FBT（TikTok仓储）和自发货",
+          "东南亚TikTok Shop：使用各国当地物流+J&T/Ninja Van等",
+          "自发货：下单后3天内发货，追踪号上传平台",
+          "建议：初期用自发货测品，爆款后考虑备货到当地仓",
+          "退货：美国退货率高（10-30%），东南亚低，选品要考虑退货成本",
+        ],
+      },
+    ],
+    links: [
+      { text: "云途物流", url: "https://www.yunexpress.cn" },
+      { text: "递四方4PX", url: "https://www.4px.com" },
+      { text: "燕文物流", url: "https://www.yanwen.com" },
+      { text: "17Track 物流追踪", url: "https://www.17track.net" },
+    ],
+  },
+  {
+    id: "tools",
+    icon: <Wrench size={20} />,
+    title: "必备工具软件大全",
+    color: "rose",
+    sections: [
+      {
+        title: "🛒 选品数据工具",
+        content: [
+          "本工具（Crossly）：1688→多平台一键导入，利润计算，批量翻译 ⭐免费",
+          "选品大师：Ozon专属数据分析，月销量/趋势/竞品，约¥199/月",
+          "Jungle Scout：亚马逊选品神器，月销量估算超准，约$49/月",
+          "Helium 10：亚马逊运营全套工具，关键词/竞品/广告，约$99/月",
+          "Seller Assistant App：Ozon数据分析，有免费版",
+          "Kalodata：TikTok Shop数据分析，爆品追踪，约¥299/月",
+          "魔方格：国内跨境数据工具，支持多平台，有免费版",
+        ],
+      },
+      {
+        title: "🌐 翻译工具",
+        content: [
+          "DeepL：俄语/欧洲语言翻译最准，强烈推荐 deepl.com ⭐",
+          "ChatGPT/Claude：优化俄语/英语标题和描述，效果最好",
+          "本工具翻译：批量翻译商品标题，支持8种语言 ⭐",
+          "Google翻译：备用，免费，东南亚语言准确率还不错",
+          "Yandex翻译：俄语最准（俄罗斯本土），translate.yandex.com",
+          "百度翻译APP：手机端扫图翻译，很方便",
+        ],
+      },
+      {
+        title: "🎨 图片处理",
+        content: [
+          "Canva：设计详情图/场景图，模板丰富，免费版够用 canva.com ⭐",
+          "Remove.bg：一键抠图做白底图，免费 remove.bg ⭐",
+          "Watermarkremover.io：去除1688商品图水印，免费",
+          "Photoshop：专业修图，¥88/月",
+          "美图秀秀：手机端修图，批量处理方便",
+          "Squoosh：图片压缩，保质量缩体积，在线免费 squoosh.app",
+          "CapCut（剪映）：TikTok短视频剪辑，免费且功能强大",
+        ],
+      },
+      {
+        title: "📦 ERP多平台管理",
+        content: [
+          "店小秘（ECCANG）：支持Ozon/亚马逊/Shopee，多平台订单管理，¥99起/月",
+          "马帮ERP：老牌跨境ERP，功能全，适合有规模的卖家",
+          "万里牛：国内主流ERP，支持主流跨境平台",
+          "Linnworks：亚马逊/eBay/Shopify多平台管理，$449/月（大卖家）",
+          "新手阶段：各平台自带后台够用，月销100单以内不需要ERP",
+        ],
+      },
+      {
+        title: "💰 收款与汇率工具",
+        content: [
+          "PingPong：支持Ozon/亚马逊/TikTok，手续费1%，到账快 pingpongx.com ⭐",
+          "连连支付：Ozon官方推荐，支持多平台，lianlianpay.com ⭐",
+          "Payoneer：亚马逊必备，国际收款老牌，payoneer.com",
+          "WorldFirst万里汇：汇率好，适合大额收款，worldfirst.com",
+          "实时汇率参考：xe.com（美元/卢布/泰铢等）",
+          "建议：收款后及时换汇，别囤外币（尤其卢布波动大）",
+        ],
+      },
+      {
+        title: "📊 广告与数据分析",
+        content: [
+          "Google Analytics：网站/落地页流量分析，免费",
+          "Facebook Ads Manager：面向海外买家投广告，适合独立站",
+          "亚马逊广告后台：PPC广告，自带数据分析",
+          "TikTok Ads Manager：TikTok广告投放，东南亚/美国",
+          "Ozon Performance：Ozon广告后台，搜索/展示广告",
+          "SimilarWeb：竞品网站流量分析，免费版够用",
+        ],
+      },
+      {
+        title: "💬 学习与社群",
+        content: [
+          "Ozon中文卖家Telegram群：搜「Ozon卖家中文群」，资源最多",
+          "知无不言：跨境电商论坛，各平台都有版块 zhiwubuyan.com",
+          "雨果网：跨境媒体，有Ozon/亚马逊/TikTok专题 cifnews.com",
+          "跨境知道：B站有大量免费教程视频",
+          "Seller's Place（Facebook群）：英语亚马逊卖家社区",
+          "跨境电商圈（微信公众号）：每日行业资讯",
+        ],
+      },
+    ],
+    links: [
+      { text: "DeepL", url: "https://www.deepl.com" },
+      { text: "Canva", url: "https://www.canva.com" },
+      { text: "Remove.bg", url: "https://www.remove.bg" },
+      { text: "PingPong收款", url: "https://www.pingpongx.com" },
+      { text: "17Track物流追踪", url: "https://www.17track.net" },
+      { text: "知无不言论坛", url: "https://www.zhiwubuyan.com" },
+      { text: "Jungle Scout", url: "https://www.junglescout.com" },
+      { text: "Kalodata TikTok数据", url: "https://www.kalodata.com" },
+    ],
+  },
+  {
+    id: "advanced",
+    icon: <BarChart2 size={20} />,
+    title: "进阶：独立站与品牌出海",
+    color: "indigo",
+    sections: [
+      {
+        title: "什么时候考虑独立站",
+        content: [
+          "月销超过50万，平台抽成太多，值得建自己的品牌站",
+          "有稳定货源和复购品类，希望沉淀自己的用户资产",
+          "有内容运营能力（社交媒体/YouTube/TikTok有粉丝）",
+          "不推荐新手直接做独立站（流量贵，转化难，退款多）",
+          "正确姿势：平台验证爆款 → 有稳定货源 → 再开独立站",
+        ],
+      },
+      {
+        title: "独立站建站工具",
+        content: [
+          "Shopify：全球最主流独立站平台，$29/月起，新手首选",
+          "WooCommerce：WordPress插件，免费，需要自己维护",
+          "Shoplazza（店匠）：中国团队做的，对接国内支付方便",
+          "SHOPLINE：支持多语言多货币，适合多市场卖家",
+          "建议主题：免费主题中「Dawn」（Shopify）最干净专业",
+        ],
+      },
+      {
+        title: "品牌注册",
+        content: [
+          "亚马逊品牌备案（Brand Registry）：需要有注册商标",
+          "商标注册：在目标市场（美国USPTO/欧盟EUIPO）注册",
+          "国内商标：可以用于Shopee/Lazada品牌备案",
+          "商标注册费：美国约$250/类，国内约¥300/类",
+          "时间：美国6-12个月，国内8-12个月",
+          "推荐找专业商标代理，避免因格式问题被驳回",
+        ],
+      },
+      {
+        title: "选品数据分析进阶",
+        content: [
+          "Ozon竞品分析：MPStats.ru（俄语）、Moneyplace.io",
+          "亚马逊市场研究：Jungle Scout/Helium 10",
+          "TikTok选品：Kalodata、FastMoss（看爆款视频数据）",
+          "通用：Google Trends（全球趋势）、SimilarWeb（竞品流量）",
+          "海关数据：查竞品的进出口记录，了解货源和销量",
+        ],
+      },
+    ],
+    links: [
+      { text: "Shopify 建站", url: "https://www.shopify.com" },
+      { text: "Google Trends", url: "https://trends.google.com" },
+      { text: "Jungle Scout", url: "https://www.junglescout.com" },
+      { text: "FastMoss TikTok数据", url: "https://www.fastmoss.com" },
     ],
   },
 ];
@@ -503,10 +523,11 @@ const COLOR_MAP: Record<string, { bg: string; border: string; icon: string; badg
   teal:   { bg: "bg-teal-50",   border: "border-teal-200",   icon: "text-teal-600",   badge: "bg-teal-100 text-teal-700" },
   cyan:   { bg: "bg-cyan-50",   border: "border-cyan-200",   icon: "text-cyan-600",   badge: "bg-cyan-100 text-cyan-700" },
   rose:   { bg: "bg-rose-50",   border: "border-rose-200",   icon: "text-rose-600",   badge: "bg-rose-100 text-rose-700" },
+  indigo: { bg: "bg-indigo-50", border: "border-indigo-200", icon: "text-indigo-600", badge: "bg-indigo-100 text-indigo-700" },
 };
 
 export function GuidePage() {
-  const [openGuide, setOpenGuide] = useState<string | null>("open-store");
+  const [openGuide, setOpenGuide] = useState<string | null>("platforms");
   const [openSection, setOpenSection] = useState<string | null>(null);
 
   return (
@@ -514,9 +535,14 @@ export function GuidePage() {
       <div className="mb-6">
         <div className="flex items-center gap-2 mb-1">
           <BookOpen className="text-indigo-600" size={20} />
-          <h2 className="text-lg font-bold text-gray-900">Ozon 跨境电商完全指南</h2>
+          <h2 className="text-lg font-bold text-gray-900">跨境电商完全指南</h2>
         </div>
-        <p className="text-sm text-gray-500">从零开始做 Ozon，系统学习开店、选品、运营、物流、工具全流程</p>
+        <p className="text-sm text-gray-500">覆盖 Ozon / 亚马逊 / TikTok Shop / Shopee / Lazada 全平台，从选品到运营系统学习</p>
+        <div className="flex flex-wrap gap-2 mt-2">
+          {["🛒 Ozon", "📦 亚马逊", "🎵 TikTok Shop", "🌟 Shopee", "🛍️ Lazada", "⚡ 速卖通"].map(p => (
+            <span key={p} className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{p}</span>
+          ))}
+        </div>
       </div>
 
       <div className="space-y-3">
@@ -593,10 +619,10 @@ export function GuidePage() {
       </div>
 
       <div className="mt-8 bg-gradient-to-r from-indigo-50 to-blue-50 border border-indigo-100 rounded-xl p-5">
-        <p className="text-sm font-semibold text-indigo-800 mb-2">🚀 新手推荐路线</p>
+        <p className="text-sm font-semibold text-indigo-800 mb-2">🚀 新手推荐路线（Ozon起步）</p>
         <div className="flex flex-wrap gap-2 text-xs">
-          {["注册Ozon账号", "→ 1688找3-5款测品", "→ 用本工具计算利润", "→ 上架RFBS模式", "→ 开搜索广告", "→ 积累评价", "→ 找到爆款备货"].map((s, i) => (
-            <span key={i} className={`px-2 py-1 rounded-lg ${i === 0 || s.startsWith("→") ? "bg-white border border-indigo-100 text-indigo-700" : ""}`}>{s}</span>
+          {["注册Ozon账号", "→ 1688找3-5款", "→ 用Crossly算利润", "→ RFBS直发上架", "→ 开搜索广告", "→ 积累评价", "→ 爆款备货扩平台"].map((s, i) => (
+            <span key={i} className="px-2 py-1 rounded-lg bg-white border border-indigo-100 text-indigo-700">{s}</span>
           ))}
         </div>
       </div>
