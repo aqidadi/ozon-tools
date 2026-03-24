@@ -84,10 +84,15 @@ export function PickerPage() {
   const [sort, setSort] = useState(SORT_OPTIONS[0]);
   const [search, setSearch] = useState("");
 
+  const [copiedKw, setCopiedKw] = useState("");
+
   const open1688 = (kw: string) => {
-    const sortParam = sort.value === "monthSold" ? "6" : sort.value === "price" ? "2" : "0";
-    const url = `https://search.1688.com/search/product.do?SearchText=${encodeURIComponent(kw)}&sortType=${sortParam}`;
-    window.open(url, "_blank");
+    // 复制关键词到剪贴板
+    navigator.clipboard.writeText(kw).catch(() => {});
+    setCopiedKw(kw);
+    setTimeout(() => setCopiedKw(""), 2000);
+    // 打开1688搜索页（已登录状态下正常工作）
+    window.open(`https://s.1688.com/selloffer/offer_search.html?keyword=${encodeURIComponent(kw)}&sortType=6`, "_blank");
   };
 
   const filteredCategories = CATEGORIES.map((cat) => ({
@@ -150,7 +155,11 @@ export function PickerPage() {
                 <button
                   key={item.kw}
                   onClick={() => open1688(item.kw)}
-                  className="flex items-center justify-between bg-white border border-gray-200 rounded-lg px-3 py-2.5 text-sm hover:border-blue-400 hover:bg-blue-50 transition-all group text-left"
+                  className={`flex items-center justify-between bg-white border rounded-lg px-3 py-2.5 text-sm transition-all group text-left ${
+                    copiedKw === item.kw
+                      ? "border-green-400 bg-green-50"
+                      : "border-gray-200 hover:border-blue-400 hover:bg-blue-50"
+                  }`}
                 >
                   <div className="flex items-center gap-2 min-w-0">
                     {item.hot && (
@@ -158,7 +167,10 @@ export function PickerPage() {
                     )}
                     <span className="text-gray-700 truncate">{item.label}</span>
                   </div>
-                  <ExternalLink size={13} className="text-gray-300 group-hover:text-blue-500 flex-shrink-0 ml-1" />
+                  {copiedKw === item.kw
+                    ? <span className="text-xs text-green-600 flex-shrink-0">已复制!</span>
+                    : <ExternalLink size={13} className="text-gray-300 group-hover:text-blue-500 flex-shrink-0 ml-1" />
+                  }
                 </button>
               ))}
             </div>
