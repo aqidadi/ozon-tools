@@ -59,9 +59,9 @@ export function ProductCard({ product, settings, onUpdate, onDelete }: Props) {
     <div className={`bg-white border rounded-xl overflow-hidden transition-shadow hover:shadow-sm ${expanded ? "border-blue-200" : "border-gray-200"}`}>
       {/* Compact row */}
       <div className="flex items-center gap-3 px-3 py-2.5">
-        {/* Thumbnail */}
+        {/* Thumbnail — 用 referrerPolicy 绕过1688防盗链 */}
         {product.images[0]
-          ? <img src={product.images[0]} alt="" className="w-10 h-10 object-cover rounded-lg flex-shrink-0 bg-gray-100" />
+          ? <img src={product.images[0]} alt="" referrerPolicy="no-referrer" className="w-10 h-10 object-cover rounded-lg flex-shrink-0 bg-gray-100" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
           : <div className="w-10 h-10 bg-gray-100 rounded-lg flex-shrink-0 flex items-center justify-center text-gray-300 text-[10px]">无图</div>
         }
 

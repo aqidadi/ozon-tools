@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ExternalLink, Copy, Check } from "lucide-react";
+import { ExternalLink, Copy, Check, ChevronDown, ChevronRight } from "lucide-react";
 
 const CATEGORIES = [
   {
@@ -249,6 +249,7 @@ const COLOR_MAP: Record<string, { bg: string; badge: string; btn: string; search
 export function PickerPage() {
   const [copiedKw, setCopiedKw] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [openCat, setOpenCat] = useState<string | null>("动漫周边");
 
   const copyKw = async (kw: string) => {
     await navigator.clipboard.writeText(kw);
@@ -268,50 +269,54 @@ export function PickerPage() {
     : CATEGORIES;
 
   return (
-    <div className="max-w-5xl mx-auto">
-      <div className="mb-5">
+    <div className="max-w-3xl mx-auto">
+      <div className="mb-4">
         <h2 className="text-lg font-bold text-gray-900 mb-1">选品参考</h2>
-        <p className="text-sm text-gray-500 mb-3">点「复制」粘贴到1688搜索框，或直接点「搜索」打开1688</p>
+        <p className="text-sm text-gray-500 mb-3">15个品类，100+关键词，点「复制」或「搜」直达1688</p>
         <input
           type="text"
           value={search}
-          onChange={e => setSearch(e.target.value)}
+          onChange={e => { setSearch(e.target.value); if(e.target.value) setOpenCat(null); }}
           placeholder="搜索品类或关键词..."
-          className="w-full max-w-sm border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+          className="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="space-y-2">
         {filtered.map((cat) => {
           const colors = COLOR_MAP[cat.color] || COLOR_MAP.blue;
+          const isOpen = openCat === cat.name || !!search.trim();
           return (
-            <div key={cat.name} className={`border rounded-xl overflow-hidden ${colors.bg}`}>
-              <div className="px-4 py-2.5 flex items-center gap-2">
-                <span className="text-lg">{cat.icon}</span>
-                <span className="font-semibold text-gray-900">{cat.name}</span>
-                <span className={`text-xs px-2 py-0.5 rounded-full ml-auto ${colors.badge}`}>{cat.keywords.length} 个词</span>
-              </div>
-              <div className="bg-white border-t border-gray-100 px-3 py-2 flex flex-wrap gap-1.5">
-                {cat.keywords.map(({ label, kw, hot }) => (
-                  <div key={kw} className="flex items-center gap-0.5">
-                    <button
-                      onClick={() => copyKw(kw)}
-                      className={`flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg border border-gray-200 bg-white transition-colors ${colors.btn}`}
-                    >
-                      {hot && <span className="text-red-400 text-[10px]">🔥</span>}
-                      {copiedKw === kw ? <Check size={10} className="text-green-500" /> : <Copy size={10} className="text-gray-300" />}
-                      {label}
-                    </button>
-                    <button
-                      onClick={() => searchOn1688(kw)}
-                      title="在1688搜索"
-                      className={`text-xs px-2 py-1.5 rounded-lg text-white transition-colors ${colors.search}`}
-                    >
-                      搜
-                    </button>
-                  </div>
-                ))}
-              </div>
+            <div key={cat.name} className={`border rounded-xl overflow-hidden ${isOpen ? colors.bg : "border-gray-200 bg-white"}`}>
+              {/* Header */}
+              <button
+                onClick={() => setOpenCat(isOpen && !search ? null : cat.name)}
+                className="w-full flex items-center gap-2 px-4 py-2.5 text-left"
+              >
+                <span className="text-base">{cat.icon}</span>
+                <span className="font-semibold text-gray-900 text-sm">{cat.name}</span>
+                <span className={`text-xs px-2 py-0.5 rounded-full ml-1 ${colors.badge}`}>{cat.keywords.length}个词</span>
+                <span className="ml-auto text-gray-400">{isOpen && !search ? <ChevronDown size={15} /> : <ChevronRight size={15} />}</span>
+              </button>
+              {/* Keywords */}
+              {isOpen && (
+                <div className="bg-white border-t border-gray-100 px-3 py-2.5 flex flex-wrap gap-1.5">
+                  {cat.keywords.map(({ label, kw, hot }) => (
+                    <div key={kw} className="flex items-center gap-0.5">
+                      <button onClick={() => copyKw(kw)}
+                        className={`flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-l-lg border border-gray-200 bg-white transition-colors ${colors.btn}`}>
+                        {hot && <span className="text-[10px]">🔥</span>}
+                        {copiedKw === kw ? <Check size={10} className="text-green-500" /> : <Copy size={10} className="text-gray-300" />}
+                        {label}
+                      </button>
+                      <button onClick={() => searchOn1688(kw)} title="在1688搜索"
+                        className={`text-xs px-2 py-1.5 rounded-r-lg text-white transition-colors ${colors.search}`}>
+                        搜
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           );
         })}
@@ -320,7 +325,7 @@ export function PickerPage() {
       {copiedKw && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-sm px-4 py-2 rounded-xl shadow-lg flex items-center gap-2 z-50">
           <Check size={14} className="text-green-400" />
-          已复制「{copiedKw}」，去1688粘贴搜索
+          已复制「{copiedKw}」
           <a href="https://www.1688.com" target="_blank" rel="noopener noreferrer"
             className="ml-2 text-blue-300 underline text-xs flex items-center gap-1">
             打开1688 <ExternalLink size={11} />
