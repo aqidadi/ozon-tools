@@ -136,7 +136,14 @@ async function init() {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   const url = tab?.url || "";
 
-  if (!url.includes("1688.com")) {
+  const is1688Product = url.includes("1688.com") && (
+    url.includes("/offer/") ||
+    url.includes("detail.1688.com") ||
+    url.includes("offer_id=") ||
+    url.includes("offerId=")
+  );
+
+  if (!is1688Product) {
     renderNotProduct();
     return;
   }
@@ -163,68 +170,89 @@ async function init() {
 // 这个函数会在页面中执行，提取商品数据
 function extractProductData() {
   try {
-    // 获取标题
-    const titleEl =
-      document.querySelector(".product-title-text") ||
-      document.querySelector("[class*='title']h1") ||
-      document.querySelector("h1.title") ||
-      document.querySelector(".detail-title") ||
-      document.querySelector("h1");
-    const title = titleEl?.textContent?.trim() || document.title?.split("-")[0]?.trim() || "";
-
-    // 获取价格（取最低价）
-    let price = null;
-    const priceEls = document.querySelectorAll(
-      "[class*='price'] .value, [class*='Price'] .value, .price-num, .price-text"
-    );
-    for (const el of priceEls) {
-      const text = el.textContent.trim().replace(/[^\d.]/g, "");
-      if (text && parseFloat(text) > 0) {
-        price = text;
+    // 获取标题 - 1688多种页面结构
+    const titleSelectors = [
+      ".product-title-text",
+      ".title-text",
+      ".mod-detail-title h1",
+      ".offer-title",
+      "h1.title",
+      "h1",
+    ];
+    let title = "";
+    for (const sel of titleSelectors) {
+      const el = document.querySelector(sel);
+      if (el && el.textContent.trim().length > 5) {
+        title = el.textContent.trim();
         break;
       }
     }
+    // fallback: document.title
+    if (!title) title = document.title.split("-")[0].trim();
 
-    // 尝试从JSON数据中提取（1688页面通常有window.__DATA__或类似）
-    if (!price) {
-      const scripts = document.querySelectorAll("script");
-      for (const script of scripts) {
-        const text = script.textContent;
-        const match = text.match(/"price"[:\s]+"?([\d.]+)"?/) ||
-                      text.match(/"priceRange"[:\s]+"([\d.]+)/);
-        if (match) {
-          price = match[1];
+    // 获取价格 - 1688价格选择器
+    let price = null;
+    const priceSelectors = [
+      ".price-module__price",
+      ".price-common-wrap .value",
+      ".price-num",
+      ".price .value",
+      "[class*='priceText']",
+      ".price-original",
+    ];
+    for (const sel of priceSelectors) {
+      const el = document.querySelector(sel);
+      if (el) {
+        const text = el.textContent.trim().replace(/[^\d.]/g, "");
+        if (text && parseFloat(text) > 0) {
+          price = text;
           break;
         }
       }
     }
 
+    // 从页面文本找价格（兜底）
+    if (!price) {
+      const allText = document.body.innerText;
+      const m = allText.match(/新人价[^\d]*([\d.]+)/) ||
+                allText.match(/¥\s*([\d.]+)/) ||
+                allText.match(/价格[^\d]*([\d.]+)/);
+      if (m) price = m[1];
+    }
+
     // 获取图片
     const images = [];
-    const imgEls = document.querySelectorAll(
-      ".image-gallery img, .product-image img, [class*='gallery'] img, [class*='thumb'] img"
-    );
-    for (const img of imgEls) {
-      const src = img.src || img.dataset.src;
-      if (src && !src.includes("placeholder") && !images.includes(src)) {
-        // 转换为高清图
-        const hd = src.replace(/_\d+x\d+.*?\.(jpg|png|webp)/i, "_400x400.$1")
-                      .replace(/\.jpg_.*$/, ".jpg")
-                      .replace(/\.png_.*$/, ".png");
-        images.push(hd);
-        if (images.length >= 5) break;
+    const imgSelectors = [
+      ".detail-gallery-img img",
+      ".gallery-items img",
+      ".mod-detail-gallery img",
+      "[class*='gallery'] img",
+      "[class*='thumb'] img",
+    ];
+    for (const sel of imgSelectors) {
+      const els = document.querySelectorAll(sel);
+      for (const img of els) {
+        const src = img.src || img.dataset.src || img.dataset.lazySrc;
+        if (src && src.startsWith("http") && !src.includes("placeholder")) {
+          const hd = src.replace(/_\d+x\d+[^.]*\.(jpg|jpeg|png|webp)/i, "_400x400.$1")
+                        .replace(/\.jpg_\d+.*$/, ".jpg")
+                        .replace(/\.png_\d+.*$/, ".png");
+          if (!images.includes(hd)) images.push(hd);
+          if (images.length >= 5) break;
+        }
       }
+      if (images.length > 0) break;
     }
 
     // SKU数量
-    const skuItems = document.querySelectorAll("[class*='sku-item'], [class*='SKUItem']");
+    const skuItems = document.querySelectorAll("[class*='sku-item'], [class*='SKUItem'], .sku-content li");
 
     return {
       id: crypto.randomUUID(),
       title,
       titleRu: "",
       price: price ? parseFloat(price) : 0,
-      weight: 0, // 用户填写
+      weight: 0,
       images,
       sellPriceRub: 0,
       note: "",
