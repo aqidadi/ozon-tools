@@ -6,11 +6,24 @@ import { createServiceClient } from "@/lib/supabase";
 // 爱发电会在用户购买后 POST 到这个地址
 
 const PLANS: Record<string, { months: number; name: string }> = {
-  // 对应爱发电的套餐 plan_id（在爱发电后台设置）
-  "plan_monthly": { months: 1, name: "Pro 月度" },
-  "plan_yearly":  { months: 12, name: "Pro 年度" },
-  "plan_lifetime": { months: 0, name: "Pro 终身" }, // 0 = 永久
+  // ⬇ 爱发电后台每个方案的 plan_id，建好后填入这里
+  // 格式：爱发电方案ID -> { months: 有效月数, name: 名称 }
+  // months=0 表示终身；0.033≈1天；0.25≈7天
+  "trial_24h":    { months: -1,  name: "24小时体验" },  // 特殊：按小时算
+  "week_card":    { months: -7,  name: "周卡7天" },      // 特殊：按天算
+  "pro_monthly":  { months: 1,   name: "月度Pro" },
+  "pro_yearly":   { months: 12,  name: "年度Pro" },
+  "pro_lifetime": { months: 0,   name: "终身Pro" },
 };
+
+// 按金额兜底匹配（plan_id 不匹配时用金额判断）
+function getPlanByAmount(amount: number): { months: number; name: string } {
+  if (amount <= 6)    return { months: -1,  name: "24小时体验" };
+  if (amount <= 20)   return { months: -7,  name: "周卡7天" };
+  if (amount <= 45)   return { months: 1,   name: "月度Pro" };
+  if (amount <= 310)  return { months: 12,  name: "年度Pro" };
+  return { months: 0, name: "终身Pro" }; // 999+
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -58,12 +71,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ec: 200, em: "ok" });
     }
 
-    // 计算有效期
-    const planConfig = PLANS[plan_id] || { months: month || 1, name: "Pro" };
+    // 计算有效期（支持小时/天/月/永久）
+    const amount = parseFloat(total_amount) || 0;
+    const planConfig = PLANS[plan_id] ?? getPlanByAmount(amount);
     let expiresAt: string | null = null;
 
     if (planConfig.months === 0) {
       expiresAt = null; // 终身
+    } else if (planConfig.months === -1) {
+      // 24小时体验
+      const exp = new Date();
+      exp.setHours(exp.getHours() + 24);
+      expiresAt = exp.toISOString();
+    } else if (planConfig.months < 0) {
+      // 负数表示天数（如 -7 = 7天）
+      const exp = new Date();
+      exp.setDate(exp.getDate() + Math.abs(planConfig.months));
+      expiresAt = exp.toISOString();
     } else {
       const exp = new Date();
       exp.setMonth(exp.getMonth() + planConfig.months);

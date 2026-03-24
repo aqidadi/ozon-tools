@@ -134,7 +134,7 @@ function UpgradeModal({ onClose, user }: { onClose: () => void; user: { email: s
   const AFDIAN_URL = process.env.NEXT_PUBLIC_AFDIAN_URL || "https://afdian.com/a/your-account";
 
   const plans = [
-    { name: "24小时体验", price: "¥3.99", period: "24小时", tag: "新手试用", saving: "体验全部Pro功能" },
+    { name: "24小时体验", price: "¥5.99", period: "24小时", tag: "新手试用", saving: "体验全部Pro功能" },
     { name: "周卡", price: "¥19.9", period: "7天", tag: "", saving: "适合短期选品" },
     { name: "月度 Pro", price: "¥39", period: "/月", tag: "", saving: "到期后自动降为免费版" },
     { name: "年度 Pro", price: "¥299.99", period: "/年", tag: "省¥168", saving: "相当于每月¥25" },
