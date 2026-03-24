@@ -4,9 +4,10 @@ import { useState, useCallback, useEffect } from "react";
 import { ProductCard } from "@/components/ProductCard";
 import { SettingsPanel } from "@/components/SettingsPanel";
 import { AddProductModal } from "@/components/AddProductModal";
+import { PickerPage } from "@/components/PickerPage";
 import { exportToExcel } from "@/lib/export";
 import { Product, Settings } from "@/lib/types";
-import { ShoppingBag, Settings2, Download, Plus } from "lucide-react";
+import { ShoppingBag, Settings2, Download, Plus, TrendingUp } from "lucide-react";
 
 const DEFAULT_SETTINGS: Settings = {
   exchangeRate: 10,
@@ -21,6 +22,7 @@ export default function Home() {
   const [showSettings, setShowSettings] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState<"products" | "picker">("products");
 
   // 从数据库加载商品
   const loadProducts = useCallback(async () => {
@@ -92,6 +94,15 @@ export default function Home() {
           </div>
           <div className="flex items-center gap-2">
             <button
+              onClick={() => setTab(tab === "picker" ? "products" : "picker")}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                tab === "picker" ? "bg-orange-100 text-orange-700" : "text-gray-600 hover:bg-gray-100"
+              }`}
+            >
+              <TrendingUp size={16} />
+              选品参考
+            </button>
+            <button
               onClick={() => setShowSettings(!showSettings)}
               className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                 showSettings
@@ -121,7 +132,10 @@ export default function Home() {
       </header>
 
       <main className="max-w-6xl mx-auto px-4 py-6">
-        {/* Settings Panel */}
+        {tab === "picker" ? (
+          <PickerPage />
+        ) : (
+          <>
         {showSettings && (
           <div className="mb-6">
             <SettingsPanel settings={settings} onChange={setSettings} />
@@ -181,6 +195,8 @@ export default function Home() {
               />
             ))}
           </div>
+        )}
+        </>
         )}
       </main>
 
