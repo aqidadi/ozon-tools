@@ -483,49 +483,50 @@ function extractOzonProducts() {
     const items = [];
     const seen = new Set();
 
-    // Ozon商品卡片 — 多种选择器覆盖列表页/首页/搜索页
-    const selectors = [
-      "a[href*='/product/']",
-    ];
+    // 找所有指向商品详情页的链接
+    const links = document.querySelectorAll("a[href*='/product/']");
 
-    for (const sel of selectors) {
-      const links = document.querySelectorAll(sel);
-      for (const link of links) {
-        if (items.length >= 20) break;
+    for (const link of links) {
+      if (items.length >= 20) break;
 
-        const href = link.href;
-        if (!href || seen.has(href)) continue;
-        seen.add(href);
+      const href = link.href;
+      // 只要 /product/ 结尾带ID的链接，过滤掉评论/问答等子页面
+      if (!href || seen.has(href)) continue;
+      if (!href.match(/\/product\/[^/]+-\d+\/?$/)) continue;
+      seen.add(href);
 
-        // 找商品名
-        const nameEl = link.querySelector("span, div, p");
-        let name = "";
-        // 递归找最长的文字节点
-        const walker = document.createTreeWalker(link, NodeFilter.SHOW_TEXT);
-        let node;
-        let longest = "";
-        while ((node = walker.nextNode())) {
-          const t = node.textContent.trim();
-          if (t.length > longest.length && t.length > 5 && !t.match(/^\d+([.,]\d+)?₽?$/) && !t.match(/^[\d\s]+$/)) {
-            longest = t;
-          }
-        }
-        name = longest;
-
-        // 找图片
-        const img = link.querySelector("img");
-        const image = img?.src || img?.dataset?.src || "";
-
-        // 找价格
-        let price = "";
-        const priceMatch = link.innerText?.match(/(\d[\d\s]{1,6})\s*₽/);
-        if (priceMatch) price = priceMatch[1].replace(/\s/g, "");
-
-        if (name && name.length > 5 && !name.match(/^\d+$/)) {
-          items.push({ name, price, image, url: href });
+      // 商品标题：找 link 内部最长的、不含数字/符号的文本
+      let name = "";
+      const walker = document.createTreeWalker(link, NodeFilter.SHOW_TEXT);
+      let node;
+      while ((node = walker.nextNode())) {
+        const t = node.textContent.trim();
+        // 过滤：纯数字、评分、评论数、价格、促销标签
+        if (
+          t.length > name.length &&
+          t.length > 10 &&
+          !t.match(/^\d[\d\s.,]*₽?$/) &&         // 纯数字/价格
+          !t.match(/^[\d.,]+\s*·/) &&              // "4.9 · xxx"
+          !t.match(/отзыв|вопрос|оценен|распрод|скидк|%/i) && // 评论/折扣标签
+          !t.match(/^[→←↑↓]+$/)                  // 箭头
+        ) {
+          name = t;
         }
       }
-      if (items.length > 0) break;
+
+      // 图片
+      const img = link.querySelector("img");
+      const image = img?.src || "";
+
+      // 价格（从父元素找）
+      let price = "";
+      const parent = link.closest("[class]") || link.parentElement;
+      const priceMatch = parent?.innerText?.match(/(\d[\d\s]{1,5})\s*₽/);
+      if (priceMatch) price = priceMatch[1].replace(/\s/g, "");
+
+      if (name && name.length > 10) {
+        items.push({ name, price, image, url: href });
+      }
     }
 
     return items;
