@@ -128,6 +128,17 @@ function renderLogin(settings) {
 // 这个函数在用户浏览器中运行，有Cookie，不受IP限制！
 // ─────────────────────────────────────────────────────────────
 function extractProductData() {
+  // 先尝试点击「商品详情」tab，触发懒加载图片渲染
+  try {
+    const tabEls = document.querySelectorAll("[class*='tab'] a, [class*='tab'] li, [role='tab'], .tab-item");
+    for (const el of tabEls) {
+      if (el.textContent && el.textContent.includes("商品详情")) {
+        el.click();
+        break;
+      }
+    }
+  } catch(e) {}
+
   try {
     // ── 标题 ──
     const titleSelectors = [
@@ -867,6 +878,14 @@ async function setTab(tab, settings, tabId, condition) {
   } else {
     if (!condition) { renderManualInput(settings, ""); return; }
     try {
+      // 先点击「商品详情」tab触发懒加载，等1秒后再抓
+      await chrome.scripting.executeScript({ target: { tabId }, func: () => {
+        const tabs = document.querySelectorAll("[class*='tab'] a, [class*='tab'] li, [role='tab'], .tab-item");
+        for (const el of tabs) {
+          if (el.textContent && el.textContent.includes("商品详情")) { el.click(); break; }
+        }
+      }});
+      await new Promise(r => setTimeout(r, 1200));
       const results = await chrome.scripting.executeScript({ target: { tabId }, func: extractProductData });
       const product = results?.[0]?.result;
       if (product && product.title) {
