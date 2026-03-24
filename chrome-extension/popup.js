@@ -483,67 +483,31 @@ function extractOzonProducts() {
     const items = [];
     const seen = new Set();
 
-    // Ozon商品卡片：找带图片且有商品链接的容器
-    // 策略：找所有 /product/ 链接，取其最近的有 class 的父容器，再从容器里找标题
-    const productLinks = Array.from(document.querySelectorAll("a[href*='/product/']"));
-    
-    // 按href去重，取图片链接（包含img的那个）
-    const cardMap = new Map();
-    for (const link of productLinks) {
-      const href = link.href.split("?")[0];
-      if (!href.match(/\/product\/[^/]+-\d+/)) continue;
-      if (!cardMap.has(href)) {
-        cardMap.set(href, { href, links: [] });
-      }
-      cardMap.get(href).links.push(link);
-    }
+    // Ozon商品链接有 tile-clickable-element class
+    const links = document.querySelectorAll("a.tile-clickable-element, a[class*='tile-clickable']");
 
-    for (const [href, { links }] of cardMap) {
+    for (const link of links) {
       if (items.length >= 20) break;
-      if (seen.has(href)) continue;
+      const href = link.href.split("?")[0];
+      if (!href || seen.has(href) || !href.includes("/product/")) continue;
       seen.add(href);
 
-      // 找最大的父容器（商品卡片）
-      let card = null;
-      for (const link of links) {
-        const parent = link.closest("div[class*='tile'], div[class*='card'], div[class*='item'], div[class*='product']")
-          || link.parentElement?.parentElement?.parentElement;
-        if (parent && parent.querySelectorAll("a[href*='/product/']").length <= 5) {
-          card = parent;
-          break;
-        }
-      }
-      if (!card) card = links[0]?.parentElement?.parentElement;
-      if (!card) continue;
+      // 从URL提取商品名（转换slug为可读文字）
+      const slug = href.match(/\/product\/([^/]+)-(\d+)\/?$/);
+      const nameFromUrl = slug ? slug[1].replace(/-/g, " ") : "";
 
-      // 从卡片里找标题：排除价格、评分、促销标签
-      const allSpans = Array.from(card.querySelectorAll("span, a[href*='/product/']"));
-      let title = "";
-      for (const el of allSpans) {
-        const text = el.childNodes.length === 1 && el.firstChild.nodeType === 3
-          ? el.firstChild.textContent.trim()
-          : "";
-        if (
-          text.length > title.length &&
-          text.length > 15 &&
-          text.length < 300 &&
-          !text.match(/^\d/) &&           // 不以数字开头
-          !text.match(/₽/) &&             // 不含价格
-          !text.match(/отзыв|вопрос|распрод|вау.цен|скидк/i) && // 不是促销词
-          text.match(/[а-яёА-ЯЁa-zA-Z]/) // 包含字母
-        ) {
-          title = text;
-        }
-      }
-
-      if (!title) continue;
-
-      const img = card.querySelector("img");
+      // 找图片
+      const img = link.querySelector("img");
       const image = img?.src || "";
-      const priceMatch = card.innerText?.match(/(\d[\d\s]{1,5})\s*₽/);
+
+      // 找价格（从父容器）
+      const card = link.parentElement?.parentElement;
+      const priceMatch = card?.innerText?.match(/(\d[\d\s]{1,5})\s*₽/);
       const price = priceMatch ? priceMatch[1].replace(/\s/g, "") : "";
 
-      items.push({ name: title, price, image, url: href });
+      if (nameFromUrl.length > 5) {
+        items.push({ name: nameFromUrl, price, image, url: href });
+      }
     }
 
     return items;
