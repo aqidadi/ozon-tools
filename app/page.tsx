@@ -247,20 +247,16 @@ export default function Home() {
             <>
               {/* URL导入框 */}
               <UrlImportBox onImport={handleAddProduct} />
-              {/* Stats */}
+              {/* Stats — compact bar */}
               {products.length > 0 && (
-                <div className="grid grid-cols-4 gap-4 mb-6">
-                  {[
-                    { label: "商品数量", value: products.length, unit: "个" },
-                    { label: "汇率", value: settings.exchangeRate, unit: "卢/元" },
-                    { label: "运费", value: `${settings.shippingRatePerGram}`, unit: "元/克" },
-                    { label: "平台佣金", value: `${(settings.platformFeeRate * 100).toFixed(0)}`, unit: "%" },
-                  ].map((s) => (
-                    <div key={s.label} className="bg-white rounded-xl border border-gray-200 p-4">
-                      <p className="text-xs text-gray-400 mb-1">{s.label}</p>
-                      <p className="text-2xl font-bold text-gray-900">{s.value}<span className="text-sm font-normal text-gray-400 ml-1">{s.unit}</span></p>
-                    </div>
-                  ))}
+                <div className="flex items-center gap-4 bg-white border border-gray-200 rounded-xl px-4 py-2.5 mb-4 text-sm">
+                  <span className="text-gray-500">共 <strong className="text-gray-900">{products.length}</strong> 个商品</span>
+                  <span className="text-gray-200">|</span>
+                  <span className="text-gray-500">汇率 <strong className="text-gray-800">{settings.exchangeRate}</strong> 卢/元</span>
+                  <span className="text-gray-200">|</span>
+                  <span className="text-gray-500">运费 <strong className="text-gray-800">{settings.shippingRatePerGram}</strong> 元/克</span>
+                  <span className="text-gray-200">|</span>
+                  <span className="text-gray-500">佣金 <strong className="text-gray-800">{(settings.platformFeeRate * 100).toFixed(0)}%</strong></span>
                 </div>
               )}
 
