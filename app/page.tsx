@@ -9,14 +9,15 @@ import { GuidePage } from "@/components/GuidePage";
 import { HotPage } from "@/components/HotPage";
 import { UrlImportBox } from "@/components/UrlImportBox";
 import { exportToExcel } from "@/lib/export";
-import { Product, Settings, LANGUAGES } from "@/lib/types";
+import { Product, Settings, LANGUAGES, PLATFORMS, getPlatform } from "@/lib/types";
 import {
   ShoppingBag, Settings2, Download, Plus, TrendingUp,
   BookOpen, Languages, Bell, BarChart2, Package, Globe, Zap, Shield, Flame
 } from "lucide-react";
 
 const DEFAULT_SETTINGS: Settings = {
-  exchangeRate: 10,
+  platformCode: "RUB",
+  exchangeRate: 12.5,
   shippingRatePerGram: 0.025,
   platformFeeRate: 0.15,
   packagingCost: 2,
@@ -255,7 +256,9 @@ export default function Home() {
                 <div className="flex items-center gap-4 bg-white border border-gray-200 rounded-xl px-4 py-2.5 mb-4 text-sm">
                   <span className="text-gray-500">共 <strong className="text-gray-900">{products.length}</strong> 个商品</span>
                   <span className="text-gray-200">|</span>
-                  <span className="text-gray-500">汇率 <strong className="text-gray-800">{settings.exchangeRate}</strong> 卢/元</span>
+                  <span className="text-gray-500">{getPlatform(settings.platformCode).flag} {getPlatform(settings.platformCode).platform}</span>
+                  <span className="text-gray-200">|</span>
+                  <span className="text-gray-500">汇率 <strong className="text-gray-800">{settings.exchangeRate}</strong> {getPlatform(settings.platformCode).symbol}/元</span>
                   <span className="text-gray-200">|</span>
                   <span className="text-gray-500">运费 <strong className="text-gray-800">{settings.shippingRatePerGram}</strong> 元/克</span>
                   <span className="text-gray-200">|</span>

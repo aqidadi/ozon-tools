@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Settings } from "@/lib/types";
+import { Settings, PLATFORMS, getPlatform } from "@/lib/types";
 import { Save, RotateCcw, RefreshCw } from "lucide-react";
 
 interface Props {
@@ -10,7 +10,8 @@ interface Props {
 }
 
 const DEFAULT: Settings = {
-  exchangeRate: 10,
+  platformCode: "RUB",
+  exchangeRate: 12.5,
   shippingRatePerGram: 0.025,
   platformFeeRate: 0.15,
   packagingCost: 2,
@@ -21,9 +22,37 @@ export function SettingsPanel({ settings, onChange }: Props) {
   const [saved, setSaved] = useState(false);
   const [fetchingRate, setFetchingRate] = useState(false);
 
-  const update = (key: keyof Settings, value: number) => {
+  const platform = getPlatform(local.platformCode);
+
+  const update = (key: keyof Settings, value: number | string) => {
     setLocal((prev) => ({ ...prev, [key]: value }));
   };
+
+  const handlePlatformChange = async (code: string) => {
+    const p = getPlatform(code);
+    setLocal(prev => ({
+      ...prev,
+      platformCode: code,
+      platformFeeRate: p.defaultFeeRate,
+    }));
+    // 切换平台后自动拉取汇率
+    await fetchRatesFor(code);
+  };
+
+  const fetchRatesFor = async (code: string) => {
+    setFetchingRate(true);
+    try {
+      const res = await fetch("/api/rates");
+      const data = await res.json();
+      if (data.rates?.[code]) {
+        const rate = parseFloat(data.rates[code].toFixed(4));
+        setLocal(prev => ({ ...prev, exchangeRate: rate }));
+      }
+    } catch {}
+    setFetchingRate(false);
+  };
+
+  const fetchRates = () => fetchRatesFor(local.platformCode);
 
   const handleSave = () => {
     onChange(local);
@@ -36,29 +65,7 @@ export function SettingsPanel({ settings, onChange }: Props) {
     onChange(DEFAULT);
   };
 
-  const fetchRates = async () => {
-    setFetchingRate(true);
-    try {
-      const res = await fetch("/api/rates");
-      const data = await res.json();
-      if (data.rates?.RUB) {
-        const rate = parseFloat(data.rates.RUB.toFixed(2));
-        setLocal(prev => ({ ...prev, exchangeRate: rate }));
-      }
-    } catch {}
-    setFetchingRate(false);
-  };
-
   const fields = [
-    {
-      key: "exchangeRate" as keyof Settings,
-      label: "汇率",
-      desc: "1 人民币 = ? 卢布",
-      suffix: "卢布/元",
-      step: 0.1,
-      min: 1,
-      display: local.exchangeRate,
-    },
     {
       key: "shippingRatePerGram" as keyof Settings,
       label: "运费单价",
@@ -71,7 +78,7 @@ export function SettingsPanel({ settings, onChange }: Props) {
     {
       key: "platformFeeRate" as keyof Settings,
       label: "平台佣金",
-      desc: "Ozon 按类目收取的佣金比例",
+      desc: `${platform.platform} 按类目收取的佣金比例`,
       suffix: "%",
       step: 0.5,
       min: 0,
@@ -97,6 +104,73 @@ export function SettingsPanel({ settings, onChange }: Props) {
       </div>
 
       <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+
+        {/* 平台选择 */}
+        <div className="px-6 py-5 border-b border-gray-100">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-gray-800">目标平台</p>
+              <p className="text-xs text-gray-400 mt-0.5">选择你要销售的平台，汇率和佣金会自动调整</p>
+            </div>
+            <div className="flex flex-wrap gap-2 max-w-sm justify-end">
+              {PLATFORMS.map((p) => (
+                <button
+                  key={p.code}
+                  onClick={() => handlePlatformChange(p.code)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                    local.platformCode === p.code
+                      ? "bg-blue-600 text-white border-blue-600 shadow-sm"
+                      : "bg-white text-gray-600 border-gray-200 hover:border-blue-300 hover:text-blue-600"
+                  }`}
+                >
+                  <span>{p.flag}</span>
+                  <span>{p.label}</span>
+                  <span className={`text-[10px] ${local.platformCode === p.code ? "opacity-70" : "text-gray-400"}`}>
+                    {p.symbol}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+          {local.platformCode && (
+            <div className="mt-3 text-xs text-blue-600 bg-blue-50 rounded-lg px-3 py-2">
+              ✅ 当前平台：<strong>{platform.flag} {platform.platform}</strong>，货币：<strong>{platform.symbol} {platform.label}</strong>，默认佣金：<strong>{(platform.defaultFeeRate * 100).toFixed(0)}%</strong>
+            </div>
+          )}
+        </div>
+
+        {/* 汇率 */}
+        <div className="px-6 py-5 border-b border-gray-100">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-gray-800">汇率</p>
+              <p className="text-xs text-gray-400 mt-0.5">
+                1 人民币 = ? {platform.label}（{platform.symbol}）
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                min={0}
+                step={0.01}
+                value={local.exchangeRate}
+                onChange={(e) => update("exchangeRate", parseFloat(e.target.value) || 0)}
+                className="w-28 border border-gray-300 rounded-lg px-3 py-2 text-sm text-right font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <span className="text-sm text-gray-400 w-24 truncate">{platform.symbol}/元</span>
+              <button
+                onClick={fetchRates}
+                disabled={fetchingRate}
+                className="flex items-center gap-1 text-xs px-3 py-2 border border-gray-200 rounded-lg text-blue-600 hover:bg-blue-50 disabled:opacity-50 transition-colors whitespace-nowrap"
+              >
+                <RefreshCw size={12} className={fetchingRate ? "animate-spin" : ""} />
+                {fetchingRate ? "获取中..." : "自动获取"}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* 其他字段 */}
         {fields.map((field, i) => (
           <div key={field.key} className={`px-6 py-5 ${i < fields.length - 1 ? "border-b border-gray-100" : ""}`}>
             <div className="flex items-center justify-between gap-4">
@@ -118,13 +192,6 @@ export function SettingsPanel({ settings, onChange }: Props) {
                   className="w-28 border border-gray-300 rounded-lg px-3 py-2 text-sm text-right font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 <span className="text-sm text-gray-400 w-16">{field.suffix}</span>
-                {field.key === "exchangeRate" && (
-                  <button onClick={fetchRates} disabled={fetchingRate}
-                    className="flex items-center gap-1 text-xs px-3 py-2 border border-gray-200 rounded-lg text-blue-600 hover:bg-blue-50 disabled:opacity-50 transition-colors">
-                    <RefreshCw size={12} className={fetchingRate ? "animate-spin" : ""} />
-                    {fetchingRate ? "获取中..." : "自动获取"}
-                  </button>
-                )}
               </div>
             </div>
           </div>
@@ -133,7 +200,9 @@ export function SettingsPanel({ settings, onChange }: Props) {
 
       {/* Example calculation */}
       <div className="mt-4 bg-blue-50 border border-blue-100 rounded-xl p-4">
-        <p className="text-xs font-semibold text-blue-700 mb-2">📐 当前参数示例（进价¥10，重量300克）</p>
+        <p className="text-xs font-semibold text-blue-700 mb-2">
+          📐 当前参数示例（进价¥10，重量300克）
+        </p>
         <div className="text-xs text-blue-600 space-y-1">
           {(() => {
             const cost = 10;
@@ -141,11 +210,12 @@ export function SettingsPanel({ settings, onChange }: Props) {
             const ship = local.shippingRatePerGram * weight;
             const total = cost + ship + local.packagingCost;
             const minSell = (total * local.exchangeRate) / (1 - local.platformFeeRate);
+            const sym = platform.symbol;
             return (
               <>
                 <p>运费 = {weight}克 × {local.shippingRatePerGram}元/克 = <strong>{ship.toFixed(2)}元</strong></p>
                 <p>总成本 = {cost} + {ship.toFixed(2)} + {local.packagingCost}(包装) = <strong>{total.toFixed(2)}元</strong></p>
-                <p>最低售价 = {total.toFixed(2)} × {local.exchangeRate} ÷ (1-{(local.platformFeeRate*100).toFixed(0)}%) = <strong>{minSell.toFixed(0)} 卢布</strong></p>
+                <p>最低售价 = {total.toFixed(2)} × {local.exchangeRate} ÷ (1-{(local.platformFeeRate*100).toFixed(0)}%) = <strong>{sym}{minSell.toFixed(0)}</strong></p>
               </>
             );
           })()}

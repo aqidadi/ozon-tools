@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Product, Settings, LANGUAGES, calcCost } from "@/lib/types";
+import { Product, Settings, LANGUAGES, calcCost, getSellPrice, setSellPrice } from "@/lib/types";
 import { Trash2, ChevronDown, ChevronUp, ExternalLink, Loader2, Copy, Check, Star, Tag } from "lucide-react";
 
 const TAGS = ["待上架", "已上架", "爆款", "观察中", "已下架"];
@@ -32,9 +32,12 @@ export function ProductCard({ product, settings, onUpdate, onDelete }: Props) {
   const [expanded, setExpanded] = useState(false);
   const [selectedLang, setSelectedLang] = useState(product.targetLang || "ru");
   const [translating, setTranslating] = useState(false);
+
   const cost = calcCost(product, settings);
-  const isProfit = product.sellPriceRub > 0 && cost.profit > 0;
-  const isLoss = product.sellPriceRub > 0 && cost.profit <= 0;
+  const sellPriceLocal = getSellPrice(product, settings.platformCode);
+  const isProfit = sellPriceLocal > 0 && cost.profit > 0;
+  const isLoss = sellPriceLocal > 0 && cost.profit <= 0;
+  const sym = cost.currencySymbol;
 
   const field = LANG_FIELD[selectedLang] || "titleRu";
   const translatedTitle = (product[field] as string) || product.titleRu || "";
@@ -50,18 +53,31 @@ export function ProductCard({ product, settings, onUpdate, onDelete }: Props) {
       });
       const data = await res.json();
       if (data.result) {
-        const updates: Partial<Product> = { [field]: data.result, targetLang: selectedLang, titleRu: selectedLang === "ru" ? data.result : product.titleRu };
+        const updates: Partial<Product> = {
+          [field]: data.result,
+          targetLang: selectedLang,
+          titleRu: selectedLang === "ru" ? data.result : product.titleRu,
+        };
         onUpdate(product.id, updates);
-        await fetch("/api/product-update", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: product.id, ...updates }) });
+        await fetch("/api/product-update", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: product.id, ...updates }),
+        });
       }
     } catch {} finally { setTranslating(false); }
+  };
+
+  const handleSellPriceChange = (value: number) => {
+    const updates = setSellPrice(product, settings.platformCode, value);
+    onUpdate(product.id, updates);
   };
 
   return (
     <div className={`bg-white border rounded-lg overflow-hidden transition-shadow hover:shadow-sm ${expanded ? "border-blue-200" : "border-gray-200"}`}>
       {/* Compact single row */}
       <div className="flex items-center gap-2 px-3 py-2">
-        {/* Thumbnail — 图片失败时隐藏不占位 */}
+        {/* Thumbnail */}
         <img
           src={product.images[0] || ""}
           alt=""
@@ -71,7 +87,7 @@ export function ProductCard({ product, settings, onUpdate, onDelete }: Props) {
           style={{ display: product.images[0] ? undefined : 'none' }}
         />
 
-        {/* Title + translation — 主要内容 */}
+        {/* Title + translation */}
         <div className="flex-1 min-w-0">
           <p className="text-xs text-gray-800 truncate leading-tight font-medium">{product.title}</p>
           {translatedTitle
@@ -83,17 +99,19 @@ export function ProductCard({ product, settings, onUpdate, onDelete }: Props) {
         {/* Price info + sell price + profit */}
         <div className="flex items-center gap-2 flex-shrink-0">
           <span className="text-gray-400 text-[11px]">¥{product.price}</span>
-          <span className="text-orange-500 text-[11px] font-medium">₽{cost.minSellPriceRub}起</span>
+          <span className="text-orange-500 text-[11px] font-medium">{sym}{cost.minSellPrice}起</span>
           <div className="flex items-center border border-gray-200 rounded-md overflow-hidden focus-within:border-blue-400">
-            <span className="bg-gray-50 px-1.5 py-1 text-[11px] text-gray-400 border-r border-gray-200">₽</span>
-            <input type="number" min={0}
-              value={product.sellPriceRub || ""}
-              onChange={(e) => onUpdate(product.id, { sellPriceRub: parseFloat(e.target.value) || 0 })}
+            <span className="bg-gray-50 px-1.5 py-1 text-[11px] text-gray-400 border-r border-gray-200 font-medium">{sym}</span>
+            <input
+              type="number"
+              min={0}
+              value={sellPriceLocal || ""}
+              onChange={(e) => handleSellPriceChange(parseFloat(e.target.value) || 0)}
               placeholder="售价"
-              className="w-14 px-1.5 py-1 text-[11px] focus:outline-none"
+              className="w-16 px-1.5 py-1 text-[11px] focus:outline-none"
             />
           </div>
-          {product.sellPriceRub > 0 && (
+          {sellPriceLocal > 0 && (
             <span className={`text-[11px] font-semibold px-1.5 py-0.5 rounded-full whitespace-nowrap ${isProfit ? "bg-green-100 text-green-700" : "bg-red-100 text-red-500"}`}>
               {isProfit ? "+" : ""}{cost.profit.toFixed(0)}元
             </span>
@@ -102,7 +120,6 @@ export function ProductCard({ product, settings, onUpdate, onDelete }: Props) {
 
         {/* Actions */}
         <div className="flex items-center gap-0 flex-shrink-0">
-          {/* 收藏 */}
           <button onClick={() => onUpdate(product.id, { starred: !product.starred })}
             className={`p-1 transition-colors ${product.starred ? "text-yellow-400" : "text-gray-200 hover:text-yellow-400"}`}>
             <Star size={13} fill={product.starred ? "currentColor" : "none"} />
@@ -143,15 +160,24 @@ export function ProductCard({ product, settings, onUpdate, onDelete }: Props) {
           {/* 利润 */}
           <div className="bg-white rounded-lg p-3 border border-gray-100 text-xs space-y-1">
             <p className="font-semibold text-gray-600 mb-1.5">利润分析</p>
-            <div className="flex justify-between text-gray-500"><span>保本售价</span><span className="font-medium text-orange-600">₽{cost.minSellPriceRub}</span></div>
-            {product.sellPriceRub > 0 && <>
-              <div className="flex justify-between text-gray-500"><span>当前售价</span><span>₽{product.sellPriceRub}</span></div>
-              <div className="flex justify-between text-gray-500"><span>折合人民币</span><span>¥{cost.sellPriceCny.toFixed(2)}</span></div>
+            <div className="flex justify-between text-gray-500">
+              <span>保本售价</span>
+              <span className="font-medium text-orange-600">{sym}{cost.minSellPrice}</span>
+            </div>
+            {sellPriceLocal > 0 && <>
+              <div className="flex justify-between text-gray-500">
+                <span>当前售价</span>
+                <span>{sym}{sellPriceLocal}</span>
+              </div>
+              <div className="flex justify-between text-gray-500">
+                <span>折合人民币</span>
+                <span>¥{cost.sellPriceCny.toFixed(2)}</span>
+              </div>
               <div className={`flex justify-between font-bold border-t border-gray-100 pt-1 ${isProfit ? "text-green-600" : "text-red-500"}`}>
                 <span>利润</span><span>¥{cost.profit.toFixed(2)} ({cost.profitRate.toFixed(0)}%)</span>
               </div>
             </>}
-            {!product.sellPriceRub && <p className="text-gray-300 italic">请填写售价</p>}
+            {!sellPriceLocal && <p className="text-gray-300 italic">请填写售价</p>}
           </div>
 
           {/* 编辑 */}
