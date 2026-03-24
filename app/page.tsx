@@ -7,8 +7,8 @@ import { AddProductModal } from "@/components/AddProductModal";
 import { PickerPage } from "@/components/PickerPage";
 import { GuidePage } from "@/components/GuidePage";
 import { exportToExcel } from "@/lib/export";
-import { Product, Settings } from "@/lib/types";
-import { ShoppingBag, Settings2, Download, Plus, TrendingUp, BookOpen } from "lucide-react";
+import { Product, Settings, LANGUAGES } from "@/lib/types";
+import { ShoppingBag, Settings2, Download, Plus, TrendingUp, BookOpen, Languages, Bell, BarChart2, Search } from "lucide-react";
 
 const DEFAULT_SETTINGS: Settings = {
   exchangeRate: 10,
@@ -23,7 +23,37 @@ export default function Home() {
   const [showSettings, setShowSettings] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<"products" | "picker" | "guide">("products");
+  const [tab, setTab] = useState<"products" | "picker" | "guide" | "monitor" | "analytics">("products");
+  const [translatingAll, setTranslatingAll] = useState(false);
+  const [targetLang, setTargetLang] = useState("ru");
+
+  // 批量翻译所有未翻译商品
+  const handleTranslateAll = useCallback(async () => {
+    const untranslated = products.filter((p) => !p.titleRu);
+    if (untranslated.length === 0) { alert("所有商品已翻译完成！"); return; }
+    setTranslatingAll(true);
+    for (const p of untranslated) {
+      try {
+        const res = await fetch("/api/translate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: p.title, to: targetLang }),
+        });
+        const data = await res.json();
+        if (data.result) {
+          const updates = { titleRu: data.result, targetLang };
+          setProducts((prev) => prev.map((item) => item.id === p.id ? { ...item, ...updates } : item));
+          await fetch("/api/product-update", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id: p.id, ...updates }),
+          });
+        }
+        await new Promise((r) => setTimeout(r, 500)); // 限速
+      } catch {}
+    }
+    setTranslatingAll(false);
+  }, [products, targetLang]);
 
   // 从数据库加载商品
   const loadProducts = useCallback(async (isInitial = false) => {
@@ -121,6 +151,24 @@ export default function Home() {
               新手指南
             </button>
             <button
+              onClick={() => setTab(tab === "monitor" ? "products" : "monitor")}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                tab === "monitor" ? "bg-yellow-100 text-yellow-700" : "text-gray-600 hover:bg-gray-100"
+              }`}
+            >
+              <Bell size={16} />
+              价格监控
+            </button>
+            <button
+              onClick={() => setTab(tab === "analytics" ? "products" : "analytics")}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                tab === "analytics" ? "bg-pink-100 text-pink-700" : "text-gray-600 hover:bg-gray-100"
+              }`}
+            >
+              <BarChart2 size={16} />
+              竞品分析
+            </button>
+            <button
               onClick={() => setShowSettings(!showSettings)}
               className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                 showSettings
@@ -154,6 +202,10 @@ export default function Home() {
           <PickerPage />
         ) : tab === "guide" ? (
           <GuidePage />
+        ) : tab === "monitor" ? (
+          <ComingSoon title="价格监控" icon="🔔" desc="自动监控竞品价格变动，价格下跌时及时提醒，帮你抓住调价时机。" color="yellow" />
+        ) : tab === "analytics" ? (
+          <ComingSoon title="竞品分析" icon="📊" desc="输入 Ozon 商品链接，查看月销量趋势、评价分析、关键词排名，知己知彼。" color="pink" />
         ) : (
           <>
         {showSettings && (
@@ -164,7 +216,7 @@ export default function Home() {
 
         {/* Stats Bar */}
         {products.length > 0 && (
-          <div className="bg-white rounded-xl border border-gray-200 p-4 mb-6 flex items-center gap-6">
+          <div className="bg-white rounded-xl border border-gray-200 p-4 mb-6 flex items-center gap-4 flex-wrap">
             <div>
               <span className="text-sm text-gray-500">共</span>
               <span className="text-2xl font-bold text-gray-900 mx-1">{products.length}</span>
@@ -181,6 +233,26 @@ export default function Home() {
             <div className="h-6 w-px bg-gray-200" />
             <div className="text-sm text-gray-500">
               平台佣金：<span className="font-medium text-gray-800">{(settings.platformFeeRate * 100).toFixed(0)}%</span>
+            </div>
+            {/* 批量翻译 */}
+            <div className="ml-auto flex items-center gap-2">
+              <select
+                value={targetLang}
+                onChange={(e) => setTargetLang(e.target.value)}
+                className="text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white focus:outline-none"
+              >
+                {LANGUAGES.map((l) => (
+                  <option key={l.code} value={l.code}>{l.flag} {l.label}</option>
+                ))}
+              </select>
+              <button
+                onClick={handleTranslateAll}
+                disabled={translatingAll}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-60 transition-colors"
+              >
+                <Languages size={14} />
+                {translatingAll ? "翻译中..." : `批量翻译 (${products.filter(p => !p.titleRu).length}个未译)`}
+              </button>
             </div>
           </div>
         )}
@@ -227,6 +299,25 @@ export default function Home() {
           onClose={() => setShowAddModal(false)}
         />
       )}
+    </div>
+  );
+}
+
+// 即将上线占位页
+function ComingSoon({ title, icon, desc, color }: { title: string; icon: string; desc: string; color: string }) {
+  const colorMap: Record<string, string> = {
+    yellow: "from-yellow-50 to-orange-50 border-yellow-200 text-yellow-800",
+    pink: "from-pink-50 to-purple-50 border-pink-200 text-pink-800",
+  };
+  return (
+    <div className={`max-w-2xl mx-auto mt-16 text-center bg-gradient-to-br ${colorMap[color]} border rounded-2xl p-12`}>
+      <div className="text-6xl mb-4">{icon}</div>
+      <h2 className="text-2xl font-bold mb-3">{title}</h2>
+      <p className="text-base opacity-80 mb-8 max-w-md mx-auto">{desc}</p>
+      <div className="inline-flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-6 py-3 text-sm font-medium text-gray-600 shadow-sm">
+        🚧 即将上线，敬请期待
+      </div>
+      <p className="text-xs opacity-60 mt-4">此功能正在开发中，上线后将第一时间通知您</p>
     </div>
   );
 }
