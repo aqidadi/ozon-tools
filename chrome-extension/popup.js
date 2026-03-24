@@ -481,26 +481,53 @@ function renderOzonPicker(tabId, settings) {
 function extractOzonProducts() {
   try {
     const items = [];
-    // Ozon商品卡片选择器
-    const cards = document.querySelectorAll(
-      "[class*='tile-root'], [class*='tileRoot'], [data-index], .widget-search-result-container [class*='item']"
-    );
+    const seen = new Set();
 
-    for (const card of cards) {
-      if (items.length >= 15) break;
+    // Ozon商品卡片 — 多种选择器覆盖列表页/首页/搜索页
+    const selectors = [
+      "a[href*='/product/']",
+    ];
 
-      const nameEl = card.querySelector("[class*='name'], [class*='title'], h3, h2");
-      const priceEl = card.querySelector("[class*='price'], [class*='Price']");
-      const imgEl = card.querySelector("img");
+    for (const sel of selectors) {
+      const links = document.querySelectorAll(sel);
+      for (const link of links) {
+        if (items.length >= 20) break;
 
-      const name = nameEl?.textContent?.trim();
-      const price = priceEl?.textContent?.replace(/[^\d]/g, "");
-      const image = imgEl?.src;
+        const href = link.href;
+        if (!href || seen.has(href)) continue;
+        seen.add(href);
 
-      if (name && name.length > 3) {
-        items.push({ name, price, image });
+        // 找商品名
+        const nameEl = link.querySelector("span, div, p");
+        let name = "";
+        // 递归找最长的文字节点
+        const walker = document.createTreeWalker(link, NodeFilter.SHOW_TEXT);
+        let node;
+        let longest = "";
+        while ((node = walker.nextNode())) {
+          const t = node.textContent.trim();
+          if (t.length > longest.length && t.length > 5 && !t.match(/^\d+([.,]\d+)?₽?$/) && !t.match(/^[\d\s]+$/)) {
+            longest = t;
+          }
+        }
+        name = longest;
+
+        // 找图片
+        const img = link.querySelector("img");
+        const image = img?.src || img?.dataset?.src || "";
+
+        // 找价格
+        let price = "";
+        const priceMatch = link.innerText?.match(/(\d[\d\s]{1,6})\s*₽/);
+        if (priceMatch) price = priceMatch[1].replace(/\s/g, "");
+
+        if (name && name.length > 5 && !name.match(/^\d+$/)) {
+          items.push({ name, price, image, url: href });
+        }
       }
+      if (items.length > 0) break;
     }
+
     return items;
   } catch (e) {
     return [];
