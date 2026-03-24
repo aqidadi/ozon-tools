@@ -5,25 +5,6 @@ import { ExternalLink, Copy, Check, ChevronDown, ChevronRight } from "lucide-rea
 
 const CATEGORIES = [
   {
-    name: "动漫周边",
-    icon: "🎌",
-    color: "purple",
-    keywords: [
-      { label: "咒术回战手办", kw: "咒术回战 手办", hot: true },
-      { label: "鬼灭之刃公仔", kw: "鬼灭之刃 公仔", hot: true },
-      { label: "海贼王手办", kw: "海贼王 手办 摆件", hot: true },
-      { label: "进击的巨人周边", kw: "进击的巨人 周边", hot: false },
-      { label: "龙珠手办", kw: "龙珠 手办", hot: true },
-      { label: "火影忍者摆件", kw: "火影忍者 摆件", hot: false },
-      { label: "原神周边", kw: "原神 周边 摆件", hot: true },
-      { label: "我的英雄学院", kw: "僕のヒーローアカデミア 手办", hot: false },
-      { label: "鬼灭亚克力立牌", kw: "鬼灭之刃 亚克力 立牌", hot: false },
-      { label: "动漫抱枕", kw: "动漫 抱枕 长条枕", hot: true },
-      { label: "二次元徽章", kw: "动漫 徽章 胸章", hot: false },
-      { label: "蓝色监狱周边", kw: "蓝色监狱 周边", hot: true },
-    ],
-  },
-  {
     name: "棉花娃娃",
     icon: "🧸",
     color: "pink",
@@ -42,7 +23,6 @@ const CATEGORIES = [
     color: "blue",
     keywords: [
       { label: "泡泡玛特同款", kw: "盲盒 手办 潮玩 摆件", hot: true },
-      { label: "动漫盲盒", kw: "动漫 盲盒 手办", hot: true },
       { label: "卡片盲盒", kw: "盲盒 卡片 收藏", hot: false },
       { label: "迷你公仔盲盒", kw: "迷你 公仔 盲盒 5cm", hot: true },
       { label: "海洋动物盲盒", kw: "海洋 动物 盲盒 模型", hot: false },
@@ -249,7 +229,7 @@ const COLOR_MAP: Record<string, { bg: string; badge: string; btn: string; search
 export function PickerPage() {
   const [copiedKw, setCopiedKw] = useState<string | null>(null);
   const [search, setSearch] = useState("");
-  const [openCat, setOpenCat] = useState<string | null>("动漫周边");
+  const [openCat, setOpenCat] = useState<string | null>("棉花娃娃");
 
   const copyKw = async (kw: string) => {
     await navigator.clipboard.writeText(kw);
