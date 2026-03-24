@@ -249,88 +249,95 @@ async function init() {
 // 这个函数会在页面中执行，提取商品数据
 function extractProductData() {
   try {
-    // 获取标题 - 1688多种页面结构
+    // 1688商品标题 — 专用选择器（按优先级）
     const titleSelectors = [
-      ".product-title-text",
-      ".title-text",
-      ".mod-detail-title h1",
-      ".offer-title",
-      "h1.title",
+      // 新版1688
+      "[class*='title-container'] h1",
+      "[class*='offer-title']",
+      "[class*='product-title'] h1",
+      ".title-text h1",
+      ".mod-offer-title",
+      // 通用
+      "h1[class*='title']",
       "h1",
     ];
     let title = "";
     for (const sel of titleSelectors) {
-      const el = document.querySelector(sel);
-      if (el && el.textContent.trim().length > 5) {
-        title = el.textContent.trim();
-        break;
+      const els = document.querySelectorAll(sel);
+      for (const el of els) {
+        const text = el.textContent.trim();
+        // 标题应该比店铺名长，且包含商品关键词
+        if (text.length > 10 && !text.includes("商行") && !text.includes("有限公司") && !text.includes("工厂")) {
+          title = text;
+          break;
+        }
       }
+      if (title) break;
     }
-    // fallback: document.title
-    if (!title) title = document.title.split("-")[0].trim();
+    // 最终兜底：用页面 title 标签（去掉 -1688 后缀）
+    if (!title) {
+      const docTitle = document.title;
+      title = docTitle.replace(/[-_|].*?(1688|阿里).*$/, "").trim();
+    }
 
-    // 获取价格 - 1688价格选择器
+    // 1688价格 — 取页面上最显眼的价格数字
     let price = null;
     const priceSelectors = [
-      ".price-module__price",
-      ".price-common-wrap .value",
-      ".price-num",
-      ".price .value",
-      "[class*='priceText']",
-      ".price-original",
+      // 新版
+      "[class*='price-common'] [class*='price-value']",
+      "[class*='price-box'] [class*='value']",
+      ".price-common-wrap [class*='value']",
+      // SKU选中价
+      "[class*='sku'] [class*='price']",
+      // 通用
+      "[class*='price']:not([class*='del']):not([class*='original']):not([class*='cross'])",
     ];
     for (const sel of priceSelectors) {
       const el = document.querySelector(sel);
       if (el) {
-        const text = el.textContent.trim().replace(/[^\d.]/g, "");
-        if (text && parseFloat(text) > 0) {
-          price = text;
-          break;
-        }
+        const text = el.textContent.replace(/[^\d.]/g, "");
+        const num = parseFloat(text);
+        if (num > 0 && num < 100000) { price = num; break; }
+      }
+    }
+    // 兜底：找页面里 ¥ 后面的数字
+    if (!price) {
+      const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+      const pricePattern = /[¥￥]\s*([\d.]+)/;
+      let node;
+      while ((node = walker.nextNode())) {
+        const m = node.textContent.match(pricePattern);
+        if (m) { price = parseFloat(m[1]); break; }
       }
     }
 
-    // 从页面文本找价格（兜底）
-    if (!price) {
-      const allText = document.body.innerText;
-      const m = allText.match(/新人价[^\d]*([\d.]+)/) ||
-                allText.match(/¥\s*([\d.]+)/) ||
-                allText.match(/价格[^\d]*([\d.]+)/);
-      if (m) price = m[1];
-    }
-
-    // 获取图片
+    // 图片
     const images = [];
     const imgSelectors = [
-      ".detail-gallery-img img",
-      ".gallery-items img",
-      ".mod-detail-gallery img",
-      "[class*='gallery'] img",
-      "[class*='thumb'] img",
+      "[class*='gallery'] img[src*='alicdn']",
+      "[class*='thumb'] img[src*='alicdn']",
+      ".detail-gallery img",
+      "img[src*='alicdn.com']",
     ];
     for (const sel of imgSelectors) {
       const els = document.querySelectorAll(sel);
       for (const img of els) {
-        const src = img.src || img.dataset.src || img.dataset.lazySrc;
-        if (src && src.startsWith("http") && !src.includes("placeholder")) {
-          const hd = src.replace(/_\d+x\d+[^.]*\.(jpg|jpeg|png|webp)/i, "_400x400.$1")
-                        .replace(/\.jpg_\d+.*$/, ".jpg")
-                        .replace(/\.png_\d+.*$/, ".png");
-          if (!images.includes(hd)) images.push(hd);
+        const src = (img.src || img.dataset.src || "").split("?")[0];
+        if (src && src.includes("alicdn") && !images.includes(src)) {
+          images.push(src.replace(/_\d+x\d+\.(jpg|jpeg|png|webp)/i, "_400x400.$1"));
           if (images.length >= 5) break;
         }
       }
       if (images.length > 0) break;
     }
 
-    // SKU数量
-    const skuItems = document.querySelectorAll("[class*='sku-item'], [class*='SKUItem'], .sku-content li");
+    const skuItems = document.querySelectorAll("[class*='sku-item'], .sku-content li");
 
     return {
       id: crypto.randomUUID(),
       title,
       titleRu: "",
-      price: price ? parseFloat(price) : 0,
+      price: price || 0,
       weight: 0,
       images,
       sellPriceRub: 0,
@@ -339,7 +346,7 @@ function extractProductData() {
       skuCount: skuItems.length || null,
     };
   } catch (e) {
-    return null;
+    return { error: e.message };
   }
 }
 
