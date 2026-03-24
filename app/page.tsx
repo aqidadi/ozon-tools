@@ -21,6 +21,26 @@ export default function Home() {
   const [showSettings, setShowSettings] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
 
+  // 从 localStorage 恢复数据
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("ozon-products");
+      if (saved) setProducts(JSON.parse(saved));
+      const savedSettings = localStorage.getItem("ozon-settings");
+      if (savedSettings) setSettings(JSON.parse(savedSettings));
+    } catch {}
+  }, []);
+
+  // 商品变化时保存到 localStorage
+  useEffect(() => {
+    localStorage.setItem("ozon-products", JSON.stringify(products));
+  }, [products]);
+
+  // 设置变化时保存
+  useEffect(() => {
+    localStorage.setItem("ozon-settings", JSON.stringify(settings));
+  }, [settings]);
+
   // 轮询插件推送的商品
   useEffect(() => {
     const poll = async () => {
@@ -28,7 +48,11 @@ export default function Home() {
         const res = await fetch("/api/import");
         const data = await res.json();
         if (data.items?.length > 0) {
-          setProducts((prev) => [...data.items, ...prev]);
+          setProducts((prev) => {
+            const updated = [...data.items, ...prev];
+            localStorage.setItem("ozon-products", JSON.stringify(updated));
+            return updated;
+          });
         }
       } catch {}
     };
