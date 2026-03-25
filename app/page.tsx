@@ -57,6 +57,7 @@ const COLOR_CLASSES: Record<string, { active: string; icon: string }> = {
   teal:   { active: "bg-teal-50 text-teal-700 border-l-2 border-teal-600",   icon: "text-teal-500" },
   cyan:   { active: "bg-cyan-50 text-cyan-700 border-l-2 border-cyan-600",   icon: "text-cyan-500" },
   purple: { active: "bg-purple-50 text-purple-700 border-l-2 border-purple-600", icon: "text-purple-500" },
+  green:  { active: "bg-green-50 text-green-700 border-l-2 border-green-600",   icon: "text-green-500" },
 };
 
 export default function Home() {
@@ -184,7 +185,7 @@ export default function Home() {
         <nav className="flex-1 py-3 px-2 space-y-0.5 overflow-y-auto">
           {NAV_ITEMS.map((item) => {
             const isActive = tab === item.id;
-            const colors = COLOR_CLASSES[item.color];
+            const colors = COLOR_CLASSES[item.color] ?? COLOR_CLASSES.gray;
             const Icon = item.icon;
             return (
               <button
