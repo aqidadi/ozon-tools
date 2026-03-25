@@ -150,10 +150,9 @@ function UpgradeModal({ onClose, user }: { onClose: () => void; user: { email: s
   const AFDIAN_URL = process.env.NEXT_PUBLIC_AFDIAN_URL || "https://www.afdian.com/a/Crossly";
 
   const plans = [
-    { name: "24小时体验", price: "¥5.9", period: "24h", tag: "试用" },
-    { name: "周卡", price: "¥19.9", period: "7天", tag: "" },
-    { name: "月度 Pro", price: "¥39.9", period: "/月", tag: "" },
-    { name: "年度 Pro", price: "¥299.9", period: "/年", tag: "省¥179" },
+    { name: "月度 Pro", price: "¥9.9", period: "/月", tag: "推广价" },
+    { name: "季度 Pro", price: "¥19.9", period: "/3月", tag: "省¥9.8" },
+    { name: "年度 Pro", price: "¥99", period: "/年", tag: "最划算" },
   ];
 
   return (
@@ -178,7 +177,7 @@ function UpgradeModal({ onClose, user }: { onClose: () => void; user: { email: s
         {/* 套餐列表 */}
         <div className="px-4 pb-2 space-y-1.5">
           {plans.map(plan => (
-            <div key={plan.name} className={`border rounded-lg px-3 py-2 flex items-center justify-between ${plan.tag === "省¥168" ? "border-blue-300 bg-blue-50" : "border-gray-200"}`}>
+            <div key={plan.name} className={`border rounded-lg px-3 py-2 flex items-center justify-between ${plan.tag === "最划算" ? "border-blue-300 bg-blue-50" : "border-gray-200"}`}>
               <div>
                 <span className="text-sm font-semibold text-gray-800">{plan.name}</span>
                 {plan.tag && <span className="ml-1.5 text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full">{plan.tag}</span>}

@@ -292,7 +292,7 @@ export default function Home() {
                   <div className="text-5xl mb-4">🔐</div>
                   <h2 className="text-xl font-semibold text-gray-700 mb-2">登录后开始使用</h2>
                   <p className="text-gray-400 mb-6 text-sm max-w-sm mx-auto">
-                    免费注册即可导入最多50个商品，升级 Pro 后无限导入
+                    免费注册即可导入最多100个商品，升级 Pro 后无限导入
                   </p>
                   <button
                     onClick={() => setShowLoginPrompt(true)}
@@ -470,7 +470,7 @@ function LandingPage({ onStart }: { onStart: () => void }) {
                 ["多平台利润计算", true, false, false, true],
                 ["8国语言翻译", true, false, false, false],
                 ["主图+详情图全抓", true, false, false, false],
-                ["价格（/月）", "¥39.9起", "¥299+", "¥199+", "¥99+"],
+                ["价格（/月）", "¥9.9起", "¥299+", "¥199+", "¥99+"],
               ].map((row, i) => (
                 <tr key={i} className="hover:bg-gray-50/50">
                   <td className="px-5 py-3 text-gray-700 font-medium">{row[0]}</td>
@@ -491,13 +491,12 @@ function LandingPage({ onStart }: { onStart: () => void }) {
       {/* 定价 */}
       <div className="bg-white border border-gray-100 rounded-xl p-5">
         <h2 className="font-bold text-gray-900 text-sm mb-1 text-center">简单透明的定价</h2>
-        <p className="text-xs text-gray-400 text-center mb-4">免费可用50个商品，升级无限制</p>
-        <div className="grid grid-cols-4 gap-2">
+        <p className="text-xs text-gray-400 text-center mb-4">免费可用100个商品，升级无限制</p>
+        <div className="grid grid-cols-3 gap-2">
           {[
-            { label: "体验", price: "¥5.9", sub: "24小时", color: "border-gray-200" },
-            { label: "周卡", price: "¥19.9", sub: "7天", color: "border-gray-200" },
-            { label: "月度", price: "¥39.9", sub: "30天", color: "border-indigo-300 bg-indigo-50", hot: true },
-            { label: "年度", price: "¥299.9", sub: "365天", color: "border-gray-200" },
+            { label: "月度", price: "¥9.9", sub: "推广价", color: "border-gray-200" },
+            { label: "季度", price: "¥19.9", sub: "3个月", color: "border-indigo-300 bg-indigo-50", hot: true },
+            { label: "年度", price: "¥99", sub: "365天", color: "border-gray-200" },
           ].map(p => (
             <div key={p.label} className={`border-2 rounded-xl p-3 text-center relative ${p.color}`}>
               {p.hot && <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-indigo-600 text-white text-[9px] font-bold px-2 py-0.5 rounded-full">推荐</div>}

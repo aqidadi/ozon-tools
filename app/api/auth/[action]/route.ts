@@ -75,7 +75,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ act
         id: data.user.id,
         email: data.user.email,
         plan: profile?.plan || "free",
-        quota: profile?.quota || 50,
+        quota: profile?.quota || 100,
         productCount: profile?.product_count || 0,
         apiToken: profile?.api_token,  // 插件用这个
         displayName: profile?.display_name,
@@ -115,7 +115,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ acti
     id: user.id,
     email: user.email,
     plan: profile?.plan || "free",
-    quota: profile?.quota || 50,
+    quota: profile?.quota || 100,
     productCount: profile?.product_count || 0,
     apiToken: profile?.api_token,
     displayName: profile?.display_name,

@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   plan TEXT NOT NULL DEFAULT 'free',         -- 'free' | 'pro'
   plan_expires_at TIMESTAMPTZ,               -- pro 到期时间，NULL=永久
   product_count INTEGER NOT NULL DEFAULT 0, -- 已导入商品数
-  quota INTEGER NOT NULL DEFAULT 50,        -- 免费50，付费无限(-1)
+  quota INTEGER NOT NULL DEFAULT 100,        -- 免费50，付费无限(-1)
   api_token TEXT UNIQUE,                    -- 插件用的 token
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
