@@ -128,17 +128,7 @@ function renderLogin(settings) {
 // 这个函数在用户浏览器中运行，有Cookie，不受IP限制！
 // ─────────────────────────────────────────────────────────────
 function extractProductData() {
-  // 1. 先滚动到底部触发懒加载，再回顶
-  try { window.scrollTo(0, document.body.scrollHeight); } catch(e) {}
-
-  // 2. 点击「商品详情」tab 触发详情区渲染
-  try {
-    const tabEls = document.querySelectorAll("a, li, [role='tab'], button, span");
-    for (const el of tabEls) {
-      const t = el.textContent?.trim();
-      if (t === "商品详情" || t === "产品详情" || t === "详情") { el.click(); break; }
-    }
-  } catch(e) {}
+  // 注意：滚动和tab点击已在外部完成，这里直接抓取
 
   try {
     // ── 工具函数 ──
@@ -335,10 +325,32 @@ async function batchImportFromUrls(urls, siteUrl, weight, onProgress) {
         setTimeout(resolve, 15000);
       });
 
-      // 再等一秒让JS执行完
+      // 第一步：点击商品详情tab
+      await chrome.scripting.executeScript({ target: { tabId: tab.id }, func: () => {
+        const tabs = document.querySelectorAll("[class*='tab'] a, [class*='tab'] li, [role='tab'], .tab-item, button, span, a");
+        for (const el of tabs) {
+          const t = el.textContent?.trim();
+          if (t === "商品详情" || t === "产品详情" || t === "详情") { el.click(); break; }
+        }
+      }}).catch(()=>{});
+      await new Promise(r => setTimeout(r, 800));
+
+      // 第二步：分段滚动触发懒加载
+      await chrome.scripting.executeScript({ target: { tabId: tab.id }, func: () => {
+        return new Promise(resolve => {
+          const total = document.body.scrollHeight;
+          const steps = 8;
+          let i = 0;
+          const timer = setInterval(() => {
+            window.scrollTo(0, (total / steps) * i);
+            i++;
+            if (i > steps) { clearInterval(timer); window.scrollTo(0, 0); resolve(); }
+          }, 300);
+        });
+      }}).catch(()=>{});
       await new Promise(r => setTimeout(r, 1000));
 
-      // 在标签页中提取数据
+      // 第三步：提取数据
       const res = await chrome.scripting.executeScript({
         target: { tabId: tab.id },
         func: extractProductData,
@@ -829,14 +841,36 @@ async function setTab(tab, settings, tabId, condition) {
   } else {
     if (!condition) { renderManualInput(settings, ""); return; }
     try {
-      // 先点击「商品详情」tab触发懒加载，等1秒后再抓
+      // 第一步：点击「商品详情」tab
       await chrome.scripting.executeScript({ target: { tabId }, func: () => {
-        const tabs = document.querySelectorAll("[class*='tab'] a, [class*='tab'] li, [role='tab'], .tab-item");
+        const tabs = document.querySelectorAll("[class*='tab'] a, [class*='tab'] li, [role='tab'], .tab-item, button, span, a");
         for (const el of tabs) {
-          if (el.textContent && el.textContent.includes("商品详情")) { el.click(); break; }
+          const t = el.textContent?.trim();
+          if (t === "商品详情" || t === "产品详情" || t === "详情") { el.click(); break; }
         }
       }});
-      await new Promise(r => setTimeout(r, 1200));
+      await new Promise(r => setTimeout(r, 800));
+
+      // 第二步：分段滚动，触发懒加载图片渲染
+      await chrome.scripting.executeScript({ target: { tabId }, func: () => {
+        return new Promise(resolve => {
+          const total = document.body.scrollHeight;
+          const steps = 8;
+          let i = 0;
+          const timer = setInterval(() => {
+            window.scrollTo(0, (total / steps) * i);
+            i++;
+            if (i > steps) {
+              clearInterval(timer);
+              window.scrollTo(0, 0);
+              resolve();
+            }
+          }, 300);
+        });
+      }});
+      await new Promise(r => setTimeout(r, 1000));
+
+      // 第三步：抓取数据
       const results = await chrome.scripting.executeScript({ target: { tabId }, func: extractProductData });
       const product = results?.[0]?.result;
       if (product && product.title) {
