@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { AdBanner } from "@/components/AdBanner";
 import {
   ChevronDown, ChevronRight, BookOpen, Store, TrendingUp,
   Package, Truck, Star, ExternalLink, Wrench, Globe, BarChart2, ShoppingCart
@@ -797,6 +798,7 @@ export function ToolsPage() {
           </div>
         );
       })}
+      <AdBanner slot="guide-tools" size="banner" />
     </div>
   );
 }

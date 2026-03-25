@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { AdBanner } from "@/components/AdBanner";
 
 // ── 汇率换算 ──────────────────────────────────────────
 const CURRENCIES = [
@@ -218,9 +219,11 @@ export function MiniToolsPage() {
         </div>
       </div>
       <CurrencyConverter />
+      <AdBanner slot="mintools-top" size="inline" />
       <ProfitCalc />
       <HolidayCalendar />
       <LogisticsRef />
+      <AdBanner slot="mintools-bottom" size="banner" />
     </div>
   );
 }
