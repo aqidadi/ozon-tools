@@ -1,229 +1,398 @@
 "use client";
-import { useState, useEffect } from "react";
-import { AdBanner } from "@/components/AdBanner";
+import { useState, useRef } from "react";
 
-// ── 汇率换算 ──────────────────────────────────────────
-const CURRENCIES = [
-  { code: "CNY", label: "人民币 ¥", flag: "🇨🇳" },
-  { code: "RUB", label: "俄罗斯卢布 ₽", flag: "🇷🇺" },
-  { code: "USD", label: "美元 $", flag: "🇺🇸" },
-  { code: "GBP", label: "英镑 £", flag: "🇬🇧" },
-  { code: "THB", label: "泰铢 ฿", flag: "🇹🇭" },
-  { code: "IDR", label: "印尼盾 Rp", flag: "🇮🇩" },
-  { code: "AED", label: "迪拉姆 د.إ", flag: "🇦🇪" },
-  { code: "BRL", label: "巴西雷亚尔 R$", flag: "🇧🇷" },
-];
+// ─── 各工具组件 ────────────────────────────────────────
 
 function CurrencyConverter() {
-  const [rates, setRates] = useState<Record<string, number>>({});
   const [amount, setAmount] = useState("100");
   const [from, setFrom] = useState("CNY");
-
-  useEffect(() => {
-    fetch("/api/rates").then(r => r.json()).then(d => setRates(d.rates || {})).catch(() => {});
-  }, []);
-
-  const convert = (to: string) => {
-    if (!rates[from] || !rates[to] || !amount) return "—";
-    const inCny = parseFloat(amount) / (rates[from] || 1);
-    return (inCny * (rates[to] || 1)).toLocaleString("zh-CN", { maximumFractionDigits: 2 });
+  const [to, setTo] = useState("RUB");
+  const [result, setResult] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const CURRENCIES = ["CNY","USD","RUB","EUR","THB","VND","IDR","MYR","AED","BRL","JPY","KRW","GBP"];
+  const convert = async () => {
+    setLoading(true);
+    try {
+      const r = await fetch(`/api/rates`);
+      const d = await r.json();
+      const rates = d.rates || {};
+      const fromRate = rates[from] ?? 1;
+      const toRate = rates[to] ?? 1;
+      const val = parseFloat(amount) / fromRate * toRate;
+      setResult(`${amount} ${from} = ${val.toFixed(4)} ${to}`);
+    } catch { setResult("获取汇率失败，请稍后重试"); }
+    setLoading(false);
   };
-
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 p-4">
-      <h3 className="font-semibold text-sm text-gray-800 mb-3">💱 汇率换算</h3>
-      <div className="flex gap-2 mb-3">
-        <input type="number" value={amount} onChange={e => setAmount(e.target.value)}
-          className="w-28 border rounded-lg px-3 py-1.5 text-sm" placeholder="金额" />
-        <select value={from} onChange={e => setFrom(e.target.value)}
-          className="flex-1 border rounded-lg px-2 py-1.5 text-sm bg-white">
-          {CURRENCIES.map(c => <option key={c.code} value={c.code}>{c.flag} {c.label}</option>)}
+    <div className="space-y-3">
+      <div className="flex gap-2">
+        <input value={amount} onChange={e=>setAmount(e.target.value)} type="number"
+          className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="金额" />
+        <select value={from} onChange={e=>setFrom(e.target.value)}
+          className="border border-gray-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-300">
+          {CURRENCIES.map(c=><option key={c}>{c}</option>)}
+        </select>
+        <button onClick={()=>{const t=from;setFrom(to);setTo(t);setResult(null)}}
+          className="px-3 py-2 bg-gray-100 rounded-xl text-sm hover:bg-gray-200">⇄</button>
+        <select value={to} onChange={e=>setTo(e.target.value)}
+          className="border border-gray-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-300">
+          {CURRENCIES.map(c=><option key={c}>{c}</option>)}
         </select>
       </div>
-      <div className="grid grid-cols-2 gap-2">
-        {CURRENCIES.filter(c => c.code !== from).map(c => (
-          <div key={c.code} className="bg-gray-50 rounded-xl px-3 py-2">
-            <p className="text-[10px] text-gray-400">{c.flag} {c.label}</p>
-            <p className="text-sm font-bold text-gray-800">{convert(c.code)}</p>
-          </div>
-        ))}
-      </div>
+      <button onClick={convert} disabled={loading}
+        className="w-full py-2.5 rounded-xl text-sm font-semibold text-white transition-all"
+        style={{background:"linear-gradient(135deg,#6366f1,#8b5cf6)"}}>
+        {loading ? "换算中..." : "立即换算"}
+      </button>
+      {result && <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-3 text-center font-bold text-indigo-700">{result}</div>}
     </div>
   );
 }
 
-// ── 利润计算器 ──────────────────────────────────────────
 function ProfitCalc() {
-  const [cost, setCost] = useState("50");
-  const [ship, setShip] = useState("15");
-  const [sell, setSell] = useState("150");
-  const [comm, setComm] = useState("8");
-
-  const profit = parseFloat(sell) - parseFloat(cost) - parseFloat(ship) - parseFloat(sell) * parseFloat(comm) / 100;
-  const margin = (profit / parseFloat(sell) * 100);
-  const roi = (profit / (parseFloat(cost) + parseFloat(ship)) * 100);
-
+  const [cost, setCost] = useState("25");
+  const [sell, setSell] = useState("8.99");
+  const [ship, setShip] = useState("2.5");
+  const [comm, setComm] = useState("15");
+  const [rate, setRate] = useState("12");
+  const p = parseFloat(cost)||0, s = parseFloat(sell)||0, sh = parseFloat(ship)||0, c = parseFloat(comm)||0, r = parseFloat(rate)||1;
+  const sellCny = s * r;
+  const commAmt = sellCny * c / 100;
+  const profit = sellCny - p - sh - commAmt;
+  const margin = sellCny > 0 ? (profit / sellCny * 100).toFixed(1) : "0";
+  const color = profit > 0 ? "text-green-600" : "text-red-500";
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 p-4">
-      <h3 className="font-semibold text-sm text-gray-800 mb-3">📊 利润计算器</h3>
-      <div className="grid grid-cols-2 gap-2 mb-3">
+    <div className="space-y-3">
+      <div className="grid grid-cols-2 gap-2">
         {[
-          { label: "采购成本 ¥", val: cost, set: setCost },
-          { label: "国际运费 ¥", val: ship, set: setShip },
-          { label: "售价 ¥", val: sell, set: setSell },
-          { label: "平台佣金 %", val: comm, set: setComm },
-        ].map(f => (
-          <div key={f.label}>
-            <p className="text-[10px] text-gray-400 mb-0.5">{f.label}</p>
-            <input type="number" value={f.val} onChange={e => f.set(e.target.value)}
-              className="w-full border rounded-lg px-2 py-1.5 text-sm" />
+          ["进货价(¥)", cost, setCost],
+          ["售价($)", sell, setSell],
+          ["运费(¥)", ship, setShip],
+          ["平台佣金(%)", comm, setComm],
+          ["汇率(×)", rate, setRate],
+        ].map(([label, val, setter]) => (
+          <div key={label as string}>
+            <label className="text-xs text-gray-500 mb-1 block">{label as string}</label>
+            <input value={val as string} onChange={e=>(setter as any)(e.target.value)} type="number"
+              className="w-full border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300" />
           </div>
         ))}
       </div>
-      <div className={`rounded-xl p-3 ${profit > 0 ? "bg-green-50" : "bg-red-50"}`}>
-        <div className="flex justify-between text-sm">
-          <span className="text-gray-600">净利润</span>
-          <span className={`font-bold ${profit > 0 ? "text-green-600" : "text-red-500"}`}>¥{profit.toFixed(2)}</span>
-        </div>
-        <div className="flex justify-between text-sm mt-1">
-          <span className="text-gray-600">利润率</span>
-          <span className="font-bold text-gray-800">{isNaN(margin) ? "—" : margin.toFixed(1)}%</span>
-        </div>
-        <div className="flex justify-between text-sm mt-1">
-          <span className="text-gray-600">ROI</span>
-          <span className="font-bold text-gray-800">{isNaN(roi) ? "—" : roi.toFixed(1)}%</span>
+      <div className="bg-gray-50 rounded-xl p-3 space-y-1.5 text-xs">
+        <div className="flex justify-between text-gray-500"><span>售价折合人民币</span><span>¥{sellCny.toFixed(2)}</span></div>
+        <div className="flex justify-between text-gray-500"><span>平台佣金</span><span>-¥{commAmt.toFixed(2)}</span></div>
+        <div className="flex justify-between text-gray-500"><span>运费</span><span>-¥{sh.toFixed(2)}</span></div>
+        <div className="flex justify-between text-gray-500"><span>进货成本</span><span>-¥{p.toFixed(2)}</span></div>
+        <div className={`flex justify-between font-bold text-sm pt-1 border-t border-gray-200 ${color}`}>
+          <span>净利润</span><span>¥{profit.toFixed(2)} ({margin}%)</span>
         </div>
       </div>
     </div>
   );
 }
 
-// ── 国际节日日历 ──────────────────────────────────────────
-const HOLIDAYS = [
-  { date: "2026-01-01", name: "元旦", market: "全球", flag: "🌍" },
-  { date: "2026-01-25", name: "春节", market: "中国/东南亚", flag: "🇨🇳" },
-  { date: "2026-02-14", name: "情人节", market: "全球", flag: "💝" },
-  { date: "2026-03-08", name: "妇女节", market: "俄罗斯（购物高峰）", flag: "🇷🇺" },
-  { date: "2026-04-05", name: "复活节", market: "欧美", flag: "🐣" },
-  { date: "2026-05-01", name: "劳动节", market: "全球", flag: "🌍" },
-  { date: "2026-06-01", name: "儿童节", market: "中国", flag: "🇨🇳" },
-  { date: "2026-06-12", name: "俄罗斯国庆", market: "俄罗斯", flag: "🇷🇺" },
-  { date: "2026-09-10", name: "教师节", market: "中国", flag: "🇨🇳" },
-  { date: "2026-10-01", name: "国庆节", market: "中国", flag: "🇨🇳" },
-  { date: "2026-11-04", name: "俄罗斯民族统一日", market: "俄罗斯", flag: "🇷🇺" },
-  { date: "2026-11-11", name: "双十一", market: "中国（备货高峰）", flag: "🛒" },
-  { date: "2026-11-27", name: "黑色星期五", market: "全球", flag: "🛍️" },
-  { date: "2026-12-12", name: "双十二", market: "中国", flag: "🛒" },
-  { date: "2026-12-25", name: "圣诞节", market: "欧美/俄罗斯", flag: "🎄" },
-  { date: "2026-12-31", name: "新年前夜", market: "俄罗斯（重要）", flag: "🎆" },
-].sort((a, b) => a.date.localeCompare(b.date));
+function UnitConverter() {
+  const [val, setVal] = useState("1");
+  const [type, setType] = useState("weight");
+  const [from, setFrom] = useState("kg");
+  const [to, setTo] = useState("lb");
+  const UNITS: Record<string, Record<string, number>> = {
+    weight: { kg: 1, g: 0.001, lb: 0.453592, oz: 0.0283495, t: 1000 },
+    length: { m: 1, cm: 0.01, mm: 0.001, inch: 0.0254, ft: 0.3048, yard: 0.9144 },
+    area: { "m²": 1, "cm²": 0.0001, "ft²": 0.092903, "inch²": 0.00064516 },
+  };
+  const types = Object.keys(UNITS);
+  const units = Object.keys(UNITS[type]);
+  const result = ((parseFloat(val)||0) * UNITS[type][from] / UNITS[type][to]).toFixed(6).replace(/\.?0+$/, "");
+  return (
+    <div className="space-y-3">
+      <div className="flex gap-1">
+        {types.map(t=>(
+          <button key={t} onClick={()=>{setType(t);setFrom(Object.keys(UNITS[t])[0]);setTo(Object.keys(UNITS[t])[1]);}}
+            className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-all ${type===t?"bg-indigo-600 text-white":"bg-gray-100 text-gray-600 hover:bg-gray-200"}`}>
+            {{weight:"重量",length:"长度",area:"面积"}[t]}
+          </button>
+        ))}
+      </div>
+      <div className="flex gap-2 items-center">
+        <input value={val} onChange={e=>setVal(e.target.value)} type="number"
+          className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300" />
+        <select value={from} onChange={e=>setFrom(e.target.value)}
+          className="border border-gray-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-none">
+          {units.map(u=><option key={u}>{u}</option>)}
+        </select>
+        <span className="text-gray-400">→</span>
+        <select value={to} onChange={e=>setTo(e.target.value)}
+          className="border border-gray-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-none">
+          {units.map(u=><option key={u}>{u}</option>)}
+        </select>
+      </div>
+      <div className="bg-indigo-50 rounded-xl p-3 text-center">
+        <span className="text-sm text-gray-500">{val} {from} = </span>
+        <span className="text-lg font-bold text-indigo-700">{result} {to}</span>
+      </div>
+    </div>
+  );
+}
+
+function EmojiPicker() {
+  const [search, setSearch] = useState("");
+  const [copied, setCopied] = useState<string|null>(null);
+  const EMOJIS = [
+    {cat:"常用", items:["✅","❌","⭐","🔥","💯","📦","🚀","💰","🎁","📸","🔑","💡","❤️","👍","😊","🎯","💎","🏆","✨","🌟"]},
+    {cat:"物品", items:["📱","💻","⌚","🎮","🎧","📷","🖥️","⌨️","🖱️","🔋","💾","📺","📻","🔭","🔬","⚙️","🔧","🔨","🪛","🗂️"]},
+    {cat:"运输", items:["✈️","🚢","🚂","🚚","🏭","📦","🏗️","⛵","🚁","🛸","🚠","🛳️","🚀","🛩️","🚤","⚓","🗺️","🌍","🌏","🌎"]},
+    {cat:"节日", items:["🎄","🎃","🎆","🎇","🧨","🎉","🎊","🎋","🎍","🎎","🎏","🎐","🎑","🧧","🎀","🎁","🏮","🧸","🪅","🎠"]},
+    {cat:"标记", items:["🔴","🟠","🟡","🟢","🔵","🟣","⚫","⚪","🟤","🔶","🔷","🔸","🔹","🔺","🔻","💠","🔘","🔲","🔳","▪️"]},
+  ];
+  const allItems = EMOJIS.flatMap(g=>g.items);
+  const filtered = search ? allItems.filter(e=>e.includes(search)) : null;
+  const copy = (e:string) => { navigator.clipboard.writeText(e); setCopied(e); setTimeout(()=>setCopied(null),1500); };
+  return (
+    <div className="space-y-3">
+      <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="搜索 emoji..."
+        className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300" />
+      {copied && <div className="text-center text-xs text-green-600 font-medium">✅ 已复制 {copied}</div>}
+      <div className="space-y-2 max-h-52 overflow-y-auto">
+        {(filtered ? [{cat:"搜索结果",items:filtered}] : EMOJIS).map(g=>(
+          <div key={g.cat}>
+            <p className="text-xs text-gray-400 mb-1">{g.cat}</p>
+            <div className="flex flex-wrap gap-1">
+              {g.items.map(e=>(
+                <button key={e} onClick={()=>copy(e)}
+                  className={`text-xl hover:bg-indigo-50 rounded-lg p-1 transition-all ${copied===e?"bg-green-50 scale-125":""}`}>
+                  {e}
+                </button>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function TextTools() {
+  const [text, setText] = useState("");
+  const [mode, setMode] = useState("upper");
+  const transforms: Record<string,()=>string> = {
+    upper: ()=>text.toUpperCase(),
+    lower: ()=>text.toLowerCase(),
+    title: ()=>text.replace(/\b\w/g,c=>c.toUpperCase()),
+    count: ()=>`字数: ${text.length} | 词数: ${text.trim().split(/\s+/).filter(Boolean).length} | 行数: ${text.split("\n").length}`,
+    trim: ()=>text.trim().replace(/\s+/g," "),
+  };
+  const result = transforms[mode]?.() ?? text;
+  return (
+    <div className="space-y-3">
+      <div className="flex gap-1 flex-wrap">
+        {[["upper","全大写"],["lower","全小写"],["title","首字母大写"],["count","字数统计"],["trim","去空格"]].map(([m,l])=>(
+          <button key={m} onClick={()=>setMode(m)}
+            className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${mode===m?"bg-indigo-600 text-white":"bg-gray-100 text-gray-600 hover:bg-gray-200"}`}>
+            {l}
+          </button>
+        ))}
+      </div>
+      <textarea value={text} onChange={e=>setText(e.target.value)} rows={3} placeholder="输入文字..."
+        className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 resize-none" />
+      {text && (
+        <div className="bg-gray-50 rounded-xl p-3">
+          <div className="flex justify-between items-start">
+            <p className="text-sm text-gray-700 flex-1">{result}</p>
+            <button onClick={()=>navigator.clipboard.writeText(result)}
+              className="ml-2 text-xs text-indigo-600 hover:underline flex-shrink-0">复制</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 function HolidayCalendar() {
-  const today = new Date().toISOString().slice(0, 10);
-  const upcoming = HOLIDAYS.filter(h => h.date >= today).slice(0, 6);
-
-  const daysUntil = (dateStr: string) => {
-    const diff = new Date(dateStr).getTime() - new Date(today).getTime();
-    return Math.ceil(diff / 86400000);
-  };
-
+  const year = new Date().getFullYear();
+  const HOLIDAYS = [
+    {date:`${year}-01-01`,name:"元旦",market:"🌍全球"},
+    {date:`${year}-02-14`,name:"情人节",market:"🌍欧美"},
+    {date:`${year}-03-08`,name:"妇女节",market:"🇷🇺俄罗斯"},
+    {date:`${year}-03-17`,name:"圣帕特里克节",market:"🇺🇸美国"},
+    {date:`${year}-04-01`,name:"愚人节",market:"🌍全球"},
+    {date:`${year}-04-20`,name:"复活节",market:"🌍欧美"},
+    {date:`${year}-05-12`,name:"母亲节",market:"🌍欧美"},
+    {date:`${year}-06-16`,name:"父亲节",market:"🌍欧美"},
+    {date:`${year}-07-04`,name:"美国独立日",market:"🇺🇸美国"},
+    {date:`${year}-10-31`,name:"万圣节",market:"🌍欧美"},
+    {date:`${year}-11-28`,name:"感恩节",market:"🇺🇸美国"},
+    {date:`${year}-11-29`,name:"黑色星期五",market:"🌍全球"},
+    {date:`${year}-12-02`,name:"网络星期一",market:"🌍全球"},
+    {date:`${year}-12-25`,name:"圣诞节",market:"🌍全球"},
+    {date:`${year}-12-31`,name:"新年前夜",market:"🌍全球"},
+  ];
+  const today = new Date();
+  const upcoming = HOLIDAYS.filter(h=>new Date(h.date)>=today).slice(0,6);
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 p-4">
-      <h3 className="font-semibold text-sm text-gray-800 mb-3">🗓️ 节日日历</h3>
-      <div className="space-y-2">
-        {upcoming.map(h => {
-          const days = daysUntil(h.date);
-          return (
-            <div key={h.date} className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="text-lg">{h.flag}</span>
-                <div>
-                  <p className="text-xs font-semibold text-gray-800">{h.name}</p>
-                  <p className="text-[10px] text-gray-400">{h.market} · {h.date}</p>
-                </div>
+    <div className="space-y-2">
+      <p className="text-xs text-gray-400">接下来的重要节日（备货参考）</p>
+      {upcoming.map(h=>{
+        const d = new Date(h.date);
+        const days = Math.ceil((d.getTime()-today.getTime())/(1000*60*60*24));
+        return (
+          <div key={h.date} className="flex items-center justify-between p-2.5 bg-gray-50 rounded-xl">
+            <div className="flex items-center gap-2">
+              <div className="text-center w-10">
+                <p className="text-xs text-gray-400">{d.getMonth()+1}月</p>
+                <p className="text-sm font-bold text-gray-800">{d.getDate()}日</p>
               </div>
-              <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${days <= 14 ? "bg-red-100 text-red-600" : days <= 30 ? "bg-orange-100 text-orange-600" : "bg-gray-100 text-gray-500"}`}>
-                {days === 0 ? "今天" : `${days}天后`}
-              </span>
+              <div>
+                <p className="text-xs font-semibold text-gray-800">{h.name}</p>
+                <p className="text-[10px] text-gray-400">{h.market}</p>
+              </div>
             </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-// ── 物流时效参考 ──────────────────────────────────────────
-const LOGISTICS = [
-  { route: "中国→俄罗斯", methods: [
-    { name: "俄速通/中俄班列", days: "25-35天", price: "偏高", reliable: true },
-    { name: "平邮EMS", days: "30-50天", price: "低", reliable: false },
-    { name: "空运快递", days: "7-15天", price: "高", reliable: true },
-  ]},
-  { route: "中国→东南亚", methods: [
-    { name: "J&T/顺丰国际", days: "5-10天", price: "中", reliable: true },
-    { name: "Shopee物流", days: "7-14天", price: "低", reliable: true },
-    { name: "EMS小包", days: "10-20天", price: "低", reliable: false },
-  ]},
-  { route: "中国→中东", methods: [
-    { name: "中东专线", days: "10-20天", price: "中", reliable: true },
-    { name: "DHL/FedEx", days: "5-7天", price: "很高", reliable: true },
-  ]},
-];
-
-function LogisticsRef() {
-  const [open, setOpen] = useState<string | null>("中国→俄罗斯");
-  return (
-    <div className="bg-white rounded-2xl border border-gray-200 p-4">
-      <h3 className="font-semibold text-sm text-gray-800 mb-3">📦 物流时效参考</h3>
-      <div className="space-y-2">
-        {LOGISTICS.map(l => (
-          <div key={l.route}>
-            <button onClick={() => setOpen(open === l.route ? null : l.route)}
-              className="w-full flex justify-between items-center text-xs font-semibold text-gray-700 py-1.5 px-2 bg-gray-50 rounded-lg">
-              <span>{l.route}</span>
-              <span>{open === l.route ? "▲" : "▼"}</span>
-            </button>
-            {open === l.route && (
-              <div className="mt-1 space-y-1">
-                {l.methods.map(m => (
-                  <div key={m.name} className="flex justify-between items-center px-2 py-1.5 text-xs text-gray-600 border-b border-gray-50">
-                    <div>
-                      <span className="font-medium">{m.name}</span>
-                      {m.reliable && <span className="ml-1 text-[9px] bg-green-100 text-green-600 px-1 rounded">推荐</span>}
-                    </div>
-                    <div className="text-right">
-                      <span className="text-gray-800 font-medium">{m.days}</span>
-                      <span className="ml-2 text-gray-400">运费{m.price}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+            <span className={`text-xs font-bold px-2 py-1 rounded-full ${days<=30?"bg-red-100 text-red-600":days<=60?"bg-orange-100 text-orange-600":"bg-gray-100 text-gray-500"}`}>
+              {days}天后
+            </span>
           </div>
-        ))}
-      </div>
+        );
+      })}
     </div>
   );
 }
 
-// ── 主页面 ──────────────────────────────────────────
-export function MiniToolsPage() {
+function AIPrompts() {
+  const [copied, setCopied] = useState<number|null>(null);
+  const PROMPTS = [
+    {title:"写商品标题", prompt:`请帮我写一个{平台}平台的商品标题，商品是{商品名}，目标市场是{国家}，要求包含核心关键词，控制在{字数}字以内，吸引买家点击。`},
+    {title:"翻译商品描述", prompt:`请将以下中文商品描述翻译成{语言}，保留关键卖点，语言要自然流畅，符合当地消费者习惯：\n{商品描述}`},
+    {title:"回复差评", prompt:`买家给我的商品留下了这条差评："{差评内容}"。请帮我用{语言}写一条专业、真诚的回复，表达歉意并提供解决方案，字数控制在100字内。`},
+    {title:"写卖点文案", prompt:`我的商品是{商品名}，主要特点是{特点1}、{特点2}、{特点3}。请帮我写3条简短有力的卖点描述，每条不超过20个字，突出用户价值。`},
+    {title:"市场调研分析", prompt:`我想在{平台}上卖{商品类目}，请帮我分析：1）目标消费群体是谁？2）主要竞争对手有哪些特点？3）差异化机会在哪里？4）定价建议是多少？`},
+    {title:"关键词挖掘", prompt:`商品：{商品名}，平台：{平台}，目标市场：{国家}。请帮我列出20个买家可能搜索的关键词，包括：核心词、长尾词、场景词，按搜索量从高到低排列。`},
+  ];
+  const copy = (p: {title:string,prompt:string}, i:number) => {
+    navigator.clipboard.writeText(p.prompt);
+    setCopied(i);
+    setTimeout(()=>setCopied(null), 1500);
+  };
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-2 mb-2">
-        <span className="text-xl">🧰</span>
-        <div>
-          <h2 className="text-base font-bold text-gray-800">实用小工具</h2>
-          <p className="text-xs text-gray-400">跨境常用工具集，随手可查</p>
+    <div className="space-y-2 max-h-64 overflow-y-auto">
+      <p className="text-xs text-gray-400 sticky top-0 bg-white pb-1">点击复制 AI 提示词，粘贴到 DeepSeek / ChatGPT 使用</p>
+      {PROMPTS.map((p,i)=>(
+        <button key={i} onClick={()=>copy(p,i)}
+          className={`w-full text-left p-2.5 rounded-xl border transition-all ${copied===i?"border-green-300 bg-green-50":"border-gray-100 hover:border-indigo-200 hover:bg-indigo-50/50"}`}>
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-xs font-semibold text-gray-800">{p.title}</span>
+            <span className={`text-[10px] px-2 py-0.5 rounded-full ${copied===i?"bg-green-100 text-green-600":"bg-indigo-100 text-indigo-600"}`}>
+              {copied===i?"✅ 已复制":"点击复制"}
+            </span>
+          </div>
+          <p className="text-[11px] text-gray-400 line-clamp-2 leading-relaxed">{p.prompt}</p>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function FBACalc() {
+  const [price, setPrice] = useState("19.99");
+  const [weight, setWeight] = useState("0.3");
+  const [size, setSize] = useState("standard");
+  const p = parseFloat(price)||0, w = parseFloat(weight)||0;
+  // 简化版FBA费用估算
+  const refFee = p * 0.15;
+  const fbaFee = size === "standard" ? (w<=0.25?3.22:w<=0.5?4.17:w<=1?5.14:5.48+Math.max(0,w-1)*0.47) : 
+    (w<=1?8.96:w<=2?10.89:w<=3?13.48:15.07+Math.max(0,w-3)*0.24);
+  const storageFee = 0.68; // 月均
+  const total = refFee + fbaFee + storageFee;
+  const profit = p - total;
+  return (
+    <div className="space-y-3">
+      <p className="text-xs text-gray-400">亚马逊美国站FBA费用估算（仅供参考）</p>
+      <div className="grid grid-cols-3 gap-2">
+        <div><label className="text-xs text-gray-500 mb-1 block">售价($)</label>
+          <input value={price} onChange={e=>setPrice(e.target.value)} type="number"
+            className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"/></div>
+        <div><label className="text-xs text-gray-500 mb-1 block">重量(lb)</label>
+          <input value={weight} onChange={e=>setWeight(e.target.value)} type="number"
+            className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"/></div>
+        <div><label className="text-xs text-gray-500 mb-1 block">尺寸</label>
+          <select value={size} onChange={e=>setSize(e.target.value)}
+            className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-sm bg-white focus:outline-none">
+            <option value="standard">标准</option>
+            <option value="oversize">大件</option>
+          </select></div>
+      </div>
+      <div className="bg-gray-50 rounded-xl p-3 space-y-1.5 text-xs">
+        <div className="flex justify-between text-gray-500"><span>平台佣金(15%)</span><span>-${refFee.toFixed(2)}</span></div>
+        <div className="flex justify-between text-gray-500"><span>FBA配送费</span><span>-${fbaFee.toFixed(2)}</span></div>
+        <div className="flex justify-between text-gray-500"><span>月仓储费(估)</span><span>-${storageFee.toFixed(2)}</span></div>
+        <div className={`flex justify-between font-bold text-sm pt-1 border-t border-gray-200 ${profit>0?"text-green-600":"text-red-500"}`}>
+          <span>预估利润</span><span>${profit.toFixed(2)}</span>
         </div>
       </div>
-      <CurrencyConverter />
-      <AdBanner slot="mintools-top" size="inline" />
-      <ProfitCalc />
-      <HolidayCalendar />
-      <LogisticsRef />
-      <AdBanner slot="mintools-bottom" size="banner" />
+    </div>
+  );
+}
+
+// ─── 主页面 ────────────────────────────────────────────
+
+const TOOLS = [
+  { id: "currency", emoji: "💱", title: "汇率换算", desc: "13种货币实时换算", tag: "实时", component: <CurrencyConverter /> },
+  { id: "profit", emoji: "💰", title: "利润计算器", desc: "含运费佣金汇率", tag: "内置", component: <ProfitCalc /> },
+  { id: "unit", emoji: "📏", title: "单位换算", desc: "重量/长度/面积互换", tag: "免费", component: <UnitConverter /> },
+  { id: "emoji", emoji: "😊", title: "Emoji大全", desc: "一键复制，Listing必备", tag: "免费", component: <EmojiPicker /> },
+  { id: "text", emoji: "📝", title: "文字工具", desc: "大小写/字数/去空格", tag: "免费", component: <TextTools /> },
+  { id: "holiday", emoji: "📅", title: "节日日历", desc: "欧美/俄罗斯重要节日", tag: "内置", component: <HolidayCalendar /> },
+  { id: "ai", emoji: "🤖", title: "AI提示词", desc: "跨境卖家专用指令", tag: "独家", component: <AIPrompts /> },
+  { id: "fba", emoji: "📦", title: "FBA费用估算", desc: "亚马逊美国站快速测算", tag: "内置", component: <FBACalc /> },
+];
+
+const TAG_COLORS: Record<string,string> = {
+  "实时": "bg-green-100 text-green-700",
+  "内置": "bg-indigo-100 text-indigo-700",
+  "免费": "bg-gray-100 text-gray-600",
+  "独家": "bg-purple-100 text-purple-700",
+};
+
+export function MiniToolsPage() {
+  const [active, setActive] = useState("currency");
+  const current = TOOLS.find(t=>t.id===active)!;
+
+  return (
+    <div className="flex gap-4">
+      {/* 左侧工具列表 */}
+      <div className="w-40 flex-shrink-0 space-y-1">
+        <p className="text-[10px] text-gray-400 font-medium px-2 pb-1">选择工具</p>
+        {TOOLS.map(t=>(
+          <button key={t.id} onClick={()=>setActive(t.id)}
+            className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-left transition-all ${active===t.id?"bg-indigo-600 text-white shadow":"hover:bg-gray-100 text-gray-700"}`}>
+            <span className="text-base">{t.emoji}</span>
+            <div className="min-w-0">
+              <p className="text-xs font-semibold truncate">{t.title}</p>
+              {active===t.id && <p className="text-[10px] text-indigo-200 truncate">{t.desc}</p>}
+            </div>
+          </button>
+        ))}
+      </div>
+
+      {/* 右侧工具内容 */}
+      <div className="flex-1 bg-white border border-gray-100 rounded-2xl overflow-hidden">
+        {/* 工具头部 */}
+        <div className="px-5 py-4 border-b border-gray-50 flex items-center gap-3"
+          style={{background:"linear-gradient(135deg,#f8f9ff,#f0f4ff)"}}>
+          <span className="text-2xl">{current.emoji}</span>
+          <div className="flex-1">
+            <div className="flex items-center gap-2">
+              <h3 className="text-sm font-bold text-gray-900">{current.title}</h3>
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${TAG_COLORS[current.tag]??""}`}>{current.tag}</span>
+            </div>
+            <p className="text-xs text-gray-500 mt-0.5">{current.desc}</p>
+          </div>
+        </div>
+
+        {/* 工具主体 */}
+        <div className="p-5">
+          {current.component}
+        </div>
+      </div>
     </div>
   );
 }
