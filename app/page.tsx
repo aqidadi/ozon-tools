@@ -7,6 +7,7 @@ import { AddProductModal } from "@/components/AddProductModal";
 import { PickerPage } from "@/components/PickerPage";
 import { GuidePage, ToolsPage } from "@/components/GuidePage";
 import { ClockPage } from "@/components/ClockPage";
+import { MiniToolsPage } from "@/components/MiniToolsPage";
 import { HotPage } from "@/components/HotPage";
 import { UrlImportBox } from "@/components/UrlImportBox";
 import { UserBar } from "@/components/UserBar";
@@ -16,7 +17,7 @@ import { exportToExcel } from "@/lib/export";
 import { Product, Settings, LANGUAGES, PLATFORMS, getPlatform } from "@/lib/types";
 import {
   ShoppingBag, Settings2, Download, Plus, TrendingUp,
-  BookOpen, Languages, Bell, BarChart2, Package, Globe, Zap, Shield, Flame, Clock
+  BookOpen, Languages, Bell, BarChart2, Package, Globe, Zap, Shield, Flame, Clock, Wrench
 } from "lucide-react";
 
 const DEFAULT_SETTINGS: Settings = {
@@ -27,7 +28,7 @@ const DEFAULT_SETTINGS: Settings = {
   packagingCost: 2,
 };
 
-type Tab = "landing" | "products" | "hot" | "picker" | "guide" | "tools" | "clock" | "monitor" | "analytics" | "settings";
+type Tab = "landing" | "products" | "hot" | "picker" | "guide" | "tools" | "mintools" | "clock" | "monitor" | "analytics" | "settings";
 
 const NAV_ITEMS = [
   { id: "landing",   label: "首页",     icon: Globe,      color: "blue" },
@@ -36,7 +37,8 @@ const NAV_ITEMS = [
   { id: "picker",    label: "选品参考", icon: TrendingUp, color: "orange" },
   { id: "guide",     label: "新手指南", icon: BookOpen,   color: "indigo" },
   { id: "tools",     label: "工具导航", icon: Zap,        color: "green" },
-  { id: "clock",     label: "世界时间", icon: Clock,      color: "teal" },
+  { id: "mintools",  label: "实用工具", icon: Wrench,     color: "teal" },
+  { id: "clock",     label: "世界时间", icon: Clock,      color: "cyan" },
   { id: "monitor",   label: "价格监控", icon: Bell,       color: "yellow", badge: "即将上线" },
   { id: "analytics", label: "竞品分析", icon: BarChart2,  color: "pink",   badge: "即将上线" },
   { id: "settings",  label: "参数设置", icon: Settings2,  color: "gray" },
@@ -51,6 +53,7 @@ const COLOR_CLASSES: Record<string, { active: string; icon: string }> = {
   gray:   { active: "bg-gray-100 text-gray-800 border-l-2 border-gray-500",  icon: "text-gray-500" },
   red:    { active: "bg-red-50 text-red-700 border-l-2 border-red-500",      icon: "text-red-500" },
   teal:   { active: "bg-teal-50 text-teal-700 border-l-2 border-teal-600",   icon: "text-teal-500" },
+  cyan:   { active: "bg-cyan-50 text-cyan-700 border-l-2 border-cyan-600",   icon: "text-cyan-500" },
   purple: { active: "bg-purple-50 text-purple-700 border-l-2 border-purple-600", icon: "text-purple-500" },
 };
 
@@ -264,6 +267,7 @@ export default function Home() {
           {tab === "picker" && <PickerPage />}
           {tab === "guide" && <GuidePage />}
           {tab === "tools" && <ToolsPage />}
+          {tab === "mintools" && <MiniToolsPage />}
           {tab === "clock" && <ClockPage />}
           {tab === "settings" && <SettingsPanel settings={settings} onChange={setSettings} />}
           {tab === "monitor" && (
