@@ -147,12 +147,10 @@ function ProfileModal({ onClose }: { onClose: () => void }) {
 
 // ── 升级弹窗 ──────────────────────────────────────────────
 function UpgradeModal({ onClose, user }: { onClose: () => void; user: { email: string } }) {
-  const AFDIAN_URL = process.env.NEXT_PUBLIC_AFDIAN_URL || "https://www.afdian.com/a/Crossly";
-
   const plans = [
-    { name: "月度 Pro", price: "¥9.9", period: "/月", tag: "推广价" },
-    { name: "季度 Pro", price: "¥19.9", period: "/3月", tag: "省¥9.8" },
-    { name: "年度 Pro", price: "¥99", period: "/年", tag: "最划算" },
+    { name: "月度 Pro", price: "¥9.9", period: "/月", tag: "推广价", months: 1 },
+    { name: "季度 Pro", price: "¥19.9", period: "/3月", tag: "省¥9.8", months: 3 },
+    { name: "年度 Pro", price: "¥99", period: "/年", tag: "最划算", months: 12 },
   ];
 
   return (
@@ -190,24 +188,35 @@ function UpgradeModal({ onClose, user }: { onClose: () => void; user: { email: s
           ))}
         </div>
 
-        {/* 购买提示 */}
-        <div className="mx-4 mb-3 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
-          <p className="text-[11px] text-amber-700 font-semibold mb-0.5">购买步骤</p>
-          <p className="text-[11px] text-amber-600">1. 点击下方前往爱发电选套餐</p>
-          <p className="text-[11px] text-amber-600">2. 备注填写邮箱：<strong>{user.email}</strong></p>
-          <p className="text-[11px] text-amber-600">3. 支付后5分钟内自动激活</p>
-          <p className="text-[11px] text-orange-500 mt-1">⚠️ 微信内打不开？请复制链接用Safari/浏览器打开</p>
+        {/* 支付宝收款码 */}
+        <div className="mx-4 mb-3">
+          <div className="bg-blue-50 border border-blue-100 rounded-xl p-3">
+            <p className="text-xs font-semibold text-blue-700 mb-2 text-center">扫码付款 · 支付宝</p>
+            <div className="flex justify-center mb-2">
+              <img src="/alipay-qr.jpg" alt="支付宝收款码"
+                className="w-36 h-36 object-contain rounded-lg border border-blue-200" />
+            </div>
+            <div className="bg-white rounded-lg px-3 py-2 space-y-1">
+              <p className="text-[11px] text-gray-600 flex items-center gap-1">
+                <span className="text-blue-500 font-bold">1.</span> 扫码付款，备注填写你的邮箱
+              </p>
+              <p className="text-[11px] text-gray-600 flex items-center gap-1">
+                <span className="text-blue-500 font-bold">2.</span> 邮箱：<strong className="text-gray-800 break-all">{user.email}</strong>
+              </p>
+              <p className="text-[11px] text-gray-600 flex items-center gap-1">
+                <span className="text-blue-500 font-bold">3.</span> 付款截图发至 <strong className="text-blue-600">hi@crossly.cn</strong>
+              </p>
+              <p className="text-[11px] text-gray-600 flex items-center gap-1">
+                <span className="text-blue-500 font-bold">4.</span> 24小时内手动激活会员
+              </p>
+            </div>
+          </div>
         </div>
 
-        <div className="px-4 pb-4 flex gap-2">
-          <button onClick={onClose} className="flex-1 py-2 border border-gray-200 text-gray-500 rounded-xl text-xs hover:bg-gray-50">
+        <div className="px-4 pb-4">
+          <button onClick={onClose} className="w-full py-2 border border-gray-200 text-gray-500 rounded-xl text-xs hover:bg-gray-50">
             以后再说
           </button>
-          <a href={AFDIAN_URL} target="_blank" rel="noopener noreferrer"
-            className="flex-1 flex items-center justify-center gap-1 py-2 bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-xl text-xs font-semibold hover:opacity-90"
-          >
-            <ExternalLink size={12} />去爱发电购买
-          </a>
         </div>
       </div>
     </div>
