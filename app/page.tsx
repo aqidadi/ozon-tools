@@ -12,6 +12,7 @@ import { MiniToolsPage } from "@/components/MiniToolsPage";
 import { AdBanner } from "@/components/AdBanner";
 import { HotPage } from "@/components/HotPage";
 import { UrlImportBox } from "@/components/UrlImportBox";
+import { YiwugoSearch } from "@/components/YiwugoSearch";
 import { UserBar } from "@/components/UserBar";
 import { AuthModal } from "@/components/AuthModal";
 import { useAuth } from "@/lib/auth-context";
@@ -306,7 +307,9 @@ export default function Home() {
               {/* 已登录内容 */}
               {user && (
                 <>
-              {/* URL导入框 */}
+              {/* 义乌购货源搜索 */}
+              <YiwugoSearch onImport={handleAddProduct} />
+              {/* 1688 URL导入框（需插件，服务端被封） */}
               <UrlImportBox onImport={handleAddProduct} onBatchImport={(ps) => setProducts(prev => [...ps, ...prev])} />
               {/* Stats — compact bar */}
               {products.length > 0 && (
