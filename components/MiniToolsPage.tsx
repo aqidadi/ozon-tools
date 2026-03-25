@@ -258,35 +258,101 @@ function HolidayCalendar() {
 }
 
 function AIPrompts() {
-  const [copied, setCopied] = useState<number|null>(null);
-  const PROMPTS = [
-    {title:"写商品标题", prompt:`请帮我写一个{平台}平台的商品标题，商品是{商品名}，目标市场是{国家}，要求包含核心关键词，控制在{字数}字以内，吸引买家点击。`},
-    {title:"翻译商品描述", prompt:`请将以下中文商品描述翻译成{语言}，保留关键卖点，语言要自然流畅，符合当地消费者习惯：\n{商品描述}`},
-    {title:"回复差评", prompt:`买家给我的商品留下了这条差评："{差评内容}"。请帮我用{语言}写一条专业、真诚的回复，表达歉意并提供解决方案，字数控制在100字内。`},
-    {title:"写卖点文案", prompt:`我的商品是{商品名}，主要特点是{特点1}、{特点2}、{特点3}。请帮我写3条简短有力的卖点描述，每条不超过20个字，突出用户价值。`},
-    {title:"市场调研分析", prompt:`我想在{平台}上卖{商品类目}，请帮我分析：1）目标消费群体是谁？2）主要竞争对手有哪些特点？3）差异化机会在哪里？4）定价建议是多少？`},
-    {title:"关键词挖掘", prompt:`商品：{商品名}，平台：{平台}，目标市场：{国家}。请帮我列出20个买家可能搜索的关键词，包括：核心词、长尾词、场景词，按搜索量从高到低排列。`},
+  const [product, setProduct] = useState("");
+  const [platform, setPlatform] = useState("Ozon");
+  const [lang, setLang] = useState("俄语");
+  const [task, setTask] = useState("title");
+  const [result, setResult] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [error, setError] = useState("");
+
+  const TASKS = [
+    { id: "title", label: "🏷️ 写商品标题", desc: "生成5个平台标题" },
+    { id: "keywords", label: "🔍 关键词挖掘", desc: "生成20个搜索词" },
+    { id: "description", label: "✨ 写卖点文案", desc: "3条精炼卖点" },
+    { id: "reply", label: "💬 回复差评", desc: "专业回复模板" },
   ];
-  const copy = (p: {title:string,prompt:string}, i:number) => {
-    navigator.clipboard.writeText(p.prompt);
-    setCopied(i);
-    setTimeout(()=>setCopied(null), 1500);
+  const PLATFORMS = ["Ozon", "Shopee", "TikTok Shop", "Amazon", "速卖通", "Lazada"];
+  const LANGS = ["俄语", "英语", "泰语", "越南语", "印尼语", "马来语", "阿拉伯语", "中文"];
+
+  const generate = async () => {
+    if (!product.trim()) return;
+    setLoading(true); setResult(""); setError(""); setCopied(false);
+    try {
+      const resp = await fetch("/api/ai", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ product: product.trim(), platform, lang, task }),
+      });
+      const data = await resp.json();
+      if (!data.ok) throw new Error(data.error ?? "生成失败");
+      setResult(data.content);
+    } catch (e: any) {
+      setError(e.message);
+    }
+    setLoading(false);
   };
+
+  const copyResult = () => {
+    if (!result) return;
+    navigator.clipboard.writeText(result);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  };
+
   return (
-    <div className="space-y-2 max-h-64 overflow-y-auto">
-      <p className="text-xs text-gray-400 sticky top-0 bg-white pb-1">点击复制 AI 提示词，粘贴到 DeepSeek / ChatGPT 使用</p>
-      {PROMPTS.map((p,i)=>(
-        <button key={i} onClick={()=>copy(p,i)}
-          className={`w-full text-left p-2.5 rounded-xl border transition-all ${copied===i?"border-green-300 bg-green-50":"border-gray-100 hover:border-indigo-200 hover:bg-indigo-50/50"}`}>
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-xs font-semibold text-gray-800">{p.title}</span>
-            <span className={`text-[10px] px-2 py-0.5 rounded-full ${copied===i?"bg-green-100 text-green-600":"bg-indigo-100 text-indigo-600"}`}>
-              {copied===i?"✅ 已复制":"点击复制"}
-            </span>
-          </div>
-          <p className="text-[11px] text-gray-400 line-clamp-2 leading-relaxed">{p.prompt}</p>
+    <div className="space-y-3">
+      {/* 任务选择 */}
+      <div className="grid grid-cols-2 gap-1.5">
+        {TASKS.map(t => (
+          <button key={t.id} onClick={() => { setTask(t.id); setResult(""); }}
+            className={`text-left p-2 rounded-xl border text-xs transition-all ${task === t.id ? "border-indigo-300 bg-indigo-50 text-indigo-700" : "border-gray-100 hover:border-indigo-200 text-gray-600"}`}>
+            <div className="font-semibold">{t.label}</div>
+            <div className="text-[10px] opacity-60 mt-0.5">{t.desc}</div>
+          </button>
+        ))}
+      </div>
+
+      {/* 输入区 */}
+      <div className="space-y-2">
+        <input value={product} onChange={e => setProduct(e.target.value)}
+          placeholder="输入商品名，如：草编遮阳帽、蓝牙耳机..."
+          className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-gray-50" />
+        <div className="flex gap-2">
+          <select value={platform} onChange={e => setPlatform(e.target.value)}
+            className="flex-1 border border-gray-200 rounded-xl px-3 py-1.5 text-xs bg-white focus:outline-none">
+            {PLATFORMS.map(p => <option key={p}>{p}</option>)}
+          </select>
+          <select value={lang} onChange={e => setLang(e.target.value)}
+            className="flex-1 border border-gray-200 rounded-xl px-3 py-1.5 text-xs bg-white focus:outline-none">
+            {LANGS.map(l => <option key={l}>{l}</option>)}
+          </select>
+        </div>
+        <button onClick={generate} disabled={loading || !product.trim()}
+          className="w-full py-2.5 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+          style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)" }}>
+          {loading ? (
+            <><span className="animate-spin inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full" /> AI 生成中...</>
+          ) : "🤖 立即生成"}
         </button>
-      ))}
+      </div>
+
+      {/* 结果 */}
+      {error && <div className="bg-red-50 border border-red-100 rounded-xl p-3 text-xs text-red-600">⚠️ {error}</div>}
+      {result && (
+        <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-3 space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-indigo-700">生成结果</span>
+            <button onClick={copyResult}
+              className={`text-xs px-3 py-1 rounded-lg font-medium transition-all ${copied ? "bg-green-100 text-green-600" : "bg-indigo-600 text-white hover:bg-indigo-700"}`}>
+              {copied ? "✅ 已复制" : "复制全部"}
+            </button>
+          </div>
+          <pre className="text-xs text-gray-700 whitespace-pre-wrap leading-relaxed max-h-48 overflow-y-auto font-sans">{result}</pre>
+          <button onClick={generate} className="text-[11px] text-indigo-500 hover:underline">🔄 重新生成</button>
+        </div>
+      )}
     </div>
   );
 }
@@ -341,7 +407,7 @@ const TOOLS = [
   { id: "emoji", emoji: "😊", title: "Emoji大全", desc: "一键复制，Listing必备", tag: "免费", component: <EmojiPicker /> },
   { id: "text", emoji: "📝", title: "文字工具", desc: "大小写/字数/去空格", tag: "免费", component: <TextTools /> },
   { id: "holiday", emoji: "📅", title: "节日日历", desc: "欧美/俄罗斯重要节日", tag: "内置", component: <HolidayCalendar /> },
-  { id: "ai", emoji: "🤖", title: "AI提示词", desc: "跨境卖家专用指令", tag: "独家", component: <AIPrompts /> },
+  { id: "ai", emoji: "🤖", title: "AI文案生成", desc: "DeepSeek驱动，真实生成", tag: "独家", component: <AIPrompts /> },
   { id: "fba", emoji: "📦", title: "FBA费用估算", desc: "亚马逊美国站快速测算", tag: "内置", component: <FBACalc /> },
 ];
 
