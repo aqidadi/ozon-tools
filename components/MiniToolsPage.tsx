@@ -55,6 +55,20 @@ function ProfitCalc() {
   const [ship, setShip] = useState("2.5");
   const [comm, setComm] = useState("15");
   const [rate, setRate] = useState("12");
+  const [currency, setCurrency] = useState("USD");
+  const CURRENCIES = [
+    { code: "USD", symbol: "$", name: "美元" },
+    { code: "RUB", symbol: "₽", name: "卢布" },
+    { code: "THB", symbol: "฿", name: "泰铢" },
+    { code: "VND", symbol: "₫", name: "越南盾" },
+    { code: "IDR", symbol: "Rp", name: "印尼盾" },
+    { code: "MYR", symbol: "RM", name: "马来西亚令吉" },
+    { code: "AED", symbol: "د.إ", name: "迪拉姆" },
+    { code: "BRL", symbol: "R$", name: "巴西雷亚尔" },
+    { code: "EUR", symbol: "€", name: "欧元" },
+    { code: "GBP", symbol: "£", name: "英镑" },
+  ];
+  const cur = CURRENCIES.find(c => c.code === currency) || CURRENCIES[0];
   const p = parseFloat(cost)||0, s = parseFloat(sell)||0, sh = parseFloat(ship)||0, c = parseFloat(comm)||0, r = parseFloat(rate)||1;
   const sellCny = s * r;
   const commAmt = sellCny * c / 100;
@@ -63,13 +77,25 @@ function ProfitCalc() {
   const color = profit > 0 ? "text-green-600" : "text-red-500";
   return (
     <div className="space-y-3">
+      {/* 货币选择 */}
+      <div>
+        <label className="text-xs text-gray-500 mb-1 block">售价货币</label>
+        <div className="flex flex-wrap gap-1.5">
+          {CURRENCIES.map(c => (
+            <button key={c.code} onClick={() => setCurrency(c.code)}
+              className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${currency === c.code ? "bg-indigo-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}>
+              {c.symbol} {c.code}
+            </button>
+          ))}
+        </div>
+      </div>
       <div className="grid grid-cols-2 gap-2">
         {[
-          ["进货价(¥)", cost, setCost],
-          ["售价($)", sell, setSell],
+          [`进货价(¥)`, cost, setCost],
+          [`售价(${cur.symbol})`, sell, setSell],
           ["运费(¥)", ship, setShip],
           ["平台佣金(%)", comm, setComm],
-          ["汇率(×)", rate, setRate],
+          [`汇率(1${cur.symbol}=?¥)`, rate, setRate],
         ].map(([label, val, setter]) => (
           <div key={label as string}>
             <label className="text-xs text-gray-500 mb-1 block">{label as string}</label>
