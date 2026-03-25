@@ -1,12 +1,11 @@
 "use client";
 
 interface AdBannerProps {
-  slot?: string;       // 广告位标识
-  size?: "banner" | "card" | "inline"; // 尺寸
+  slot?: string;
+  size?: "hero" | "banner" | "card" | "inline";
   className?: string;
 }
 
-// 占位广告内容（以后替换成真实广告代码）
 const PLACEHOLDER_ADS = [
   {
     title: "🚀 Ozon 官方认证服务商",
@@ -32,8 +31,25 @@ const PLACEHOLDER_ADS = [
 ];
 
 export function AdBanner({ slot = "default", size = "banner", className = "" }: AdBannerProps) {
-  // 根据slot哈希选广告（保持同一位置稳定显示同一条）
   const ad = PLACEHOLDER_ADS[slot.length % PLACEHOLDER_ADS.length];
+
+  if (size === "hero") {
+    return (
+      <div className={`relative overflow-hidden rounded-2xl bg-gradient-to-r ${ad.color} text-white p-6 ${className}`}>
+        <div className="absolute top-2 right-3 text-[10px] opacity-40">广告</div>
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-lg font-bold mb-1">{ad.title}</p>
+            <p className="text-sm opacity-85">{ad.desc}</p>
+          </div>
+          <a href={ad.href} className="ml-6 flex-shrink-0 bg-white/20 hover:bg-white/30 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition whitespace-nowrap">
+            {ad.cta} →
+          </a>
+        </div>
+        <p className="text-[10px] opacity-30 mt-3">广告位招租 · 联系 hi@crossly.cn</p>
+      </div>
+    );
+  }
 
   if (size === "inline") {
     return (
@@ -67,7 +83,7 @@ export function AdBanner({ slot = "default", size = "banner", className = "" }: 
   return (
     <div className={`bg-gray-50 border border-dashed border-gray-200 rounded-xl p-3 ${className}`}>
       <div className="flex items-center justify-between mb-1">
-        <span className="text-[10px] text-gray-300">广告位招租 · 联系 crossly.cn@gmail.com</span>
+        <span className="text-[10px] text-gray-300">广告位招租 · 联系 hi@crossly.cn</span>
         <span className="text-[10px] text-gray-300">AD</span>
       </div>
       <div className={`bg-gradient-to-r ${ad.color} text-white rounded-lg px-4 py-3 flex items-center justify-between`}>

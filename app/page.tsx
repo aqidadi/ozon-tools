@@ -392,6 +392,8 @@ function LandingPage({ onStart }: { onStart: () => void }) {
 
   return (
     <div className="max-w-4xl mx-auto">
+      {/* 顶部大广告位 */}
+      <AdBanner slot="landing-top" size="hero" className="mb-6" />
       {/* Hero */}
       <div className="text-center py-12">
         <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-600 text-xs font-medium px-3 py-1.5 rounded-full mb-4">

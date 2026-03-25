@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { TrendingUp, TrendingDown, Minus, Copy, Check, ExternalLink, RefreshCw } from "lucide-react";
+import { AdBanner } from "@/components/AdBanner";
 
 interface WeeklyItem {
   rank: number; name: string; category: string;
@@ -189,6 +190,7 @@ export function HotPage() {
         📌 数据来源：综合1688热销榜、Ozon平台趋势、跨境卖家社群等公开渠道，每周更新。
         点击「搜1688」可直接搜索货源。
       </div>
+      <AdBanner slot="hot-bottom" size="banner" className="mt-4" />
     </div>
   );
 }
