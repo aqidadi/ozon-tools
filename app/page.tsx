@@ -385,87 +385,136 @@ function ComingSoon({ title, icon, desc, color }: { title: string; icon: string;
 }
 
 function LandingPage({ onStart }: { onStart: () => void }) {
-  const features = [
-    { icon: <Zap size={22} className="text-blue-500" />, title: "1688一键导入", desc: "粘贴链接秒抓商品信息，无需安装插件" },
-    { icon: <Globe size={22} className="text-green-500" />, title: "8国语言翻译", desc: "俄/英/泰/越/印尼/马来/西/阿拉伯一键翻译" },
-    { icon: <Package size={22} className="text-purple-500" />, title: "利润自动计算", desc: "运费+佣金+汇率，一目了然算清楚每件利润" },
-    { icon: <Shield size={22} className="text-orange-500" />, title: "导出上架模板", desc: "一键导出Ozon上架Excel，省去繁琐填表工作" },
-    { icon: <TrendingUp size={22} className="text-pink-500" />, title: "热门选品参考", desc: "按类目整理1688热销关键词，快速找到货源" },
-    { icon: <BookOpen size={22} className="text-indigo-500" />, title: "新手完整指南", desc: "从注册到运营，7大模块系统学习Ozon跨境" },
-  ];
-
-  const platforms = ["🛒 Ozon", "📦 亚马逊", "🎵 TikTok Shop", "🛍️ Lazada", "🌟 Shopee", "⚡ 速卖通"];
+  const [showUpgrade, setShowUpgrade] = useState(false);
+  const { user } = useAuth();
 
   return (
-    <div className="max-w-4xl mx-auto">
-      {/* 顶部大广告位 */}
-      <AdBanner slot="landing-top" size="hero" className="mb-6" />
+    <div className="max-w-3xl mx-auto space-y-8">
+
       {/* Hero */}
-      <div className="text-center py-12">
-        <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-600 text-xs font-medium px-3 py-1.5 rounded-full mb-4">
-          🚀 专为跨境卖家打造
-        </div>
-        <h1 className="text-4xl font-extrabold text-gray-900 mb-4">
-          跨境选品，<span className="text-blue-600">从未如此简单</span>
-        </h1>
-        <p className="text-lg text-gray-500 mb-2 max-w-xl mx-auto">
-          1688 找货 → 多语言翻译 → 利润计算 → 导出上架，全流程一站搞定
-        </p>
-        <div className="flex flex-wrap justify-center gap-2 mb-8">
-          {platforms.map((p) => (
-            <span key={p} className="text-xs bg-gray-100 text-gray-600 px-3 py-1 rounded-full">{p}</span>
-          ))}
-        </div>
-        <div className="flex items-center justify-center gap-3">
-          <button
-            onClick={onStart}
-            className="px-8 py-3 bg-blue-600 text-white rounded-xl font-semibold text-base hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200"
-          >
-            立即开始使用 →
-          </button>
-          <span className="text-sm text-gray-400">注册即可免费使用</span>
+      <div className="relative rounded-2xl overflow-hidden p-8 text-center"
+        style={{ background: "linear-gradient(135deg, #1e2d5a 0%, #2d1b69 60%, #0f172a 100%)" }}>
+        <div className="absolute inset-0 opacity-10"
+          style={{ backgroundImage: "radial-gradient(circle at 20% 50%, #6366f1 0%, transparent 50%), radial-gradient(circle at 80% 20%, #8b5cf6 0%, transparent 40%)" }} />
+        <div className="relative z-10">
+          <div className="inline-flex items-center gap-2 bg-white/10 text-white/80 text-xs font-medium px-3 py-1.5 rounded-full mb-4 border border-white/20">
+            🚀 专为跨境卖家打造 · 支持Ozon/Shopee/TikTok/亚马逊
+          </div>
+          <h1 className="text-3xl font-extrabold text-white mb-3">
+            1688 找货，一键导入<br />
+            <span style={{ background: "linear-gradient(90deg, #a78bfa, #60a5fa)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+              自动算利润，直接上架
+            </span>
+          </h1>
+          <p className="text-white/60 text-sm mb-6 max-w-md mx-auto">
+            Chrome插件在1688商品页一键抓取主图+详情图+规格，秒算多平台利润，支持8国语言翻译
+          </p>
+          <div className="flex items-center justify-center gap-3">
+            <button onClick={onStart}
+              className="px-6 py-2.5 rounded-xl text-sm font-semibold text-white shadow-lg transition-all hover:scale-105"
+              style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)" }}>
+              免费开始使用 →
+            </button>
+            <a href="https://www.crossly.cn/crossly-extension.zip"
+              className="px-6 py-2.5 rounded-xl text-sm font-medium text-white/80 border border-white/20 hover:bg-white/10 transition-colors">
+              下载插件
+            </a>
+          </div>
         </div>
       </div>
 
-      {/* Features */}
-      <div className="grid grid-cols-3 gap-4 mb-10">
-        {features.map((f) => (
-          <div key={f.title} className="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md transition-shadow">
-            <div className="mb-3">{f.icon}</div>
-            <h3 className="font-semibold text-gray-900 mb-1">{f.title}</h3>
-            <p className="text-sm text-gray-500">{f.desc}</p>
+      {/* 核心卖点 3列 */}
+      <div className="grid grid-cols-3 gap-3">
+        {[
+          { emoji: "🔌", title: "1688插件直抓", tag: "独家功能", tagColor: "bg-purple-100 text-purple-700",
+            desc: "Chrome插件在1688商品页运行，抓取主图/详情图/规格/月销量，竞品没有这个功能" },
+          { emoji: "💰", title: "多平台利润计算", tag: "一站搞定", tagColor: "bg-blue-100 text-blue-700",
+            desc: "Ozon/Shopee/TikTok/亚马逊10个平台，自动换算汇率，扣完运费佣金看净利润" },
+          { emoji: "🌍", title: "8国语言翻译", tag: "省时省力", tagColor: "bg-green-100 text-green-700",
+            desc: "俄/英/泰/越/印尼/马来/阿拉伯，一键批量翻译标题，不用再手动逐个翻" },
+        ].map(f => (
+          <div key={f.title} className="bg-white border border-gray-100 rounded-xl p-4 hover:shadow-md transition-shadow">
+            <div className="flex items-start justify-between mb-2">
+              <span className="text-2xl">{f.emoji}</span>
+              <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${f.tagColor}`}>{f.tag}</span>
+            </div>
+            <h3 className="font-bold text-gray-900 text-sm mb-1">{f.title}</h3>
+            <p className="text-xs text-gray-500 leading-relaxed">{f.desc}</p>
           </div>
         ))}
       </div>
 
-      {/* How it works */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl border border-blue-100 p-8 mb-8">
-        <h2 className="text-lg font-bold text-gray-900 text-center mb-6">3步完成选品流程</h2>
-        <div className="flex items-start gap-4">
-          {[
-            { step: "01", title: "找货源", desc: "在1688找到心仪商品，复制链接粘贴到这里，一键抓取商品信息" },
-            { step: "02", title: "算利润", desc: "填入重量，设置汇率/运费/佣金参数，自动计算最低售价和利润" },
-            { step: "03", title: "导出上架", desc: "一键导出Ozon上架Excel模板，翻译好标题直接上传到Ozon卖家后台" },
-          ].map((s, i) => (
-            <div key={s.step} className="flex-1 text-center">
-              <div className="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold mx-auto mb-3">{s.step}</div>
-              <h3 className="font-semibold text-gray-900 mb-1">{s.title}</h3>
-              <p className="text-xs text-gray-500">{s.desc}</p>
-              {i < 2 && <div className="absolute text-gray-300 text-2xl">→</div>}
-            </div>
-          ))}
+      {/* 竞品对比表 */}
+      <div className="bg-white border border-gray-100 rounded-xl overflow-hidden">
+        <div className="px-5 py-4 border-b border-gray-50">
+          <h2 className="font-bold text-gray-900 text-sm">为什么选 Crossly？</h2>
+          <p className="text-xs text-gray-400 mt-0.5">和主流工具横向对比</p>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="bg-gray-50">
+                <th className="text-left px-5 py-3 text-gray-500 font-medium">功能</th>
+                <th className="px-4 py-3 text-center font-bold text-indigo-600">Crossly</th>
+                <th className="px-4 py-3 text-center text-gray-400 font-medium">卖家精灵</th>
+                <th className="px-4 py-3 text-center text-gray-400 font-medium">知虾</th>
+                <th className="px-4 py-3 text-center text-gray-400 font-medium">店小秘</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-50">
+              {[
+                ["1688商品直接导入", true, false, false, false],
+                ["多平台利润计算", true, false, false, true],
+                ["8国语言翻译", true, false, false, false],
+                ["主图+详情图全抓", true, false, false, false],
+                ["价格（/月）", "¥39.9起", "¥299+", "¥199+", "¥99+"],
+              ].map((row, i) => (
+                <tr key={i} className="hover:bg-gray-50/50">
+                  <td className="px-5 py-3 text-gray-700 font-medium">{row[0]}</td>
+                  {[1,2,3,4].map(j => (
+                    <td key={j} className="px-4 py-3 text-center">
+                      {typeof row[j] === "boolean"
+                        ? row[j] ? <span className="text-green-500 font-bold">✓</span> : <span className="text-gray-300">✗</span>
+                        : <span className={j === 1 ? "font-bold text-indigo-600" : "text-gray-400"}>{row[j]}</span>}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
 
-      <div className="text-center">
-        <button
-          onClick={onStart}
-          className="px-8 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors"
-        >
-          开始选品 →
-        </button>
+      {/* 定价 */}
+      <div className="bg-white border border-gray-100 rounded-xl p-5">
+        <h2 className="font-bold text-gray-900 text-sm mb-1 text-center">简单透明的定价</h2>
+        <p className="text-xs text-gray-400 text-center mb-4">免费可用50个商品，升级无限制</p>
+        <div className="grid grid-cols-4 gap-2">
+          {[
+            { label: "体验", price: "¥5.9", sub: "24小时", color: "border-gray-200" },
+            { label: "周卡", price: "¥19.9", sub: "7天", color: "border-gray-200" },
+            { label: "月度", price: "¥39.9", sub: "30天", color: "border-indigo-300 bg-indigo-50", hot: true },
+            { label: "年度", price: "¥299.9", sub: "365天", color: "border-gray-200" },
+          ].map(p => (
+            <div key={p.label} className={`border-2 rounded-xl p-3 text-center relative ${p.color}`}>
+              {p.hot && <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-indigo-600 text-white text-[9px] font-bold px-2 py-0.5 rounded-full">推荐</div>}
+              <p className="text-[10px] text-gray-500 font-medium">{p.label}</p>
+              <p className={`text-lg font-extrabold mt-1 ${p.hot ? "text-indigo-600" : "text-gray-900"}`}>{p.price}</p>
+              <p className="text-[10px] text-gray-400">{p.sub}</p>
+            </div>
+          ))}
+        </div>
+        <div className="mt-4 text-center">
+          <button onClick={onStart}
+            className="px-8 py-2.5 rounded-xl text-sm font-semibold text-white shadow-md transition-all hover:scale-105"
+            style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)" }}>
+            免费注册，立即体验 →
+          </button>
+        </div>
       </div>
+
       <AdBanner slot="landing-bottom" size="banner" />
     </div>
   );
 }
+

@@ -128,192 +128,136 @@ function renderLogin(settings) {
 // 这个函数在用户浏览器中运行，有Cookie，不受IP限制！
 // ─────────────────────────────────────────────────────────────
 function extractProductData() {
-  // 先尝试点击「商品详情」tab，触发懒加载图片渲染
+  // 1. 先滚动到底部触发懒加载，再回顶
+  try { window.scrollTo(0, document.body.scrollHeight); } catch(e) {}
+
+  // 2. 点击「商品详情」tab 触发详情区渲染
   try {
-    const tabEls = document.querySelectorAll("[class*='tab'] a, [class*='tab'] li, [role='tab'], .tab-item");
+    const tabEls = document.querySelectorAll("a, li, [role='tab'], button, span");
     for (const el of tabEls) {
-      if (el.textContent && el.textContent.includes("商品详情")) {
-        el.click();
-        break;
-      }
+      const t = el.textContent?.trim();
+      if (t === "商品详情" || t === "产品详情" || t === "详情") { el.click(); break; }
     }
   } catch(e) {}
 
   try {
+    // ── 工具函数 ──
+    function getBestSrc(el) {
+      const attrs = ["src","data-src","data-lazy-src","data-original","data-lazy","data-img-src","data-url"];
+      for (const attr of attrs) {
+        const v = el.getAttribute(attr);
+        if (v && v.startsWith("http") && /\.(jpg|jpeg|png|webp)/i.test(v.split("?")[0])) return v.split("?")[0];
+      }
+      const srcset = el.getAttribute("srcset");
+      if (srcset) {
+        const parts = srcset.split(",").map(s => s.trim().split(/\s+/)[0]).filter(s => s.startsWith("http"));
+        if (parts.length) return parts[parts.length-1].split("?")[0];
+      }
+      return null;
+    }
+    function isAliyunImg(src) { return src && /alicdn\.com|aliyuncs\.com/i.test(src); }
+    function isLogo(src) { return /logo|icon|avatar|taobao|tmall|jd\.com|pinduoduo|xiaohongshu|tiktok|douyin|weixin|wechat|1688\.com\/images/i.test(src); }
+    function upscale(src) { return src.replace(/_(\d+x\d+)\.(jpg|jpeg|png|webp)/i, "_800x800.$2"); }
+
     // ── 标题 ──
     const titleSelectors = [
-      "[class*='title-container'] h1",
-      "[class*='offer-title']",
-      "[class*='product-title'] h1",
-      ".title-text h1",
-      ".mod-offer-title",
-      "h1[class*='title']",
-      "h1",
+      "[class*='title-container'] h1","[class*='offer-title']","[class*='product-title'] h1",
+      ".title-text h1",".mod-offer-title","h1[class*='title']","h1",
     ];
     let title = "";
     for (const sel of titleSelectors) {
       for (const el of document.querySelectorAll(sel)) {
         const text = el.textContent.trim();
-        if (text.length > 10 && !text.includes("商行") && !text.includes("有限公司")) {
-          title = text; break;
-        }
+        if (text.length > 10 && !text.includes("商行") && !text.includes("有限公司")) { title = text; break; }
       }
       if (title) break;
     }
-    if (!title) {
-      title = document.title.replace(/[-_|].*?(1688|阿里).*$/, "").trim();
-    }
+    if (!title) title = document.title.replace(/[-_|].*?(1688|阿里).*$/, "").trim();
 
     // ── 价格 ──
     let price = 0;
-    const priceSelectors = [
-      "[class*='price-common'] [class*='price-value']",
-      "[class*='price-box'] [class*='value']",
-      ".price-common-wrap [class*='value']",
-      "[class*='price']:not([class*='del']):not([class*='original'])",
-    ];
-    for (const sel of priceSelectors) {
+    for (const sel of ["[class*='price-common'] [class*='price-value']","[class*='price-box'] [class*='value']",".price-common-wrap [class*='value']","[class*='price']:not([class*='del'])"]) {
       const el = document.querySelector(sel);
-      if (el) {
-        const num = parseFloat(el.textContent.replace(/[^\d.]/g, ""));
-        if (num > 0 && num < 999999) { price = num; break; }
-      }
+      if (el) { const n = parseFloat(el.textContent.replace(/[^\d.]/g,"")); if (n>0&&n<999999){price=n;break;} }
     }
-    // 从页面文本扫
     if (!price) {
       const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
       let node;
-      while ((node = walker.nextNode())) {
-        const m = node.textContent.match(/[¥￥]\s*([\d.]+)/);
-        if (m) { price = parseFloat(m[1]); break; }
-      }
+      while ((node = walker.nextNode())) { const m = node.textContent.match(/[¥￥]\s*([\d.]+)/); if (m){price=parseFloat(m[1]);break;} }
     }
 
-    // ── 主图（商品展示图）──
-    const mainImages = [];
-    const seenMain = new Set();
-    const mainSelectors = [
-      "[class*='gallery'] img",
-      "[class*='thumb-list'] img",
-      "[class*='img-list'] img",
-      ".detail-gallery img",
-      "[class*='main-img'] img",
-      "[class*='swiper'] img",
-    ];
-    for (const sel of mainSelectors) {
+    // ── 主图 ──
+    const mainImages = [], seenMain = new Set();
+    for (const sel of ["[class*='gallery'] img","[class*='thumb'] img","[class*='Thumb'] img","[class*='img-list'] img","[class*='imgList'] img","[class*='main-img'] img","[class*='mainImg'] img","[class*='swiper'] img","[class*='Swiper'] img","[class*='carousel'] img",".detail-gallery img"]) {
       for (const img of document.querySelectorAll(sel)) {
-        const src = (img.src || img.dataset.src || img.dataset.lazySrc || "").split("?")[0];
-        if (src && /alicdn\.com|aliyuncs\.com/i.test(src) && !seenMain.has(src)) {
-          seenMain.add(src);
-          mainImages.push(src.replace(/_\d+x\d+\.(jpg|jpeg|png|webp)/i, "_800x800.$1"));
-          if (mainImages.length >= 8) break;
-        }
+        const src = getBestSrc(img);
+        if (!src || !isAliyunImg(src) || isLogo(src) || seenMain.has(src)) continue;
+        seenMain.add(src); mainImages.push(upscale(src));
+        if (mainImages.length >= 10) break;
       }
       if (mainImages.length >= 5) break;
     }
-    // 补充：从页面所有img扫描高质量图片
     if (mainImages.length < 3) {
-      for (const img of document.querySelectorAll("img[src*='alicdn.com']")) {
-        const src = img.src.split("?")[0];
-        if (!seenMain.has(src) && img.naturalWidth > 200) {
-          seenMain.add(src);
-          mainImages.push(src.replace(/_\d+x\d+\.(jpg|jpeg|png|webp)/i, "_800x800.$1"));
-          if (mainImages.length >= 8) break;
-        }
+      for (const img of document.querySelectorAll("img")) {
+        const src = getBestSrc(img);
+        if (!src || !isAliyunImg(src) || isLogo(src) || seenMain.has(src)) continue;
+        const w = img.naturalWidth || parseInt(img.getAttribute("width")||"0");
+        if (w > 0 && w < 100) continue;
+        seenMain.add(src); mainImages.push(upscale(src));
+        if (mainImages.length >= 10) break;
       }
     }
 
-    // ── 详情图（商品描述区大图）──
-    const detailImages = [];
-    const seenDetail = new Set();
-
-    // 找详情描述区域 container
-    const descSelectors = [
-      "#mod-detail-desc",
-      "[class*='detail-desc']",
-      "[class*='product-desc']",
-      "[class*='offer-detail']",
-      "#J_DivItemDesc",
-      "[class*='desc-content']",
-      "[data-module='detail']",
-      ".description",
-      "[class*='detail-content']",
-      "[class*='detailWrapper']",
-    ];
+    // ── 详情图（不依赖naturalWidth，彻底扫描）──
+    const detailImages = [], seenDetail = new Set();
     let descContainer = null;
-    for (const sel of descSelectors) {
+    for (const sel of ["#mod-detail-desc","[class*='detail-desc']","[class*='detailDesc']","[class*='product-desc']","[class*='productDesc']","[class*='offer-detail']","#J_DivItemDesc","[class*='desc-content']","[class*='descContent']","[data-module='detail']",".description","[class*='detail-content']","[class*='detailContent']","[class*='detailWrapper']","[class*='detail-wrapper']"]) {
       descContainer = document.querySelector(sel);
       if (descContainer) break;
     }
+    const scanRoot = descContainer || document.body;
 
-    // 从整个页面扫所有图片src/data-src/data-lazy-src
-    const allImgs = document.querySelectorAll("img");
-    for (const img of allImgs) {
-      const src = (img.src || img.dataset.src || img.dataset.lazySrc || img.dataset.original || img.getAttribute("data-lazy") || "").split("?")[0];
-      if (!src || !/alicdn\.com|aliyuncs\.com/i.test(src)) continue;
-      if (!src.match(/\.(jpg|jpeg|png|webp)/i)) continue;
-      if (seenDetail.has(src) || seenMain.has(src)) continue;
-      // 过滤小图：naturalWidth<200 或 宽高比极端（logo一般是正方形小图）
-      const w = img.naturalWidth || img.width || 0;
-      const h = img.naturalHeight || img.height || 0;
-      if (w > 0 && w < 200) continue; // 排除小图标
-      if (w > 0 && h > 0 && Math.max(w,h)/Math.min(w,h) > 5) continue; // 排除极窄/极宽
-      seenDetail.add(src);
-      detailImages.push(src);
-      if (detailImages.length >= 30) break;
+    // 从img标签扫（不过滤naturalWidth=0的懒加载图）
+    for (const img of scanRoot.querySelectorAll("img")) {
+      const src = getBestSrc(img);
+      if (!src || !isAliyunImg(src) || isLogo(src) || seenDetail.has(src) || seenMain.has(src)) continue;
+      const wAttr = parseInt(img.getAttribute("width")||"0");
+      if (wAttr > 0 && wAttr < 100) continue;
+      seenDetail.add(src); detailImages.push(src);
+      if (detailImages.length >= 40) break;
     }
 
-    // 从 innerHTML 里扫懒加载图（data-src 等属性里的URL）
-    // 只扫描描述区或页面主体，排除顶部导航/侧边栏
-    const scanEl = descContainer || document.querySelector("[class*='content']") || document.body;
-    const html = scanEl.innerHTML;
-    const matches = html.matchAll(/(?:data-src|data-lazy-src|data-original|src)=["']?(https?:\/\/[^"'\s>?]+\.(?:jpg|jpeg|png|webp))/gi);
-    for (const m of matches) {
+    // 从innerHTML正则扫所有懒加载属性（最彻底）
+    const htmlToScan = scanRoot.innerHTML;
+    const urlPattern = /(?:data-src|data-lazy-src|data-original|data-lazy|data-img-src|data-url|src)=["']?(https?:\/\/[^"'\s>?#]+\.(?:jpg|jpeg|png|webp))/gi;
+    for (const m of htmlToScan.matchAll(urlPattern)) {
       const src = m[1].split("?")[0];
-      // 过滤平台logo：通常包含特定关键词
-      if (/logo|icon|avatar|banner|taobao|tmall|jd\.com|pinduoduo|xiaohongshu|tiktok|douyin|weixin|wechat/i.test(src)) continue;
-      if (src && /alicdn\.com|aliyuncs\.com/i.test(src) && !seenDetail.has(src) && !seenMain.has(src)) {
-        seenDetail.add(src);
-        detailImages.push(src);
-        if (detailImages.length >= 30) break;
-      }
+      if (!isAliyunImg(src) || isLogo(src) || seenDetail.has(src) || seenMain.has(src)) continue;
+      seenDetail.add(src); detailImages.push(src);
+      if (detailImages.length >= 40) break;
     }
 
     // ── 规格参数 ──
     const specs = {};
-    const specSelectors = [
-      "[class*='prop-wrap'], [class*='attribute-item'], [class*='spec-item']",
-      "[class*='detail-prop'] li",
-      "table[class*='prop'] tr",
-      "[class*='sku-prop'] [class*='item']",
-    ];
-    for (const sel of specSelectors) {
-      const items = document.querySelectorAll(sel);
-      for (const item of items) {
+    for (const sel of ["[class*='prop-wrap'], [class*='attribute-item'], [class*='spec-item']","[class*='detail-prop'] li","table[class*='prop'] tr","[class*='sku-prop'] [class*='item']"]) {
+      for (const item of document.querySelectorAll(sel)) {
         const text = item.textContent.trim();
         const colonIdx = text.indexOf("：") !== -1 ? text.indexOf("：") : text.indexOf(":");
         if (colonIdx > 0) {
-          const k = text.slice(0, colonIdx).trim().slice(0, 20);
-          const v = text.slice(colonIdx + 1).trim().slice(0, 100);
+          const k = text.slice(0,colonIdx).trim().slice(0,20), v = text.slice(colonIdx+1).trim().slice(0,100);
           if (k && v && !specs[k]) specs[k] = v;
         }
       }
       if (Object.keys(specs).length > 5) break;
     }
-    // 备用：从dt/dd结构提取
     if (Object.keys(specs).length === 0) {
-      const dts = document.querySelectorAll("dt");
-      for (const dt of dts) {
+      for (const dt of document.querySelectorAll("dt")) {
         const dd = dt.nextElementSibling;
-        if (dd?.tagName === "DD") {
-          const k = dt.textContent.trim().replace(/：$/, "");
-          const v = dd.textContent.trim();
-          if (k && v && k.length < 20) specs[k] = v.slice(0, 100);
-        }
+        if (dd?.tagName === "DD") { const k=dt.textContent.trim().replace(/：$/,""), v=dd.textContent.trim(); if(k&&v&&k.length<20) specs[k]=v.slice(0,100); }
       }
     }
 
-    // ── 店铺名 ──
+        // ── 店铺名 ──
     let shopName = "";
     for (const sel of [
       "[class*='shop-name']",
