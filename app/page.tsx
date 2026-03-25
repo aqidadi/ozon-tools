@@ -6,6 +6,7 @@ import { SettingsPanel } from "@/components/SettingsPanel";
 import { AddProductModal } from "@/components/AddProductModal";
 import { PickerPage } from "@/components/PickerPage";
 import { GuidePage, ToolsPage } from "@/components/GuidePage";
+import { ClockPage } from "@/components/ClockPage";
 import { HotPage } from "@/components/HotPage";
 import { UrlImportBox } from "@/components/UrlImportBox";
 import { UserBar } from "@/components/UserBar";
@@ -15,7 +16,7 @@ import { exportToExcel } from "@/lib/export";
 import { Product, Settings, LANGUAGES, PLATFORMS, getPlatform } from "@/lib/types";
 import {
   ShoppingBag, Settings2, Download, Plus, TrendingUp,
-  BookOpen, Languages, Bell, BarChart2, Package, Globe, Zap, Shield, Flame
+  BookOpen, Languages, Bell, BarChart2, Package, Globe, Zap, Shield, Flame, Clock
 } from "lucide-react";
 
 const DEFAULT_SETTINGS: Settings = {
@@ -26,7 +27,7 @@ const DEFAULT_SETTINGS: Settings = {
   packagingCost: 2,
 };
 
-type Tab = "landing" | "products" | "hot" | "picker" | "guide" | "tools" | "monitor" | "analytics" | "settings";
+type Tab = "landing" | "products" | "hot" | "picker" | "guide" | "tools" | "clock" | "monitor" | "analytics" | "settings";
 
 const NAV_ITEMS = [
   { id: "landing",   label: "首页",     icon: Globe,      color: "blue" },
@@ -35,6 +36,7 @@ const NAV_ITEMS = [
   { id: "picker",    label: "选品参考", icon: TrendingUp, color: "orange" },
   { id: "guide",     label: "新手指南", icon: BookOpen,   color: "indigo" },
   { id: "tools",     label: "工具导航", icon: Zap,        color: "green" },
+  { id: "clock",     label: "世界时间", icon: Clock,      color: "teal" },
   { id: "monitor",   label: "价格监控", icon: Bell,       color: "yellow", badge: "即将上线" },
   { id: "analytics", label: "竞品分析", icon: BarChart2,  color: "pink",   badge: "即将上线" },
   { id: "settings",  label: "参数设置", icon: Settings2,  color: "gray" },
@@ -48,7 +50,8 @@ const COLOR_CLASSES: Record<string, { active: string; icon: string }> = {
   pink:   { active: "bg-pink-50 text-pink-700 border-l-2 border-pink-500",   icon: "text-pink-500" },
   gray:   { active: "bg-gray-100 text-gray-800 border-l-2 border-gray-500",  icon: "text-gray-500" },
   red:    { active: "bg-red-50 text-red-700 border-l-2 border-red-500",      icon: "text-red-500" },
-  green:  { active: "bg-green-50 text-green-700 border-l-2 border-green-600", icon: "text-green-500" },
+  teal:   { active: "bg-teal-50 text-teal-700 border-l-2 border-teal-600",   icon: "text-teal-500" },
+  purple: { active: "bg-purple-50 text-purple-700 border-l-2 border-purple-600", icon: "text-purple-500" },
 };
 
 export default function Home() {
@@ -261,6 +264,7 @@ export default function Home() {
           {tab === "picker" && <PickerPage />}
           {tab === "guide" && <GuidePage />}
           {tab === "tools" && <ToolsPage />}
+          {tab === "clock" && <ClockPage />}
           {tab === "settings" && <SettingsPanel settings={settings} onChange={setSettings} />}
           {tab === "monitor" && (
             <ComingSoon title="价格监控" icon="🔔" desc="自动监控竞品价格变动，价格下跌时及时提醒，帮你抓住调价时机。" color="yellow" />
