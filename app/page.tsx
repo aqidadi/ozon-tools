@@ -415,7 +415,7 @@ function LandingPage({ onStart }: { onStart: () => void }) {
           >
             立即开始使用 →
           </button>
-          <span className="text-sm text-gray-400">免费，无需注册</span>
+          <span className="text-sm text-gray-400">注册即可免费使用</span>
         </div>
       </div>
 
