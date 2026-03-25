@@ -739,6 +739,10 @@ const colorMap: Record<string, string> = {
   red: "bg-red-50 border-red-100 text-red-700",
   gray: "bg-gray-50 border-gray-200 text-gray-700",
   indigo: "bg-indigo-50 border-indigo-100 text-indigo-700",
+  teal: "bg-teal-50 border-teal-100 text-teal-700",
+  cyan: "bg-cyan-50 border-cyan-100 text-cyan-700",
+  pink: "bg-pink-50 border-pink-100 text-pink-700",
+  yellow: "bg-yellow-50 border-yellow-100 text-yellow-700",
 };
 
 export function ToolsPage() {
