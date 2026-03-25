@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { AuthModal } from "@/components/AuthModal";
 import { LogOut, Crown, Copy, Check, ExternalLink, User, Camera, Pencil, X, Loader2 } from "lucide-react";
@@ -145,6 +145,111 @@ function ProfileModal({ onClose }: { onClose: () => void }) {
   );
 }
 
+// ── 邀请好友弹窗 ──────────────────────────────────────────
+function InviteModal({ onClose }: { onClose: () => void }) {
+  const [data, setData] = useState<{inviteCode:string;inviteCount:number;inviteLink:string;invitees:any[]} | null>(null);
+  const [copied, setCopied] = useState(false);
+  const { accessToken } = useAuth();
+
+  useEffect(() => {
+    fetch("/api/invite", {
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
+    }).then(r => r.json()).then(d => setData(d)).catch(() => {});
+  }, [accessToken]);
+
+  const copy = () => {
+    if (!data?.inviteLink) return;
+    navigator.clipboard.writeText(data.inviteLink);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm">
+        <div className="px-5 pt-5 pb-2 flex items-center justify-between">
+          <h2 className="text-sm font-bold text-gray-900 flex items-center gap-1.5">
+            🎁 邀请好友，双方得 Pro
+          </h2>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><X size={16} /></button>
+        </div>
+
+        <div className="px-5 pb-2">
+          {/* 规则说明 */}
+          <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-3 mb-3 text-xs">
+            <div className="flex gap-4 text-center">
+              <div className="flex-1">
+                <div className="text-2xl font-bold text-indigo-600">30</div>
+                <div className="text-gray-500">邀请人获得<br/>天数 Pro</div>
+              </div>
+              <div className="text-gray-300 flex items-center">+</div>
+              <div className="flex-1">
+                <div className="text-2xl font-bold text-purple-600">30</div>
+                <div className="text-gray-500">被邀请人获得<br/>天数 Pro</div>
+              </div>
+            </div>
+            <p className="text-[10px] text-gray-400 text-center mt-2">每成功邀请一人，双方各得30天Pro（可叠加）</p>
+          </div>
+
+          {/* 邀请码 */}
+          {data ? (
+            <>
+              <div className="mb-3">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-xs text-gray-500">你的邀请码</span>
+                  <span className="bg-indigo-100 text-indigo-700 text-xs font-bold px-2 py-0.5 rounded">已邀请 {data.inviteCount} 人</span>
+                </div>
+                <div className="flex gap-2">
+                  <div className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-center text-lg font-bold tracking-[0.3em] text-indigo-600">
+                    {data.inviteCode}
+                  </div>
+                </div>
+              </div>
+
+              <div className="mb-3">
+                <p className="text-xs text-gray-500 mb-1">邀请链接（分享给好友）</p>
+                <div className="flex gap-2">
+                  <div className="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-600 truncate">
+                    {data.inviteLink}
+                  </div>
+                  <button onClick={copy}
+                    className={`px-3 py-2 rounded-lg text-xs font-semibold transition-all ${copied ? "bg-green-500 text-white" : "bg-indigo-600 text-white hover:bg-indigo-700"}`}>
+                    {copied ? "✓" : "复制"}
+                  </button>
+                </div>
+              </div>
+
+              {data.invitees.length > 0 && (
+                <div>
+                  <p className="text-xs text-gray-500 mb-1">已邀请的好友</p>
+                  <div className="space-y-1 max-h-24 overflow-y-auto">
+                    {data.invitees.map((u, i) => (
+                      <div key={i} className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-1.5">
+                        <span className="text-xs text-gray-600">{u.display_name || u.email?.split("@")[0]}</span>
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full ${u.plan === "pro" ? "bg-yellow-100 text-yellow-700" : "bg-gray-100 text-gray-500"}`}>
+                          {u.plan === "pro" ? "Pro" : "免费"}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="text-center py-4 text-xs text-gray-400">加载中...</div>
+          )}
+        </div>
+
+        <div className="px-5 pb-5">
+          <button onClick={onClose} className="w-full py-2 border border-gray-200 text-gray-500 rounded-xl text-xs hover:bg-gray-50">
+            关闭
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── 升级弹窗 ──────────────────────────────────────────────
 function UpgradeModal({ onClose, user }: { onClose: () => void; user: { email: string } }) {
   const plans = [
@@ -231,6 +336,7 @@ export function UserBar() {
   const [copied, setCopied] = useState(false);
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  const [showInvite, setShowInvite] = useState(false);
 
   const copyToken = () => {
     if (user?.apiToken) {
@@ -299,6 +405,13 @@ export function UserBar() {
         )}
         {isPro && <div className="flex-1" />}
 
+        {/* 邀请好友 */}
+        <button onClick={() => setShowInvite(true)}
+          className="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-white/60 hover:text-white hover:bg-white/10 text-xs transition-all">
+          <span>🎁</span>
+          <span>邀请好友得Pro</span>
+        </button>
+
         {/* 升级按钮 */}
         {!isPro && (
           <button
@@ -337,6 +450,7 @@ export function UserBar() {
       {/* 弹窗 */}
       {showProfile && <ProfileModal onClose={() => setShowProfile(false)} />}
       {showUpgrade && <UpgradeModal onClose={() => setShowUpgrade(false)} user={user} />}
+      {showInvite && <InviteModal onClose={() => setShowInvite(false)} />}
     </div>
   );
 }

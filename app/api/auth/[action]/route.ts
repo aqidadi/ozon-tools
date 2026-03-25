@@ -21,7 +21,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ act
   const sb = createServiceClient();
 
   if (action === "register") {
-    const { email, password, name } = await req.json();
+    const { email, password, name, inviteCode } = await req.json();
     if (!email || !password) {
       return NextResponse.json({ error: "邮箱和密码不能为空" }, { status: 400 });
     }
@@ -40,6 +40,17 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ act
     // 更新显示名
     if (name && data.user) {
       await sb.from("profiles").update({ display_name: name }).eq("id", data.user.id);
+    }
+
+    // 处理邀请码：给邀请人延长30天Pro
+    if (inviteCode && data.user) {
+      try {
+        await fetch(new URL("/api/invite", "https://www.crossly.cn"), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ inviteCode, userId: data.user.id }),
+        });
+      } catch {}
     }
 
     return NextResponse.json({

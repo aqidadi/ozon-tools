@@ -14,6 +14,13 @@ export function AuthModal({ onClose, defaultTab = "login" }: Props) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [inviteCode, setInviteCode] = useState(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      return params.get("ref") || "";
+    }
+    return "";
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -32,7 +39,7 @@ export function AuthModal({ onClose, defaultTab = "login" }: Props) {
         setError(result.error || "登录失败");
       }
     } else {
-      const result = await register(email, password, name);
+      const result = await register(email, password, name, inviteCode);
       if (result.ok) {
         setSuccess("注册成功！请用邮箱密码登录");
         setTab("login");
@@ -114,6 +121,19 @@ export function AuthModal({ onClose, defaultTab = "login" }: Props) {
             />
           </div>
 
+          {tab === "register" && (
+            <div className="relative">
+              <input
+                type="text"
+                value={inviteCode}
+                onChange={e => setInviteCode(e.target.value.toUpperCase())}
+                placeholder="邀请码（选填，填写可让好友获得奖励）"
+                maxLength={6}
+                className="w-full pl-4 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 uppercase tracking-widest"
+              />
+            </div>
+          )}
+
           {error && (
             <div className="bg-red-50 border border-red-100 text-red-600 text-xs px-3 py-2 rounded-lg">
               {error}
@@ -137,7 +157,7 @@ export function AuthModal({ onClose, defaultTab = "login" }: Props) {
           {/* 免费提示 */}
           {tab === "register" && (
             <p className="text-xs text-center text-gray-400 pt-1">
-              免费注册，可导入最多50个商品 · 升级 Pro 无限导入
+              免费注册，可导入最多100个商品 · 邀请好友双方均得30天Pro
             </p>
           )}
         </form>

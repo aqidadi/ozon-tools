@@ -96,3 +96,51 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 CREATE OR REPLACE TRIGGER on_product_change
   AFTER INSERT OR DELETE ON public.products
   FOR EACH ROW EXECUTE FUNCTION public.update_product_count();
+
+-- ── 邀请码系统 ────────────────────────────────────────────────
+ALTER TABLE public.profiles
+  ADD COLUMN IF NOT EXISTS invite_code TEXT UNIQUE,
+  ADD COLUMN IF NOT EXISTS invited_by TEXT,  -- 邀请人的 invite_code
+  ADD COLUMN IF NOT EXISTS invite_count INTEGER NOT NULL DEFAULT 0;
+
+-- 自动生成邀请码（6位大写字母+数字）
+CREATE OR REPLACE FUNCTION public.generate_invite_code()
+RETURNS TEXT AS $$
+DECLARE
+  chars TEXT := 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  result TEXT := '';
+  i INT;
+BEGIN
+  FOR i IN 1..6 LOOP
+    result := result || substr(chars, floor(random()*length(chars)+1)::int, 1);
+  END LOOP;
+  RETURN result;
+END;
+$$ LANGUAGE plpgsql;
+
+-- 注册时自动生成邀请码
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER AS $$
+DECLARE
+  new_code TEXT;
+BEGIN
+  -- 生成唯一邀请码
+  LOOP
+    new_code := public.generate_invite_code();
+    EXIT WHEN NOT EXISTS (SELECT 1 FROM public.profiles WHERE invite_code = new_code);
+  END LOOP;
+
+  INSERT INTO public.profiles (id, email, api_token, invite_code, quota)
+  VALUES (
+    NEW.id,
+    NEW.email,
+    encode(gen_random_bytes(32), 'hex'),
+    new_code,
+    100
+  )
+  ON CONFLICT (id) DO NOTHING;
+  RETURN NEW;
+EXCEPTION WHEN OTHERS THEN
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
