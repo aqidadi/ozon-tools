@@ -8,6 +8,7 @@ import { PickerPage } from "@/components/PickerPage";
 import { GuidePage, ToolsPage } from "@/components/GuidePage";
 import { ClockPage } from "@/components/ClockPage";
 import { MiniToolsPage } from "@/components/MiniToolsPage";
+import { AdBanner } from "@/components/AdBanner";
 import { HotPage } from "@/components/HotPage";
 import { UrlImportBox } from "@/components/UrlImportBox";
 import { UserBar } from "@/components/UserBar";
@@ -456,6 +457,7 @@ function LandingPage({ onStart }: { onStart: () => void }) {
           开始选品 →
         </button>
       </div>
+      <AdBanner slot="landing-bottom" size="banner" />
     </div>
   );
 }
