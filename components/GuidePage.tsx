@@ -743,6 +743,7 @@ const colorMap: Record<string, string> = {
   cyan: "bg-cyan-50 border-cyan-100 text-cyan-700",
   pink: "bg-pink-50 border-pink-100 text-pink-700",
   yellow: "bg-yellow-50 border-yellow-100 text-yellow-700",
+  rose: "bg-rose-50 border-rose-100 text-rose-700",
 };
 
 export function ToolsPage() {
