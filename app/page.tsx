@@ -23,6 +23,50 @@ import {
   BookOpen, Languages, Bell, BarChart2, Package, Globe, Zap, Shield, Flame, Clock, Wrench
 } from "lucide-react";
 
+// ── 实时汇率挂件 hook ──────────────────────────────────
+function useRateBar() {
+  const [rates, setRates] = useState<{RUB:number;USD:number;THB:number} | null>(null);
+  useEffect(() => {
+    fetch("/api/rates").then(r=>r.json()).then(d=>{
+      if (d.rates) setRates({ RUB: d.rates.RUB??12.5, USD: d.rates.USD??7.2, THB: d.rates.THB??0.2 });
+    }).catch(()=>{});
+  }, []);
+  return rates;
+}
+
+// ── 实时汇率挂件 ──────────────────────────────────────
+function RateBar() {
+  const [rates, setRates] = useState<Record<string,number>>({});
+  const [time, setTime] = useState("");
+  useEffect(() => {
+    fetch("/api/rates").then(r=>r.json()).then(d=>{
+      if (d.rates) setRates(d.rates);
+    }).catch(()=>{});
+    const tick = () => setTime(new Date().toLocaleTimeString("zh-CN",{hour:"2-digit",minute:"2-digit"}));
+    tick();
+    const t = setInterval(tick, 60000);
+    return () => clearInterval(t);
+  }, []);
+  const pairs = [
+    { code: "RUB", symbol: "₽", label: "卢布" },
+    { code: "USD", symbol: "$", label: "美元" },
+    { code: "THB", symbol: "฿", label: "泰铢" },
+  ];
+  if (!rates.RUB) return null;
+  return (
+    <div className="flex items-center gap-3">
+      {pairs.map(p => (
+        <div key={p.code} className="flex items-center gap-1 bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-1">
+          <span className="text-xs text-gray-400">{p.label}</span>
+          <span className="text-xs font-semibold text-gray-800">{p.symbol}{rates[p.code] ? (1/rates[p.code]).toFixed(4) : "--"}</span>
+          <span className="text-[10px] text-gray-300">¥</span>
+        </div>
+      ))}
+      {time && <span className="text-[11px] text-gray-300">{time}更新</span>}
+    </div>
+  );
+}
+
 const DEFAULT_SETTINGS: Settings = {
   platformCode: "RUB",
   exchangeRate: 12.5,
@@ -236,7 +280,7 @@ export default function Home() {
       {/* Main content */}
       <div className="flex-1 ml-56">
         {/* Top bar */}
-        <header className="bg-white/80 backdrop-blur border-b border-gray-200/80 px-6 py-3 flex items-center justify-between sticky top-0 z-10">
+        <header className="bg-white/80 backdrop-blur border-b border-gray-200/80 px-4 py-2.5 flex items-center justify-between sticky top-0 z-10">
           <div>
             <h2 className="text-base font-semibold text-gray-900">
               {NAV_ITEMS.find((n) => n.id === tab)?.label}
@@ -245,6 +289,8 @@ export default function Home() {
               <p className="text-xs text-gray-400">共 {products.length} 个商品，{untranslatedCount} 个待翻译</p>
             )}
           </div>
+          {/* 实时汇率挂件 */}
+          <RateBar />
           {tab === "products" && products.length > 0 && (
             <div className="flex items-center gap-2">
               <select
