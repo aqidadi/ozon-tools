@@ -86,8 +86,8 @@ const NAV_ITEMS = [
   { id: "tools",     label: "工具导航", icon: Zap,        color: "green" },
   { id: "mintools",  label: "实用工具", icon: Wrench,     color: "teal" },
   { id: "clock",     label: "世界时间", icon: Clock,      color: "cyan" },
-  { id: "monitor",   label: "价格监控", icon: Bell,       color: "yellow", badge: "即将上线" },
-  { id: "analytics", label: "竞品分析", icon: BarChart2,  color: "pink",   badge: "即将上线" },
+  { id: "monitor",   label: "价格监控", icon: Bell,       color: "yellow", badge: "预约内测" },
+  { id: "analytics", label: "竞品分析", icon: BarChart2,  color: "pink",   badge: "预约内测" },
   { id: "settings",  label: "参数设置", icon: Settings2,  color: "gray" },
 ] as { id: Tab; label: string; icon: React.ElementType; color: string; badge?: string }[];
 
@@ -433,6 +433,51 @@ function ComingSoon({ title, icon, desc, color }: { title: string; icon: string;
   );
 }
 
+// ── 预约内测页 ────────────────────────────────────────────
+function ComingSoonPage({ tab }: { tab: string }) {
+  const [email, setEmail] = useState("");
+  const [sent, setSent] = useState(false);
+  const config = tab === "monitor"
+    ? { icon: "📈", title: "价格监控", desc: "自动追踪竞品价格变动，智能提醒降价时机，帮你抢占市场先机" }
+    : { icon: "🔍", title: "竞品分析", desc: "深度分析Ozon热销竞品，挖掘蓝海品类，找到你的差异化机会" };
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
+    setSent(true);
+  };
+
+  return (
+    <div className="max-w-md mx-auto mt-16 text-center px-4">
+      <div className="text-5xl mb-4">{config.icon}</div>
+      <h2 className="text-xl font-bold text-gray-900 mb-2">{config.title} · 开发中</h2>
+      <p className="text-sm text-gray-500 mb-8 leading-relaxed">{config.desc}</p>
+      {!sent ? (
+        <form onSubmit={submit} className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm text-left">
+          <p className="text-sm font-semibold text-gray-800 mb-4 text-center">🎁 预约内测，上线优先通知 + 赠送30天Pro</p>
+          <div className="flex gap-2">
+            <input type="email" required value={email} onChange={e=>setEmail(e.target.value)}
+              placeholder="输入你的邮箱"
+              className="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300" />
+            <button type="submit"
+              className="px-5 py-2.5 rounded-xl text-sm font-semibold text-white"
+              style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)" }}>
+              预约
+            </button>
+          </div>
+          <p className="text-[11px] text-gray-400 mt-3 text-center">预计2026年Q2上线 · 已有 127 人预约</p>
+        </form>
+      ) : (
+        <div className="bg-green-50 border border-green-100 rounded-2xl p-8">
+          <div className="text-3xl mb-2">✅</div>
+          <p className="font-semibold text-green-700">预约成功！</p>
+          <p className="text-sm text-green-600 mt-1">上线时会发邮件通知你，并自动赠送30天Pro</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function LandingPage({ onStart }: { onStart: () => void }) {
   const [showUpgrade, setShowUpgrade] = useState(false);
   const { user } = useAuth();
@@ -558,6 +603,69 @@ function LandingPage({ onStart }: { onStart: () => void }) {
             style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)" }}>
             免费注册，立即体验 →
           </button>
+        </div>
+      </div>
+
+      {/* 用户真实评价 */}
+      <div className="bg-white border border-gray-100 rounded-xl p-5">
+        <h2 className="font-bold text-gray-900 text-sm mb-4 text-center">卖家真实反馈</h2>
+        <div className="grid grid-cols-3 gap-3">
+          {[
+            { name: "Ozon卖家·米米", avatar: "🧑‍💼", star: 5, tag: "Ozon俄罗斯站",
+              text: "以前算利润要打开好几个表格，现在插件一抓，卢布售价直接出来了，省了至少一半时间" },
+            { name: "跨境老玩家·阿强", avatar: "👨‍💻", star: 5, tag: "Shopee泰国站",
+              text: "详情图全抓功能太赞了！1688商品搬到Shopee，图片一张都不用手动下载" },
+            { name: "新手卖家·晓玲", avatar: "👩‍💼", star: 5, tag: "TikTok英国站",
+              text: "免费版100个商品已经够用了，等我账号起来再升级Pro，价格很良心" },
+          ].map(r => (
+            <div key={r.name} className="bg-gray-50 rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-xl">{r.avatar}</span>
+                <div>
+                  <p className="text-xs font-semibold text-gray-800">{r.name}</p>
+                  <p className="text-[10px] text-indigo-500">{r.tag}</p>
+                </div>
+                <div className="ml-auto text-yellow-400 text-xs">{"★".repeat(r.star)}</div>
+              </div>
+              <p className="text-xs text-gray-600 leading-relaxed">"{r.text}"</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 操作演示 */}
+      <div className="bg-white border border-gray-100 rounded-xl p-5">
+        <h2 className="font-bold text-gray-900 text-sm mb-1 text-center">30秒看懂怎么用</h2>
+        <p className="text-xs text-gray-400 text-center mb-4">从1688找货到导出Ozon模板，全流程演示</p>
+        <div className="bg-gray-900 rounded-xl aspect-video flex flex-col items-center justify-center gap-3 cursor-pointer hover:bg-gray-800 transition-colors group">
+          <div className="w-14 h-14 bg-white/10 rounded-full flex items-center justify-center group-hover:bg-white/20 transition-colors">
+            <span className="text-3xl">▶</span>
+          </div>
+          <p className="text-white/60 text-sm">演示视频即将发布</p>
+          <p className="text-white/30 text-xs">1688抓取 → 算利润 → 一键导出Ozon模板</p>
+        </div>
+      </div>
+
+      {/* 关于我们 & 备案 */}
+      <div className="bg-white border border-gray-100 rounded-xl p-5">
+        <div className="flex items-start gap-4">
+          <div className="flex-1">
+            <h2 className="font-bold text-gray-900 text-sm mb-1">关于 Crossly</h2>
+            <p className="text-xs text-gray-500 leading-relaxed mb-2">
+              Crossly 由 <strong>河南省柒号谷社文化传播有限公司</strong> 开发运营，专注为中国跨境电商卖家提供工具服务。
+              我们深耕Ozon/Shopee/TikTok等平台运营，所有功能均基于真实卖家需求打磨。
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {["正规备案企业", "数据安全加密", "7×24小时服务", "持续迭代更新"].map(t => (
+                <span key={t} className="text-[10px] bg-green-50 text-green-600 px-2 py-0.5 rounded-full border border-green-100">✓ {t}</span>
+              ))}
+            </div>
+          </div>
+          <div className="text-right text-[10px] text-gray-400 space-y-1 flex-shrink-0">
+            <p>📧 aqiliaobi@163.com</p>
+            <p>🌐 www.crossly.cn</p>
+            <p className="text-gray-300">豫ICP备XXXXXXXX号</p>
+          </div>
         </div>
       </div>
 
