@@ -197,6 +197,7 @@ function UpgradeModal({ onClose, user }: { onClose: () => void; user: { email: s
           <p className="text-[11px] text-amber-600">1. 点击下方前往爱发电选套餐</p>
           <p className="text-[11px] text-amber-600">2. 备注填写邮箱：<strong>{user.email}</strong></p>
           <p className="text-[11px] text-amber-600">3. 支付后5分钟内自动激活</p>
+          <p className="text-[11px] text-orange-500 mt-1">⚠️ 微信内打不开？请复制链接用Safari/浏览器打开</p>
         </div>
 
         <div className="px-4 pb-4 flex gap-2">
