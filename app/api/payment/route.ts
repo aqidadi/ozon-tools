@@ -133,16 +133,27 @@ export async function PUT(req: NextRequest) {
   const { email, months } = await req.json(); // months=0 = 终身
   const sb = createServiceClient();
 
-  const { data: users } = await sb.auth.admin.listUsers();
+  const { data: users } = await sb.auth.admin.listUsers({ perPage: 1000 });
   const user = users?.users?.find(u => u.email === email);
   if (!user) return NextResponse.json({ error: "用户不存在" }, { status: 404 });
 
   let expiresAt: string | null = null;
-  if (months > 0) {
+  if (months === -1) {
+    // 24小时体验
+    const exp = new Date();
+    exp.setHours(exp.getHours() + 24);
+    expiresAt = exp.toISOString();
+  } else if (months === -7) {
+    // 7天周卡
+    const exp = new Date();
+    exp.setDate(exp.getDate() + 7);
+    expiresAt = exp.toISOString();
+  } else if (months > 0) {
     const exp = new Date();
     exp.setMonth(exp.getMonth() + months);
     expiresAt = exp.toISOString();
   }
+  // months === 0 = 永久，expiresAt 保持 null
 
   await sb.from("profiles").update({
     plan: "pro",
