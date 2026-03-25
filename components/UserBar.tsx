@@ -147,7 +147,7 @@ function ProfileModal({ onClose }: { onClose: () => void }) {
 
 // ── 升级弹窗 ──────────────────────────────────────────────
 function UpgradeModal({ onClose, user }: { onClose: () => void; user: { email: string } }) {
-  const AFDIAN_URL = process.env.NEXT_PUBLIC_AFDIAN_URL || "https://afdian.com/a/your-account";
+  const AFDIAN_URL = process.env.NEXT_PUBLIC_AFDIAN_URL || "https://www.afdian.com/a/Crossly";
 
   const plans = [
     { name: "24小时体验", price: "¥5.9", period: "24h", tag: "试用" },
