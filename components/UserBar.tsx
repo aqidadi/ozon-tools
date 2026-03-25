@@ -246,7 +246,7 @@ export function UserBar() {
       <>
         <button
           onClick={() => setShowAuth(true)}
-          className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-medium hover:bg-blue-700 transition-colors w-full justify-center"
+          className="flex items-center gap-1.5 px-3 py-1.5 bg-white/20 text-white rounded-xl text-xs font-medium hover:bg-white/30 transition-colors w-full justify-center border border-white/20"
         >
           <User size={12} />
           登录 / 注册
@@ -261,7 +261,7 @@ export function UserBar() {
       {/* 用户头像 + 昵称行（点击进个人中心） */}
       <button
         onClick={() => setShowProfile(true)}
-        className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-gray-100 transition-colors text-left"
+        className="w-full flex items-center gap-2 px-2 py-1.5 rounded-xl hover:bg-white/10 transition-colors text-left"
       >
         <div className="w-8 h-8 rounded-full overflow-hidden bg-blue-600 flex items-center justify-center flex-shrink-0">
           {avatarUrl
@@ -270,10 +270,10 @@ export function UserBar() {
           }
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-xs font-medium text-gray-800 truncate">{displayName}</p>
-          <p className="text-[10px] text-gray-400 truncate">{isPro ? `✨ Pro · ${formatExpiry(user.planExpiresAt)}` : `免费版 ${user.productCount}/${user.quota}`}</p>
+          <p className="text-xs font-medium text-white truncate">{displayName}</p>
+          <p className="text-[10px] text-white/50 truncate">{isPro ? `✨ Pro · ${formatExpiry(user.planExpiresAt)}` : `免费版 ${user.productCount}/${user.quota}`}</p>
         </div>
-        <Pencil size={11} className="text-gray-300 flex-shrink-0" />
+        <Pencil size={11} className="text-white/30 flex-shrink-0" />
       </button>
 
       {/* 操作行 */}
@@ -281,9 +281,9 @@ export function UserBar() {
         {/* 配额进度 */}
         {!isPro && (
           <div className="flex-1 flex items-center gap-1.5">
-            <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+            <div className="flex-1 h-1 bg-white/20 rounded-full overflow-hidden">
               <div
-                className={`h-full rounded-full ${usagePercent > 80 ? "bg-red-400" : "bg-blue-400"}`}
+                className={`h-full rounded-full ${usagePercent > 80 ? "bg-red-400" : "bg-indigo-300"}`}
                 style={{ width: `${usagePercent}%` }}
               />
             </div>

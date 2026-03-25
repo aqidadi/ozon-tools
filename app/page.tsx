@@ -46,18 +46,19 @@ const NAV_ITEMS = [
   { id: "settings",  label: "参数设置", icon: Settings2,  color: "gray" },
 ] as { id: Tab; label: string; icon: React.ElementType; color: string; badge?: string }[];
 
+// 深色侧边栏下，所有激活态统一用白色高亮
 const COLOR_CLASSES: Record<string, { active: string; icon: string }> = {
-  blue:   { active: "bg-blue-50 text-blue-700 border-l-2 border-blue-600",   icon: "text-blue-500" },
-  orange: { active: "bg-orange-50 text-orange-700 border-l-2 border-orange-500", icon: "text-orange-500" },
-  indigo: { active: "bg-indigo-50 text-indigo-700 border-l-2 border-indigo-600", icon: "text-indigo-500" },
-  yellow: { active: "bg-yellow-50 text-yellow-700 border-l-2 border-yellow-500", icon: "text-yellow-500" },
-  pink:   { active: "bg-pink-50 text-pink-700 border-l-2 border-pink-500",   icon: "text-pink-500" },
-  gray:   { active: "bg-gray-100 text-gray-800 border-l-2 border-gray-500",  icon: "text-gray-500" },
-  red:    { active: "bg-red-50 text-red-700 border-l-2 border-red-500",      icon: "text-red-500" },
-  teal:   { active: "bg-teal-50 text-teal-700 border-l-2 border-teal-600",   icon: "text-teal-500" },
-  cyan:   { active: "bg-cyan-50 text-cyan-700 border-l-2 border-cyan-600",   icon: "text-cyan-500" },
-  purple: { active: "bg-purple-50 text-purple-700 border-l-2 border-purple-600", icon: "text-purple-500" },
-  green:  { active: "bg-green-50 text-green-700 border-l-2 border-green-600",   icon: "text-green-500" },
+  blue:   { active: "bg-white/15 text-white",   icon: "text-white" },
+  orange: { active: "bg-white/15 text-white",   icon: "text-white" },
+  indigo: { active: "bg-white/15 text-white",   icon: "text-white" },
+  yellow: { active: "bg-white/15 text-white",   icon: "text-white" },
+  pink:   { active: "bg-white/15 text-white",   icon: "text-white" },
+  gray:   { active: "bg-white/15 text-white",   icon: "text-white" },
+  red:    { active: "bg-white/15 text-white",   icon: "text-white" },
+  teal:   { active: "bg-white/15 text-white",   icon: "text-white" },
+  cyan:   { active: "bg-white/15 text-white",   icon: "text-white" },
+  purple: { active: "bg-white/15 text-white",   icon: "text-white" },
+  green:  { active: "bg-white/15 text-white",   icon: "text-white" },
 };
 
 export default function Home() {
@@ -162,17 +163,19 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      {/* Sidebar */}
-      <aside className="w-56 bg-white border-r border-gray-200 flex flex-col fixed h-full z-20">
+      {/* Sidebar - 深色渐变 */}
+      <aside className="w-56 flex flex-col fixed h-full z-20"
+        style={{ background: "linear-gradient(180deg, #1e2d5a 0%, #2d1b69 50%, #1a1a2e 100%)" }}>
         {/* Logo */}
-        <div className="px-4 py-4 border-b border-gray-100">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-              <ShoppingBag size={16} className="text-white" />
+        <div className="px-4 py-4 border-b border-white/10">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center shadow-lg"
+              style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)" }}>
+              <ShoppingBag size={18} className="text-white" />
             </div>
             <div>
-              <p className="text-sm font-bold text-gray-900 leading-tight">Crossly</p>
-              <p className="text-xs text-gray-400">跨境卖家工具箱</p>
+              <p className="text-sm font-bold text-white leading-tight">Crossly</p>
+              <p className="text-[10px] text-white/50">跨境卖家工具箱</p>
             </div>
           </div>
           {/* 用户信息 */}
@@ -191,18 +194,18 @@ export default function Home() {
               <button
                 key={item.id}
                 onClick={() => setTab(item.id as Tab)}
-                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                  isActive ? colors.active : "text-gray-600 hover:bg-gray-50 border-l-2 border-transparent"
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                  isActive ? colors.active : "text-white/60 hover:bg-white/10 hover:text-white"
                 }`}
               >
                 <div className="flex items-center gap-2.5">
-                  <Icon size={16} className={isActive ? "" : "text-gray-400"} />
+                  <Icon size={16} className={isActive ? "text-white" : "text-white/40"} />
                   <span>{item.label}</span>
                 </div>
                 {item.badge ? (
-                  <span className="text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-full">{item.badge}</span>
+                  <span className="text-[9px] bg-white/20 text-white/70 px-1.5 py-0.5 rounded-full">{item.badge}</span>
                 ) : item.id === "products" && products.length > 0 ? (
-                  <span className="text-[10px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded-full font-semibold">{products.length}</span>
+                  <span className="text-[10px] bg-indigo-400/30 text-indigo-200 px-1.5 py-0.5 rounded-full font-semibold">{products.length}</span>
                 ) : null}
               </button>
             );
@@ -210,17 +213,18 @@ export default function Home() {
         </nav>
 
         {/* Bottom actions */}
-        <div className="p-3 border-t border-gray-100 space-y-2">
+        <div className="p-3 border-t border-white/10 space-y-2">
           <button
             onClick={handleExport}
-            className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+            className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-white/60 hover:bg-white/10 hover:text-white transition-colors"
           >
-            <Download size={15} className="text-gray-400" />
+            <Download size={15} className="text-white/40" />
             导出 Excel
           </button>
           <button
             onClick={() => setShowAddModal(true)}
-            className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+            className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium text-white transition-all shadow-lg hover:shadow-xl"
+            style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)" }}
           >
             <Plus size={15} />
             添加商品
@@ -231,7 +235,7 @@ export default function Home() {
       {/* Main content */}
       <div className="flex-1 ml-56">
         {/* Top bar */}
-        <header className="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between sticky top-0 z-10">
+        <header className="bg-white/80 backdrop-blur border-b border-gray-200/80 px-6 py-3 flex items-center justify-between sticky top-0 z-10">
           <div>
             <h2 className="text-base font-semibold text-gray-900">
               {NAV_ITEMS.find((n) => n.id === tab)?.label}
