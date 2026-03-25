@@ -496,7 +496,7 @@ function LandingPage({ onStart }: { onStart: () => void }) {
           {[
             { label: "月度", price: "¥9.9", sub: "推广价", color: "border-gray-200" },
             { label: "季度", price: "¥19.9", sub: "3个月", color: "border-indigo-300 bg-indigo-50", hot: true },
-            { label: "年度", price: "¥99", sub: "365天", color: "border-gray-200" },
+            { label: "年度", price: "¥69", sub: "365天", color: "border-gray-200" },
           ].map(p => (
             <div key={p.label} className={`border-2 rounded-xl p-3 text-center relative ${p.color}`}>
               {p.hot && <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-indigo-600 text-white text-[9px] font-bold px-2 py-0.5 rounded-full">推荐</div>}

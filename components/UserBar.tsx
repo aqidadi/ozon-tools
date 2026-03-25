@@ -150,7 +150,7 @@ function UpgradeModal({ onClose, user }: { onClose: () => void; user: { email: s
   const plans = [
     { name: "月度 Pro", price: "¥9.9", period: "/月", tag: "推广价", months: 1 },
     { name: "季度 Pro", price: "¥19.9", period: "/3月", tag: "省¥9.8", months: 3 },
-    { name: "年度 Pro", price: "¥99", period: "/年", tag: "最划算", months: 12 },
+    { name: "年度 Pro", price: "¥69", period: "/年", tag: "最划算", months: 12 },
   ];
 
   return (
