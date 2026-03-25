@@ -11,7 +11,7 @@ const CATEGORIES = [
       { name: "Removebg", tag: "免费", desc: "一键AI抠图，主图必备", url: "https://www.remove.bg", emoji: "✂️" },
       { name: "汇率换算", tag: "内置", desc: "Crossly内置，10货币实时换算", url: "#mintools", emoji: "💱" },
       { name: "利润计算", tag: "内置", desc: "Crossly内置，考虑运费佣金", url: "#mintools", emoji: "📊" },
-      { name: "1688插件", tag: "独家", desc: "一键导入1688商品+详情图+规格", url: "https://www.crossly.cn/crossly-extension.zip", emoji: "🔌" },
+      { name: "1688插件", tag: "独家", desc: "一键导入1688商品+详情图+规格", url: "https://www.crossly.cn/crossly-extension.zip?v=20260325", emoji: "🔌" },
       { name: "创客贴", tag: "免费", desc: "在线设计主图海报，模板丰富", url: "https://www.chuangkit.com", emoji: "🎨" },
     ]
   },

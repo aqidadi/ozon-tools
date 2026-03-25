@@ -418,7 +418,7 @@ function LandingPage({ onStart }: { onStart: () => void }) {
               style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)" }}>
               免费开始使用 →
             </button>
-            <a href="https://www.crossly.cn/crossly-extension.zip"
+            <a href="https://www.crossly.cn/crossly-extension.zip?v=20260325"
               className="px-6 py-2.5 rounded-xl text-sm font-medium text-white/80 border border-white/20 hover:bg-white/10 transition-colors">
               下载插件
             </a>
