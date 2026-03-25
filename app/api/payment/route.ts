@@ -155,11 +155,20 @@ export async function PUT(req: NextRequest) {
   }
   // months === 0 = 永久，expiresAt 保持 null
 
-  await sb.from("profiles").update({
+  // upsert：如果 profiles 里没有记录（触发器失败），先创建再更新
+  const { error: upsertErr } = await sb.from("profiles").upsert({
+    id: user.id,
+    email: user.email ?? email,
     plan: "pro",
     quota: -1,
     plan_expires_at: expiresAt,
-  }).eq("id", user.id);
+    api_token: crypto.randomUUID().replace(/-/g, "") + crypto.randomUUID().replace(/-/g, ""),
+  }, { onConflict: "id" });
+
+  if (upsertErr) {
+    console.error("profiles upsert error:", upsertErr);
+    return NextResponse.json({ error: "数据库写入失败: " + upsertErr.message }, { status: 500 });
+  }
 
   return NextResponse.json({ ok: true, email, expiresAt: expiresAt || "终身" });
 }
