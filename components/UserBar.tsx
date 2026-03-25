@@ -204,7 +204,7 @@ function UpgradeModal({ onClose, user }: { onClose: () => void; user: { email: s
                 <span className="text-blue-500 font-bold">2.</span> 邮箱：<strong className="text-gray-800 break-all">{user.email}</strong>
               </p>
               <p className="text-[11px] text-gray-600 flex items-center gap-1">
-                <span className="text-blue-500 font-bold">3.</span> 付款截图发至 <strong className="text-blue-600">hi@crossly.cn</strong>
+                <span className="text-blue-500 font-bold">3.</span> 付款截图发至 <strong className="text-blue-600">aqiliaobi@163.com</strong>
               </p>
               <p className="text-[11px] text-gray-600 flex items-center gap-1">
                 <span className="text-blue-500 font-bold">4.</span> 24小时内手动激活会员
