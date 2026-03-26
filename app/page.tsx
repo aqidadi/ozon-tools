@@ -36,23 +36,42 @@ function useRateBar() {
   return rates;
 }
 
-// ── 金钱呼吸状态栏 ──────────────────────────────────────
-// 幽默广告位（固定，不滚动，随机切换）
-const AD_SLOTS = [
-  "📦 广告位招租 · 老板还在送外卖给服务器续命，有没有好心人搭把手？",
-  "🍜 广告位招租 · 我们的服务器靠一碗泡面撑着，你来投广告它就能吃上饭",
-  "💸 广告位招租 · 这里可以放你的广告，比朋友圈转发便宜，效果不一定更差",
-  "🐶 广告位招租 · 老板的狗狗说：主人又没钱买狗粮了，求大佬投广告",
-  "🚀 广告位招租 · 月活数量 = 在涨 · 广告效果 = 未知 · 价格 = 你说了算",
-  "☕ 广告位招租 · 老板今天第三杯咖啡了，只为让你看到这行字",
+// ── 顶部广告位（3个并排） ────────────────────────────────
+const AD_SLOTS_A = [
+  "🐶 老板的狗狗没狗粮了，求大佬投广告",
+  "☕ 老板第三杯咖啡了，只为让你看到这",
+  "🍜 服务器靠泡面撑着，投广告让它吃饭",
+  "📦 老板送外卖给服务器续命中，求救",
+];
+const AD_SLOTS_B = [
+  "🚢 货代/物流 · 广告位招租 · 价格面议",
+  "🏪 1688供货商 · 推广位空缺 · 联系我们",
+  "✈️ 跨境物流广告位 · 全国卖家天天看",
+  "📦 仓储货代推广位 · 卖家精准触达",
+];
+const AD_SLOTS_C = [
+  "💸 这里放广告，比朋友圈便宜，没准还管用",
+  "🚀 月活在涨 · 广告效果未知 · 价格你定",
+  "🎯 精准跨境卖家流量 · 广告位招租中",
+  "🤝 跨境服务商合作 · 联系 aqiliaobi@163.com",
 ];
 
 function RateBar() {
-  const [adIdx] = useState(() => Math.floor(Math.random() * AD_SLOTS.length));
+  const [i] = useState(() => Math.floor(Math.random() * 4));
   return (
-    <div className="flex items-center gap-1.5 bg-yellow-50 border border-yellow-200 rounded-lg px-3 py-1.5 text-xs text-yellow-700 font-medium max-w-md cursor-pointer hover:bg-yellow-100 transition-colors"
-      title="联系我们投广告：aqiliaobi@163.com">
-      {AD_SLOTS[adIdx]}
+    <div className="flex items-center gap-1.5 flex-wrap">
+      <div className="flex items-center gap-1 bg-yellow-50 border border-yellow-200 rounded-lg px-2.5 py-1 text-[11px] text-yellow-700 font-medium cursor-pointer hover:bg-yellow-100 transition-colors whitespace-nowrap"
+        title="联系我们投广告：aqiliaobi@163.com">
+        📣 {AD_SLOTS_A[i]}
+      </div>
+      <div className="flex items-center gap-1 bg-blue-50 border border-blue-200 rounded-lg px-2.5 py-1 text-[11px] text-blue-600 font-medium cursor-pointer hover:bg-blue-100 transition-colors whitespace-nowrap"
+        title="联系我们投广告：aqiliaobi@163.com">
+        {AD_SLOTS_B[i]}
+      </div>
+      <div className="flex items-center gap-1 bg-purple-50 border border-purple-200 rounded-lg px-2.5 py-1 text-[11px] text-purple-600 font-medium cursor-pointer hover:bg-purple-100 transition-colors whitespace-nowrap"
+        title="联系我们投广告：aqiliaobi@163.com">
+        {AD_SLOTS_C[i]}
+      </div>
     </div>
   );
 }
