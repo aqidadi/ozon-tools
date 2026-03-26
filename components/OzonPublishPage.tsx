@@ -85,6 +85,38 @@ export function OzonPublishPage({ products, settings }: Props) {
       const heightMatch = (product.title || "").match(/(\d+)\s*(cm|см|厘米)/i);
       const height = heightMatch ? parseInt(heightMatch[1]) : null;
 
+      // 先缓存图片到 Supabase Storage（绕过 1688 防盗链）
+      setStates(prev => ({ ...prev, [product.id]: { status: "loading", msg: "缓存图片中..." } }));
+      const allImgUrls = [
+        ...(product.images || []),
+        ...(product.detailImages || []),
+      ].filter((u: string) => u?.startsWith("https://"));
+
+      let cachedImages: string[] = product.images || [];
+      let cachedDetailImages: string[] = product.detailImages || [];
+
+      if (allImgUrls.length > 0) {
+        try {
+          const cacheRes = await fetch("/api/img-cache", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ urls: allImgUrls }),
+          });
+          const cacheData = await cacheRes.json();
+          if (cacheData.urls?.length > 0) {
+            const mainCount = (product.images || []).filter((u: string) => u?.startsWith("https://")).length;
+            cachedImages = cacheData.urls.slice(0, mainCount).filter(Boolean);
+            cachedDetailImages = cacheData.urls.slice(mainCount).filter(Boolean);
+          }
+        } catch {
+          // 缓存失败时继续用原 URL（可能失败）
+          cachedImages = (product.images || []).filter((u: string) => u?.startsWith("https://"));
+          cachedDetailImages = (product.detailImages || []).filter((u: string) => u?.startsWith("https://"));
+        }
+      }
+
+      setStates(prev => ({ ...prev, [product.id]: { status: "loading", msg: "发布中..." } }));
+
       const res = await fetch("/api/ozon/publish", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -96,8 +128,8 @@ export function OzonPublishPage({ products, settings }: Props) {
             price: sell > 0 ? sell : 999,
             oldPrice: old > 0 ? old : 0,
             weight: product.weight || 400,
-            images: (product.images || []).filter((u: string) => u?.startsWith("https://")),
-            detailImages: (product.detailImages || []).filter((u: string) => u?.startsWith("https://")),
+            images: cachedImages,
+            detailImages: cachedDetailImages,
             description: product.titleRu || product.title,
             color, material, height,
             offerId: product.id,
