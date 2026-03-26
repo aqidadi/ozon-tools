@@ -952,24 +952,25 @@ async function setTab(tab, settings, tabId, condition) {
         const imgResults = await chrome.scripting.executeScript({
           target: { tabId, allFrames: true },
           func: () => {
-            try {
-              return Array.from(document.querySelectorAll("img"))
-                .map(img => img.getAttribute("data-lazyload-src") || img.src)
-                .filter(src => src && src.includes("cbu01.alicdn.com"));
-            } catch(e) { return []; }
+            const imgs = document.querySelectorAll("img");
+            let rawUrls = [];
+            imgs.forEach(img => {
+              let url = img.getAttribute("data-lazyload-src") ||
+                        img.getAttribute("data-lazy-src") ||
+                        img.getAttribute("src");
+              if (url && url.includes("cbu01.alicdn.com/img/ibank/")) {
+                if (url.startsWith("//")) url = "https:" + url;
+                rawUrls.push(url);
+              }
+            });
+            return rawUrls;
           }
         });
 
         // 串行清洗：1.砍参数/webp 2.只留ibank 3.去重
-        let rawDirtyUrls = imgResults.flatMap(r => r.result || []).filter(Boolean);
-        const finalOutput = [...new Set(
-          rawDirtyUrls.map(url => url.replace(/(_\d+x\d+)/gi, ""))
-        )].filter(url =>
-          url.includes("cbu01.alicdn.com/img/ibank/") &&
-          !/logo|setting|gear|icon|check|avatar|loading|blank|spaceball/i.test(url)
-        );
-        grabbedImages = finalOutput.slice(0, 10);
-        grabbedDetailImages = finalOutput.slice(10, 25);
+        const finalUnique = [...new Set(imgResults.flatMap(r => r.result || []).filter(Boolean))];
+        grabbedImages = finalUnique.slice(0, 10);
+        grabbedDetailImages = finalUnique.slice(10, 25);
             } catch(e) {}
 
       // 第四步：抓标题、价格、规格等
