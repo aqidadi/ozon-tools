@@ -954,59 +954,23 @@ async function setTab(tab, settings, tabId, condition) {
           func: async () => {
             try {
               window.scrollBy(0, 500);
-              await new Promise(r => setTimeout(r, 1200));
-
-              let pool = new Set();
-
-              // A: img标签
-              document.querySelectorAll("img").forEach(img => {
-                const src = img.getAttribute("data-lazyload-src") ||
-                            img.getAttribute("data-lazy-src") ||
-                            img.getAttribute("src") || "";
-                if (src && src.includes("cbu01.alicdn.com")) pool.add(src);
-              });
-
-              // B: textarea逃生舱
-              document.querySelectorAll("textarea").forEach(t => {
-                const raw = t.value || t.textContent || "";
-                const matches = raw.match(/https?:\/\/[^\s"'<>]+\.(?:jpg|jpeg|png|webp)/gi);
-                if (matches) matches.forEach(u => pool.add(u));
-              });
-
-              // C: 全页HTML正则（最全）
+              await new Promise(r => setTimeout(r, 1000));
               const html = document.documentElement.innerHTML;
-              const rawMatches = html.match(/https?:\/\/cbu01\.alicdn\.com\/[^\s"'<>]+\.(?:jpg|jpeg|png)/gi);
-              if (rawMatches) rawMatches.forEach(u => pool.add(u));
-
-              // D: 最后滤镜
-              const blackList = ["logo","setting","icon","gear","check","loading","avatar","spaceball","blank"];
-              return [...pool].filter(url => {
-                const isProduct = url.includes("cbu01.alicdn.com/img/ibank/");
-                const isGarbage = blackList.some(k => url.toLowerCase().includes(k));
-                return isProduct && !isGarbage;
-              }).map(url => (url.startsWith("//") ? "https:" + url : url)
-                .replace(/(_\d+x\d+.*\.jpg$)|(\.\d+x\d+.*\.jpg$)/, ""));
+              const regex = /https?:\/\/cbu01\.alicdn\.com\/img\/ibank\/[0-9a-zA-Z!/_.-]+(?=\.jpg)/g;
+              const matches = html.match(regex) || [];
+              const highResUrls = [...new Set(matches)].map(u => u + ".jpg");
+              return highResUrls.filter(u => !/logo|setting|gear|icon|check|avatar|loading|blank/i.test(u));
             } catch(e) { return []; }
           }
         });
 
         // 串行清洗：1.砍参数/webp 2.只留ibank 3.去重
         const allRawUrls = imgResults.flatMap(r => r.result || []).filter(Boolean);
-        const purifyImages = (urls) => {
-          const normalized = urls.map(url => {
-            let u = url.split("?")[0];
-            u = u.replace(/\.jpg_.*$/i, ".jpg");   // 处理 .jpg_.webp 变体（先处理这个）
-            u = u.replace(/\.webp$/i, "");          // 再去纯 .webp
-            return u.replace(/(_\d+x\d+.*\.jpg$)|(\.\d+x\d+.*\.jpg$)/i, "");
-          });
-          const filtered = normalized.filter(u => {
-            const isProduct = u.includes("cbu01.alicdn.com/img/ibank/");
-            const isGarbage = /logo|setting|gear|icon|check|avatar|loading|blank|spaceball/i.test(u);
-            return isProduct && !isGarbage;
-          });
-          return [...new Set(filtered)];
-        };
-        const finalUnique = purifyImages(allRawUrls);
+        const finalUnique = [...new Set(allRawUrls)].filter(u =>
+          u.includes("cbu01.alicdn.com/img/ibank/") &&
+          !/logo|setting|gear|icon|check|avatar|loading|blank/i.test(u)
+        );
+        console.log("Crossly 提纯图片数量:", finalUnique.length, finalUnique);
         grabbedImages = finalUnique.slice(0, 10);
         grabbedDetailImages = finalUnique.slice(10, 25);
             } catch(e) {}
