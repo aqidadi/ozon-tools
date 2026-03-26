@@ -56,7 +56,7 @@ function RateBar() {
       {/* 主汇率 */}
       <div className={`flex items-center gap-1.5 rounded-lg px-3 py-1 text-xs font-medium ${isGood ? "bg-green-50 border border-green-200 text-green-700" : "bg-gray-50 border border-gray-200 text-gray-600"}`}>
         <span>💰</span>
-        <span>1000卢布 ≈ <strong>{cnyPer1000Rub}元</strong></span>
+        <span>1000卢布 ≈ <strong>{cnyPer1000Rub}元</strong> · $1≈¥7.2</span>
         <span className={`text-[10px] ${isGood ? "text-green-500" : "text-gray-400"}`}>
           {isGood ? "↑ 回款正肥，快上架！" : "汇率稳定"}
         </span>
@@ -312,7 +312,7 @@ export default function Home() {
           <div className="flex animate-marquee whitespace-nowrap py-1.5">
             {[
               "🧸 据说卖毛绒玩具的人，睡觉都是笑着的",
-              "💰 今日份励志：你的第一个卢布，正在义乌的某个仓库等你",
+              "💰 今日份励志：你的第一笔外币，正在义乌的某个仓库等你",
               "🚀 Crossly 用户平均上架速度：30秒。你邻居还在手动填表格",
               "😂 不懂俄语没关系，AI也不懂，但它会翻译",
               "🏆 本周最励志：一位宝妈边喂奶边上架了3件商品",
@@ -322,10 +322,10 @@ export default function Home() {
               "⚡ Ozon刚刚又来了一个订单，主人，快去1688补货吧",
               "🎯 选品时间超过1小时=选品恐惧症，治疗方法：随便选一个先发出去",
               "🤖 AI翻译提示：「毛茸茸的猫咪」翻成俄语后，俄罗斯人疯狂下单",
-              "💸 广告位招租，价格面议，付卢布也行",
+              "💸 广告位招租，价格面议，付人民币/美元/泰铢均可",
             ].concat([
               "🧸 据说卖毛绒玩具的人，睡觉都是笑着的",
-              "💰 今日份励志：你的第一个卢布，正在义乌的某个仓库等你",
+              "💰 今日份励志：你的第一笔外币，正在义乌的某个仓库等你",
               "🚀 Crossly 用户平均上架速度：30秒。你邻居还在手动填表格",
               "😂 不懂俄语没关系，AI也不懂，但它会翻译",
             ]).map((ad, i) => (
@@ -597,7 +597,7 @@ function LandingPage({ onStart }: { onStart: () => void }) {
           <h2 className="text-white text-xl font-black text-center mb-5">为什么选 Crossly？🏆</h2>
           <div className="space-y-3 mb-4">
             {[
-              { icon: "🧸", t: "毛绒玩具", profit: "利润30-50%", hot: true, tip: "俄罗斯人的心头爱，月销5000件不是梦" },
+              { icon: "🧸", t: "毛绒玩具", profit: "利润30-50%", hot: true, tip: "俄罗斯人的心头爱，全球月销5000件不是梦" },
               { icon: "💄", t: "美妆工具", profit: "利润25-40%", tip: "女性市场永不过时，睫毛夹/卷发棒最好卖" },
               { icon: "🏠", t: "家居收纳", profit: "利润20-35%", tip: "复购率超高，一个买家会买10件不同款" },
               { icon: "🐾", t: "宠物玩具", profit: "利润35-55%", hot: true, tip: "新风口！竞争还小，现在进正是时候" },
@@ -638,9 +638,9 @@ function LandingPage({ onStart }: { onStart: () => void }) {
           <h2 className="text-white text-xl font-black text-center mb-5">普通人，真的做到了 💬</h2>
           <div className="space-y-3">
             {[
-              { avatar: "👩", name: "小美", tag: "宝妈 · 义乌 · 做了3个月", text: "娃在睡觉，我用手机把第一件毛绒玩具发到Ozon上。那天下午收到第一个订单，真的哭了。原来我也可以。" },
-              { avatar: "👨‍🎓", name: "阿俊", tag: "大学生 · 广州 · 大三在读", text: "用Crossly发了20件商品，每月稳定1000多块。这个月生活费不用问家里要了，那种感觉没法形容。" },
-              { avatar: "👩‍💼", name: "晓玲", tag: "上班族 · 深圳 · 会计", text: "下班刷1688找款，复制链接一键发布。第二天上班路上收到Ozon出单通知。这就是我想要的副业。" },
+              { avatar: "👩", name: "小美", tag: "宝妈 · 义乌 · Shopee · 做了3个月", text: "娃在睡觉，我用手机把第一件毛绒玩具上架到Shopee。那天下午收到第一个订单，真的哭了。原来我也可以。" },
+              { avatar: "👨‍🎓", name: "阿俊", tag: "大学生 · 广州 · 东南亚市场 · 大三在读", text: "用Crossly把商品卖到东南亚，每月稳定赚1000多块外币。这个月生活费不用问家里要了，那种感觉没法形容。" },
+              { avatar: "👩‍💼", name: "晓玲", tag: "上班族 · 深圳 · TikTok Shop · 会计", text: "下班刷1688找款，复制链接一键发布，AI自动翻译。第二天上班路上收到TikTok Shop出单通知。这就是我想要的副业。" },
             ].map(u => (
               <div key={u.name} className="flex items-start gap-3 bg-white/8 rounded-xl p-3 border border-white/10">
                 <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-lg flex-shrink-0">{u.avatar}</div>

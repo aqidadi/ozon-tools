@@ -86,7 +86,7 @@ export function YiwugoSearch({ onImport }: Props) {
           <ShoppingBag size={16} className="text-white" />
         </div>
         <div>
-          <p className="text-sm font-bold text-gray-800">输入想卖的宝贝，AI帮你把商品卖到全世界 🌍 💰</p>
+          <p className="text-sm font-bold text-gray-800">输入想卖的宝贝，AI帮你卖到全世界 🌍 💰</p>
           <p className="text-xs text-gray-400">全网爆款一键收割 · 义乌购 · 1688 · 淘宝 · 拼多多</p>
         </div>
       </div>
