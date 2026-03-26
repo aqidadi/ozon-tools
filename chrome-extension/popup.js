@@ -1149,52 +1149,70 @@ async function setTab(tab, settings, tabId, condition) {
       }});
       await new Promise(r => setTimeout(r, 2000)); // 等iframe内图片加载完
 
-      // 第三步：扫全部img标签，稳定版
+      // 第三步：三路并发抓图（全页扫描，不管干净不干净，最后统一过滤）
       let grabbedImages = [];
       let grabbedDetailImages = [];
       try {
         const imgResults = await chrome.scripting.executeScript({
           target: { tabId, allFrames: true },
-          func: () => {
-            const host = location.hostname;
+          func: async () => {
+            try {
+              // 微滚动唤醒懒加载
+              window.scrollBy(0, 500);
+              await new Promise(r => setTimeout(r, 1200));
 
-            // 义乌购抓取（容器是.product-detail-page，图片域名是yiwugou.com）
-            if (host.includes("yiwugo.com")) {
-              // 只取详情长图区，跳过主图缩略图和评价图
-              // 优先找详情描述容器
-              const detailDesc = document.querySelector(".product-desc, .detail-desc, .goods-detail, [class*=proDesc], [class*=pro-desc], [class*=goodsDesc]");
-              const scope = detailDesc || document.querySelector(".product-detail-page") || document.body;
-              const allImgs = Array.from(scope.querySelectorAll("img"));
-              console.log("Crossly yiwugo: 容器=", scope.className||scope.id, "img数量:", allImgs.length);
-              const finalUrls = allImgs
-                .map(i => i.getAttribute("data-lazyload-src") || i.getAttribute("data-src") || i.src || "")
-                .filter(src => src && (src.includes("yiwugou.com") || src.includes("yiwugo.com")))
-                .map(src => src.split("?")[0].replace(/(_\d+x\d+)/, ""))
-                .filter(src => src.length > 30 && !/icon|logo|avatar|huiyuan/i.test(src));
-              return [...new Set(finalUrls)];
-            }
+              let pool = new Set();
 
-            // 1688抓取（默认）：只抓 ibank 路径的商品图，这是1688商品图专属CDN路径
-            const rawText = document.documentElement.outerHTML;
-            // ibank 路径是1688商品图专属，不会出现logo/吉祥物等杂图
-            const ibankRegex = /https?:\/\/cbu01\.alicdn\.com\/img\/ibank\/[^"'\s>?#]{10,}\.(?:jpg|jpeg|png)/gi;
-            const ibankMatches = rawText.match(ibankRegex) || [];
-            // 清理尺寸参数，换成原图
-            const cleaned = [...new Set(ibankMatches)].map(url => 
-              url.split("?")[0].replace(/(_\d+x\d+|_\d+x\d+xz)(?=\.(jpg|jpeg|png))/i, "")
-            );
-            console.log("Crossly ibank图片:", cleaned.length, "张");
-            return cleaned;
+              // A: 扫所有 img 标签（含懒加载属性）
+              document.querySelectorAll("img").forEach(img => {
+                const src = img.getAttribute("data-lazyload-src") ||
+                            img.getAttribute("data-lazy-src") ||
+                            img.getAttribute("data-src") ||
+                            img.getAttribute("src") || "";
+                if (src && src.includes("cbu01.alicdn.com")) pool.add(src);
+              });
+
+              // B: 暴力破解 textarea（1688详情图隐藏在这里）
+              document.querySelectorAll("textarea").forEach(t => {
+                const raw = t.value || t.textContent || "";
+                const matches = raw.match(/https?:\/\/cbu01\.alicdn\.com\/img\/ibank\/[0-9a-zA-Z/_.-]+\.jpg/g);
+                if (matches) matches.forEach(u => pool.add(u));
+              });
+
+              // C: 全页 HTML 正则兜底（最强，确保不漏）
+              const html = document.documentElement.innerHTML;
+              const rawMatches = html.match(/https?:\/\/cbu01\.alicdn\.com\/img\/ibank\/[0-9a-zA-Z/_!.-]+\.jpg/g);
+              if (rawMatches) rawMatches.forEach(u => pool.add(u));
+
+              return [...pool];
+            } catch(e) { return []; }
           }
         });
 
-        // ibank 图片直接用，前10张主图，后续详情图
-        const allRaw = imgResults.flatMap(r => r.result || []).filter(Boolean);
-        const finalUnique = [...new Set(allRaw)];
-        console.log("Crossly 合并去重:", finalUnique.length, "张ibank图");
-        grabbedImages = finalUnique.slice(0, 10);
-        grabbedDetailImages = finalUnique.slice(10, 25);
-            } catch(e) {}
+        // 汇总所有 frame 的结果
+        const allRaw = [...new Set(imgResults.flatMap(r => r.result || []).filter(Boolean))];
+
+        // ── 净网滤镜（只在最后一步过滤，不动前面抓取逻辑）──
+        const blackList = ['logo', 'setting', 'icon', 'gear', 'check', 'loading', 'avatar', 'spaceball'];
+        const finalUrls = allRaw
+          .filter(url => {
+            const isIbank = url.includes('cbu01.alicdn.com/img/ibank/');
+            const isGarbage = blackList.some(key => url.toLowerCase().includes(key));
+            return isIbank && !isGarbage;
+          })
+          .map(url => {
+            // 统一高清化：去掉缩略图后缀
+            const u = url.startsWith("//") ? "https:" + url : url;
+            return u.replace(/(_\d+x\d+.*\.jpg$)|(\.\d+x\d+.*\.jpg$)/i, "");
+          });
+
+        // 再次去重（高清化后可能重复）
+        const uniqueUrls = [...new Set(finalUrls)];
+        console.log("Crossly 抓图结果: 原始", allRaw.length, "张 → 过滤后", uniqueUrls.length, "张");
+
+        grabbedImages = uniqueUrls.slice(0, 10);
+        grabbedDetailImages = uniqueUrls.slice(10, 40); // 最多30张详情图
+      } catch(e) { console.log("Crossly 抓图失败:", e); }
 
       // 第四步：抓标题、价格、规格等
       const res = await chrome.scripting.executeScript({ target: { tabId }, func: extractProductData });
