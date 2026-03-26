@@ -649,6 +649,11 @@ function LandingPage({ onStart }: { onStart: () => void }) {
         <p className="text-center text-[10px] text-gray-300 mt-2">Crossly 支持全平台一键上架，你选平台，我们搞定其余</p>
       </div>
 
+      {/* 广告位1 */}
+      <div className="border border-dashed border-yellow-300 rounded-xl px-4 py-3 bg-yellow-50 text-center text-xs text-yellow-700 cursor-pointer hover:bg-yellow-100 transition-colors" title="投广告：aqiliaobi@163.com">
+        📣 <strong>广告位招租</strong> · 你的品牌可以出现在这里 · 每天有真实跨境卖家经过 · 价格比你想象的便宜
+      </div>
+
       {/* ── 爆款品类 ── */}
       <div>
         <h2 className="text-center text-base font-black text-gray-900 mb-1">现在卖什么最赚？🔥</h2>
@@ -675,6 +680,11 @@ function LandingPage({ onStart }: { onStart: () => void }) {
         </div>
       </div>
 
+      {/* 广告位2 */}
+      <div className="border border-dashed border-blue-200 rounded-xl px-4 py-3 bg-blue-50 text-center text-xs text-blue-600 cursor-pointer hover:bg-blue-100 transition-colors" title="投广告：aqiliaobi@163.com">
+        🚢 <strong>货代/物流公司广告位</strong> · 全国跨境卖家每天都在看 · 你的电话号码放这，订单自己来找你 · <span className="underline">合作联系 →</span>
+      </div>
+
       {/* ── 用户故事 ── */}
       <div>
         <h2 className="text-center text-base font-black text-gray-900 mb-3">普通人，真的做到了 💬</h2>
@@ -699,6 +709,11 @@ function LandingPage({ onStart }: { onStart: () => void }) {
         </div>
       </div>
 
+      {/* 广告位3 */}
+      <div className="border border-dashed border-green-200 rounded-xl px-4 py-3 bg-green-50 text-center text-xs text-green-700 cursor-pointer hover:bg-green-100 transition-colors" title="投广告：aqiliaobi@163.com">
+        🏪 <strong>1688店铺/供货商广告位</strong> · 这里的用户正在找货源 · 你的爆款在这展示，他们直接下单 · 老板这不比打广告费钱强？
+      </div>
+
       {/* ── 消除顾虑 ── */}
       <div>
         <h2 className="text-center text-base font-black text-gray-900 mb-3">你在担心什么？🙋</h2>
@@ -716,6 +731,11 @@ function LandingPage({ onStart }: { onStart: () => void }) {
             </div>
           ))}
         </div>
+      </div>
+
+      {/* 广告位4 */}
+      <div className="border border-dashed border-purple-200 rounded-xl px-4 py-3 bg-purple-50 text-center text-xs text-purple-700 cursor-pointer hover:bg-purple-100 transition-colors" title="投广告：aqiliaobi@163.com">
+        🤝 <strong>跨境服务商广告位</strong> · ERP·摄影·选品·财税·运营外包 · 你家服务正是他们需要的 · 老板不投广告你等什么呢？
       </div>
 
       {/* ── 给Crossly充电 ── */}
