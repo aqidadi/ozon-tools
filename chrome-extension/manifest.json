@@ -8,6 +8,7 @@
     "*://*.1688.com/*",
     "*://*.ozon.ru/*",
     "*://*.yiwugo.com/*",
+    "*://*.yiwugou.com/*",
     "https://localhost:3000/*",
     "https://*.vercel.app/*",
     "https://*.crossly.cn/*"

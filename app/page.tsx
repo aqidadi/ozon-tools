@@ -19,9 +19,10 @@ import { AuthModal } from "@/components/AuthModal";
 import { useAuth } from "@/lib/auth-context";
 import { exportToExcel } from "@/lib/export";
 import { Product, Settings, LANGUAGES, PLATFORMS, getPlatform } from "@/lib/types";
+import { BatchImportPage } from "@/components/BatchImportPage";
 import {
   ShoppingBag, Settings2, Download, Plus, TrendingUp,
-  BookOpen, Languages, Bell, BarChart2, Package, Globe, Zap, Shield, Flame, Clock, Wrench
+  BookOpen, Languages, Bell, BarChart2, Package, Globe, Zap, Shield, Flame, Clock, Wrench, DatabaseZap
 } from "lucide-react";
 
 // ── 实时汇率挂件 hook ──────────────────────────────────
@@ -77,21 +78,22 @@ const DEFAULT_SETTINGS: Settings = {
   packagingCost: 2,
 };
 
-type Tab = "landing" | "products" | "ozon" | "hot" | "picker" | "guide" | "tools" | "mintools" | "clock" | "monitor" | "analytics" | "settings";
+type Tab = "landing" | "products" | "ozon" | "hot" | "picker" | "guide" | "tools" | "mintools" | "clock" | "monitor" | "analytics" | "settings" | "batch";
 
 const NAV_ITEMS = [
-  { id: "landing",   label: "首页",     icon: Globe,      color: "blue" },
-  { id: "settings",  label: "参数设置", icon: Settings2,  color: "gray" },
-  { id: "products",  label: "选品列表", icon: Package,    color: "blue" },
-  { id: "ozon",      label: "Ozon刊登", icon: Zap,        color: "orange", badge: "核心" },
-  { id: "hot",       label: "爆品榜单", icon: Flame,      color: "red" },
-  { id: "picker",    label: "选品参考", icon: TrendingUp, color: "orange" },
-  { id: "guide",     label: "新手指南", icon: BookOpen,   color: "indigo" },
-  { id: "tools",     label: "工具导航", icon: Zap,        color: "green" },
-  { id: "mintools",  label: "实用工具", icon: Wrench,     color: "teal" },
-  { id: "clock",     label: "世界时间", icon: Clock,      color: "cyan" },
-  { id: "monitor",   label: "价格监控", icon: Bell,       color: "yellow", badge: "预约内测" },
-  { id: "analytics", label: "竞品分析", icon: BarChart2,  color: "pink",   badge: "预约内测" },
+  { id: "landing",   label: "首页",     icon: Globe,        color: "blue" },
+  { id: "settings",  label: "参数设置", icon: Settings2,    color: "gray" },
+  { id: "batch",     label: "批量导入", icon: DatabaseZap,  color: "purple", badge: "新" },
+  { id: "products",  label: "选品列表", icon: Package,      color: "blue" },
+  { id: "ozon",      label: "Ozon刊登", icon: Zap,          color: "orange", badge: "核心" },
+  { id: "hot",       label: "爆品榜单", icon: Flame,        color: "red" },
+  { id: "picker",    label: "选品参考", icon: TrendingUp,   color: "orange" },
+  { id: "guide",     label: "新手指南", icon: BookOpen,     color: "indigo" },
+  { id: "tools",     label: "工具导航", icon: Zap,          color: "green" },
+  { id: "mintools",  label: "实用工具", icon: Wrench,       color: "teal" },
+  { id: "clock",     label: "世界时间", icon: Clock,        color: "cyan" },
+  { id: "monitor",   label: "价格监控", icon: Bell,         color: "yellow", badge: "预约内测" },
+  { id: "analytics", label: "竞品分析", icon: BarChart2,    color: "pink",   badge: "预约内测" },
 ] as { id: Tab; label: string; icon: React.ElementType; color: string; badge?: string }[];
 
 // 深色侧边栏下，所有激活态统一用白色高亮
@@ -349,6 +351,7 @@ export default function Home() {
           {tab === "mintools" && <MiniToolsPage />}
           {tab === "clock" && <ClockPage />}
           {tab === "ozon" && <OzonPublishPage products={products} settings={settings} onUpdate={handleUpdateProduct} />}
+          {tab === "batch" && <BatchImportPage accessToken={accessToken || undefined} onDone={() => { /* 刷新商品列表 */ }} />}
           {tab === "settings" && <SettingsPanel settings={settings} onChange={setSettings} />}
           {tab === "monitor" && (
             <ComingSoon title="价格监控" icon="🔔" desc="自动监控竞品价格变动，价格下跌时及时提醒，帮你抓住调价时机。" color="yellow" />
