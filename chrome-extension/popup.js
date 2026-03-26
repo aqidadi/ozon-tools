@@ -131,6 +131,27 @@ function extractProductData() {
   return new Promise((resolve) => {
     const doExtract = () => {
     try {
+      // 义乌购专用提取
+      if (location.hostname.includes("yiwugo.com")) {
+        const title = document.querySelector(".product-name, .goods-name, h1.name, .detail-title, h1")?.textContent?.trim() || document.title;
+        // 价格：找含数字的价格元素
+        let price = 0;
+        for (const sel of [".price-num", ".sale-price", ".cur-price", "[class*='price'] em", "[class*='price'] span"]) {
+          const el = document.querySelector(sel);
+          if (el) { const n = parseFloat(el.textContent.replace(/[^\d.]/g,"")); if (n > 0) { price = n; break; } }
+        }
+        // 规格：只取规格参数表，不取评价
+        const specs = {};
+        const specTable = document.querySelector(".product-attr, .goods-attr, .spec-table, [class*='proAttr'], [class*='product-param']");
+        if (specTable) {
+          specTable.querySelectorAll("li, tr, .item").forEach(row => {
+            const kv = row.textContent.trim().split(/[:：]/);
+            if (kv.length >= 2) specs[kv[0].trim()] = kv.slice(1).join("：").trim();
+          });
+        }
+        return resolve({ title, price, specs, images: [], detailImages: [], monthlySales: 0, moq: 1 });
+      }
+
       // 优先用content script拦截到的接口数据
       const intercepted = window.__crosslyGetData ? window.__crosslyGetData() : {};
 
@@ -986,7 +1007,7 @@ async function setTab(tab, settings, tabId, condition) {
         // 串行清洗：1.砍参数/webp 2.只留ibank 3.去重
         const allRaw = imgResults.flatMap(r => r.result || []).filter(Boolean);
         const finalUnique = [...new Set(allRaw)].filter(u =>
-          u.includes("cbu01.alicdn.com/img/ibank/") || u.includes("yiwugo.com")
+          u.includes("cbu01.alicdn.com/img/ibank/") || u.includes("yiwugou.com") || u.includes("yiwugo.com")
         );
         console.log("Crossly frames结果:", imgResults.map((r,i) => `frame${i}:${(r.result||[]).length}张`).join(", "), "→合并去重后:", finalUnique.length, "张");
         grabbedImages = finalUnique.slice(0, 10);
