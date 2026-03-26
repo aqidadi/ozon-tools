@@ -117,6 +117,28 @@ export async function POST(req: NextRequest) {
     } catch { /* 失败用标题作描述 */ }
   }
 
+  // ── 服务端图片缓存：把1688图片缓存到 Supabase，绕过防盗链 ──
+  async function cacheImages(urls: string[]): Promise<string[]> {
+    if (!urls || urls.length === 0) return [];
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://www.crossly.cn";
+      const res = await fetch(`${baseUrl}/api/img-cache`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ urls: urls.filter(u => u?.startsWith("https://")) }),
+      });
+      const data = await res.json();
+      return (data.urls || []).filter(Boolean);
+    } catch {
+      return urls.filter(u => u?.startsWith("https://"));
+    }
+  }
+
+  const rawImages = (product.images || []).filter((u: string) => u?.startsWith("https://"));
+  const rawDetailImages = (product.detailImages || []).filter((u: string) => u?.startsWith("https://"));
+  const cachedImages = await cacheImages(rawImages.slice(0, 15));
+  const cachedDetailImages = await cacheImages(rawDetailImages.slice(0, 15));
+
   // 构建Ozon商品数据结构
   const ozonProduct = {
     items: [{
@@ -130,14 +152,11 @@ export async function POST(req: NextRequest) {
       vat: "0",                                      // 税率0%（中国卖家）
       
       // 类目 + 类型（v3 API 必填，两个字段缺一不可）
-      // description_category_id: 新版类目ID（叶子节点）
-      // type_id: 商品类型ID（配合类目使用，0 会报错）
-      // 17028973 = 玩具/毛绒玩具类目，93726 = 毛绒玩具类型
       description_category_id: product.categoryId || 17028973,
       type_id: product.typeId || 92851,
       
-      // 图片（Ozon要求公网可访问的HTTPS URL）
-      images: (product.images || []).slice(0, 15),  // 最多15张主图
+      // 图片（缓存到 Supabase 的公网 HTTPS URL）
+      images: cachedImages,
       images360: [],
       
       // 重量尺寸
@@ -169,8 +188,8 @@ export async function POST(req: NextRequest) {
         ...(product.toyType ? [{ id: 7173, complex_id: 0, values: [{ value: product.toyType }] }] : []),
       ],
       // 详情图（最多15张，单独字段）
-      ...(product.detailImages?.length ? { 
-        images360: product.detailImages.slice(0, 15)
+      ...(cachedDetailImages.length ? { 
+        images360: cachedDetailImages.slice(0, 15)
       } : {}),
     }]
   };
