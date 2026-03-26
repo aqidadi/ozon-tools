@@ -1037,27 +1037,22 @@ async function setTab(tab, settings, tabId, condition) {
               }
             }
 
-            // 提纯：去重 + 高清化 + 只保留商品大图路径
-            function purify(urlSet, isDetail) {
+            // 终极提纯：只保留 cbu01.alicdn.com/img/ibank/ 路径的真实商品图
+            const BLACKLIST = ['logo','setting','icon','loading','placeholder','avatar','canvas','check','banner','helpIcon','platform','alphashop','spaceball','blank','\.gif'];
+            function purify(urlSet) {
               return [...new Set([...urlSet])]
-                .map(u => {
-                  u = u.replace(/[_.](\d+x\d+)[^"'\s]*/gi, "");
-                  u = u.replace(/_(sum|compress|q\d+)[^"'\s]*/gi, "");
-                  return u;
-                })
+                .map(u => u.replace(/[_.](\d+x\d+)[^"'\s]*/gi, "").replace(/_(sum|compress|q\d+)[^"'\s]*/gi, ""))
                 .filter(u => {
                   if (!u || u.length < 50) return false;
-                  if (/60x60|32x32|50x50|64x64|lazyload|blank|spaceball|\.gif/i.test(u)) return false;
-                  if (/\/icon|\/logo|favicon|alphashop|banner|platform|helpIcon/i.test(u)) return false;
-                  // 必须是阿里系图片且包含 /img/ 路径（排除网站UI图标）
-                  if (!isAliImg(u) || !u.includes("/img/")) return false;
-                  return true;
+                  if (BLACKLIST.some(kw => u.toLowerCase().includes(kw))) return false;
+                  // 只保留 cbu01.alicdn.com/img/ibank/ 路径（1688商品图唯一特征）
+                  return u.includes("cbu01.alicdn.com") && u.includes("/img/");
                 });
             }
 
-            const finalMain = purify(mainImgs, false).slice(0, 10);
-            const finalDetail = purify(detailImgs, true)
-              .filter(u => !finalMain.includes(u)) // 详情图不与主图重复
+            const finalMain = purify(mainImgs).slice(0, 10);
+            const finalDetail = purify(detailImgs)
+              .filter(u => !finalMain.includes(u))
               .slice(0, 15);
 
             return {
