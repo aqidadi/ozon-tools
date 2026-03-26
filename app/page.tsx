@@ -37,35 +37,22 @@ function useRateBar() {
 }
 
 // ── 金钱呼吸状态栏 ──────────────────────────────────────
+// 幽默广告位（固定，不滚动，随机切换）
+const AD_SLOTS = [
+  "📦 广告位招租 · 老板还在送外卖给服务器续命，有没有好心人搭把手？",
+  "🍜 广告位招租 · 我们的服务器靠一碗泡面撑着，你来投广告它就能吃上饭",
+  "💸 广告位招租 · 这里可以放你的广告，比朋友圈转发便宜，效果不一定更差",
+  "🐶 广告位招租 · 老板的狗狗说：主人又没钱买狗粮了，求大佬投广告",
+  "🚀 广告位招租 · 月活数量 = 在涨 · 广告效果 = 未知 · 价格 = 你说了算",
+  "☕ 广告位招租 · 老板今天第三杯咖啡了，只为让你看到这行字",
+];
+
 function RateBar() {
-  const [rates, setRates] = useState<Record<string,number>>({});
-  useEffect(() => {
-    fetch("/api/rates").then(r=>r.json()).then(d=>{
-      if (d.rates) setRates(d.rates);
-    }).catch(()=>{});
-  }, []);
-
-  if (!rates.RUB) return null;
-
-  const rubPerCny = 1 / rates.RUB; // 1元人民币能换多少卢布
-  const cnyPer1000Rub = (1000 * rates.RUB).toFixed(1); // 1000卢布值多少人民币
-  const isGood = rubPerCny > 12; // 汇率好不好
-
+  const [adIdx] = useState(() => Math.floor(Math.random() * AD_SLOTS.length));
   return (
-    <div className="flex items-center gap-2 flex-wrap">
-      {/* 主汇率 */}
-      <div className={`flex items-center gap-1.5 rounded-lg px-3 py-1 text-xs font-medium ${isGood ? "bg-green-50 border border-green-200 text-green-700" : "bg-gray-50 border border-gray-200 text-gray-600"}`}>
-        <span>💰</span>
-        <span>1000卢布 ≈ <strong>{cnyPer1000Rub}元</strong> · $1≈¥7.2</span>
-        <span className={`text-[10px] ${isGood ? "text-green-500" : "text-gray-400"}`}>
-          {isGood ? "↑ 回款正肥，快上架！" : "汇率稳定"}
-        </span>
-      </div>
-      {/* 运费估算 */}
-      <div className="flex items-center gap-1 bg-blue-50 border border-blue-100 rounded-lg px-3 py-1 text-xs text-blue-600">
-        <span>✈️</span>
-        <span>头程运费参考：约<strong>14-30元/500g</strong>（全球多线路）</span>
-      </div>
+    <div className="flex items-center gap-1.5 bg-yellow-50 border border-yellow-200 rounded-lg px-3 py-1.5 text-xs text-yellow-700 font-medium max-w-md cursor-pointer hover:bg-yellow-100 transition-colors"
+      title="联系我们投广告：aqiliaobi@163.com">
+      {AD_SLOTS[adIdx]}
     </div>
   );
 }
