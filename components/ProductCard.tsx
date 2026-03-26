@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { Product, Settings, LANGUAGES, calcCost, getSellPrice, setSellPrice } from "@/lib/types";
+import { useState, useCallback } from "react";import { Product, Settings, LANGUAGES, calcCost, getSellPrice, setSellPrice } from "@/lib/types";
 import { Trash2, ChevronDown, ChevronUp, ExternalLink, Loader2, Copy, Check, Star, Tag, Image as ImageIcon, LayoutList } from "lucide-react";
 
 const TAGS = ["待上架", "已上架", "爆款", "观察中", "已下架"];
@@ -32,6 +31,8 @@ export function ProductCard({ product, settings, onUpdate, onDelete }: Props) {
   const [expanded, setExpanded] = useState(false);
   const [selectedLang, setSelectedLang] = useState(product.targetLang || "ru");
   const [translating, setTranslating] = useState(false);
+  const [ozonStatus, setOzonStatus] = useState<"idle"|"loading"|"ok"|"fail">("idle");
+  const [ozonMsg, setOzonMsg] = useState("");
 
   const cost = calcCost(product, settings);
   const sellPriceLocal = getSellPrice(product, settings.platformCode);
@@ -279,6 +280,72 @@ export function ProductCard({ product, settings, onUpdate, onDelete }: Props) {
             )}
           </div>
         )}
+
+        {/* 一键发布到Ozon */}
+        <div className="border-t border-gray-100 px-3 py-2 bg-white flex items-center gap-2 flex-wrap">
+          <button
+            onClick={async () => {
+              const cfg = localStorage.getItem("ozon-api-config");
+              const ozonCfg = cfg ? JSON.parse(cfg) : {};
+              const sellPrice = getSellPrice(product, "RUB");
+              const suggestPrice = sellPrice > 0 ? sellPrice : Math.ceil((calcCost(product, settings).minSellPrice || 999));
+
+              setOzonStatus("loading");
+              setOzonMsg("");
+              try {
+                const specs = product.specs as Record<string, string> || {};
+                const color = specs["颜色"] || specs["颜色分类"] || specs["颜色/图案"] || "";
+                const material = specs["材质"] || specs["面料"] || specs["材料"] || "";
+                const heightMatch = (product.title || "").match(/(\d+)\s*(cm|см|厘米)/i);
+                const height = heightMatch ? parseInt(heightMatch[1]) : null;
+
+                const res = await fetch("/api/ozon/publish", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    clientId: ozonCfg.clientId,
+                    apiKey: ozonCfg.apiKey,
+                    product: {
+                      title: product.titleRu || product.title,
+                      price: suggestPrice,
+                      oldPrice: Math.ceil(suggestPrice * 1.2),
+                      weight: product.weight || 400,
+                      images: product.images || [],
+                      detailImages: product.detailImages || [],
+                      description: product.titleRu || product.title,
+                      color, material, height,
+                      offerId: product.id,
+                    }
+                  })
+                });
+                const data = await res.json();
+                if (data.success) {
+                  setOzonStatus("ok");
+                  setOzonMsg(`✅ 已发布！₽${suggestPrice}`);
+                } else {
+                  setOzonStatus("fail");
+                  setOzonMsg("❌ " + (data.error || "发布失败"));
+                }
+              } catch {
+                setOzonStatus("fail");
+                setOzonMsg("❌ 网络错误");
+              }
+            }}
+            disabled={ozonStatus === "loading"}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+              ozonStatus === "ok" ? "bg-green-100 text-green-700 border border-green-200" :
+              ozonStatus === "fail" ? "bg-red-100 text-red-600 border border-red-200" :
+              "bg-blue-600 text-white hover:bg-blue-700"
+            } disabled:opacity-60`}
+          >
+            {ozonStatus === "loading" ? <Loader2 size={12} className="animate-spin"/> : "🚀"}
+            {ozonStatus === "loading" ? "发布中..." : ozonStatus === "ok" ? "已发布" : ozonStatus === "fail" ? "重新发布" : "一键发布到 Ozon"}
+          </button>
+          {ozonMsg && <span className={`text-xs ${ozonStatus === "ok" ? "text-green-600" : "text-red-500"}`}>{ozonMsg}</span>}
+          {!localStorage.getItem("ozon-api-config") && (
+            <span className="text-xs text-gray-400">（请先在「参数设置」里配置 Ozon API Key）</span>
+          )}
+        </div>
         </>
       )}
     </div>

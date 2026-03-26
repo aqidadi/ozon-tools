@@ -5,9 +5,11 @@ const OZON_API = "https://api-seller.ozon.ru";
 // 查询Ozon类目树（用于找正确的category_id）
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
-  const clientId = searchParams.get("clientId");
-  const apiKey = searchParams.get("apiKey");
   const categoryId = searchParams.get("categoryId") || "0";
+
+  // 优先用请求头，其次用query参数，最后用环境变量
+  const clientId = req.headers.get("x-client-id") || searchParams.get("clientId") || process.env.OZON_CLIENT_ID;
+  const apiKey = req.headers.get("x-api-key") || searchParams.get("apiKey") || process.env.OZON_API_KEY;
 
   if (!clientId || !apiKey) {
     return NextResponse.json({ error: "需要 Ozon API Key" }, { status: 400 });

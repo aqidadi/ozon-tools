@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Settings, PLATFORMS, getPlatform } from "@/lib/types";
-import { Save, RotateCcw, RefreshCw } from "lucide-react";
+import { Save, RotateCcw, RefreshCw, Key, Eye, EyeOff, CheckCircle, XCircle } from "lucide-react";
 
 interface Props {
   settings: Settings;
@@ -21,6 +21,50 @@ export function SettingsPanel({ settings, onChange }: Props) {
   const [local, setLocal] = useState(settings);
   const [saved, setSaved] = useState(false);
   const [fetchingRate, setFetchingRate] = useState(false);
+
+  // Ozon API配置
+  const [ozonClientId, setOzonClientId] = useState("");
+  const [ozonApiKey, setOzonApiKey] = useState("");
+  const [showKey, setShowKey] = useState(false);
+  const [testStatus, setTestStatus] = useState<"idle"|"testing"|"ok"|"fail">("idle");
+  const [testMsg, setTestMsg] = useState("");
+
+  // 加载已保存的Ozon配置
+  useEffect(() => {
+    const saved = localStorage.getItem("ozon-api-config");
+    if (saved) {
+      const cfg = JSON.parse(saved);
+      setOzonClientId(cfg.clientId || "");
+      setOzonApiKey(cfg.apiKey || "");
+    }
+  }, []);
+
+  const saveOzonConfig = () => {
+    localStorage.setItem("ozon-api-config", JSON.stringify({ clientId: ozonClientId, apiKey: ozonApiKey }));
+  };
+
+  const testOzonApi = async () => {
+    setTestStatus("testing");
+    setTestMsg("");
+    try {
+      const res = await fetch("/api/ozon/category", {
+        method: "GET",
+        headers: { "x-client-id": ozonClientId, "x-api-key": ozonApiKey }
+      });
+      const data = await res.json();
+      if (data.result?.length > 0) {
+        setTestStatus("ok");
+        setTestMsg(`✅ 连接成功！找到 ${data.result.length} 个类目`);
+        saveOzonConfig();
+      } else {
+        setTestStatus("fail");
+        setTestMsg("❌ " + (data.error || data.message || "连接失败"));
+      }
+    } catch {
+      setTestStatus("fail");
+      setTestMsg("❌ 网络错误");
+    }
+  };
 
   const platform = getPlatform(local.platformCode);
 
@@ -219,6 +263,58 @@ export function SettingsPanel({ settings, onChange }: Props) {
               </>
             );
           })()}
+        </div>
+      </div>
+
+      {/* Ozon API配置 */}
+      <div className="mt-6 bg-white rounded-2xl border border-blue-200 overflow-hidden">
+        <div className="px-6 py-4 bg-blue-50 border-b border-blue-100 flex items-center gap-2">
+          <Key size={16} className="text-blue-600" />
+          <h3 className="text-sm font-bold text-blue-800">Ozon 卖家 API 配置</h3>
+          <span className="ml-auto text-xs text-blue-500">配置后可一键发布商品到Ozon</span>
+        </div>
+        <div className="px-6 py-4 space-y-3">
+          <div>
+            <label className="text-xs font-medium text-gray-600 mb-1 block">Client-Id（客户ID）</label>
+            <input
+              type="text"
+              value={ozonClientId}
+              onChange={e => setOzonClientId(e.target.value)}
+              placeholder="例：4301277"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <label className="text-xs font-medium text-gray-600 mb-1 block">Api-Key（密钥）</label>
+            <div className="relative">
+              <input
+                type={showKey ? "text" : "password"}
+                value={ozonApiKey}
+                onChange={e => setOzonApiKey(e.target.value)}
+                placeholder="例：xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
+              />
+              <button onClick={() => setShowKey(!showKey)} className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600">
+                {showKey ? <EyeOff size={15}/> : <Eye size={15}/>}
+              </button>
+            </div>
+          </div>
+          <div className="text-xs text-gray-400 bg-gray-50 rounded-lg px-3 py-2">
+            📍 获取方式：<a href="https://seller.ozon.ru/app/settings/api-keys" target="_blank" className="text-blue-500 underline">Ozon卖家后台 → 设置 → API密钥</a> → 生成密钥（选"供外部服务/应用使用"）
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={testOzonApi}
+              disabled={!ozonClientId || !ozonApiKey || testStatus === "testing"}
+              className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
+            >
+              {testStatus === "testing" ? <RefreshCw size={13} className="animate-spin"/> : <Key size={13}/>}
+              {testStatus === "testing" ? "测试中..." : "测试并保存"}
+            </button>
+            {testStatus === "ok" && <CheckCircle size={16} className="text-green-500"/>}
+            {testStatus === "fail" && <XCircle size={16} className="text-red-500"/>}
+            {testMsg && <span className={`text-xs ${testStatus === "ok" ? "text-green-600" : "text-red-500"}`}>{testMsg}</span>}
+          </div>
         </div>
       </div>
 
