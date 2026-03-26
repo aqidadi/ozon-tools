@@ -1,85 +1,80 @@
-// Crossly content script - 拦截1688接口获取商品数据
-(function() {
-  // 存储拦截到的商品数据
-  let capturedData = {
-    images: [],
-    price: 0,
-    title: "",
-    skuProps: [],
-  };
+// Crossly content script
+// 在页面加载完成后扫描商品数据，存到window供popup读取
 
-  // 拦截 XHR
-  const origOpen = XMLHttpRequest.prototype.open;
-  const origSend = XMLHttpRequest.prototype.send;
+function scanProductData() {
+  const data = { images: [], price: 0, title: "" };
 
-  XMLHttpRequest.prototype.open = function(method, url) {
-    this._url = url;
-    return origOpen.apply(this, arguments);
-  };
+  // 标题
+  const h1 = document.querySelector("h1");
+  if (h1) data.title = h1.textContent.trim();
+  const ogTitle = document.querySelector("meta[property='og:title']")?.content;
+  if (ogTitle && ogTitle.length > data.title.length) data.title = ogTitle;
 
-  XMLHttpRequest.prototype.send = function() {
-    this.addEventListener("load", function() {
-      try {
-        const url = this._url || "";
-        // 拦截1688商品详情接口
-        if (url.includes("mtop.alibaba.detail") || 
-            url.includes("item.detail") ||
-            url.includes("offer.detail") ||
-            url.includes("1688.com/product")) {
-          const json = JSON.parse(this.responseText);
-          parseOfferData(json);
+  // 主图：直接取所有 img.preview-img 的 src
+  const previewImgs = document.querySelectorAll("img.preview-img, img.active-preview-img");
+  previewImgs.forEach(img => {
+    const src = img.src || img.getAttribute("data-src") || "";
+    if (src && src.startsWith("http") && !data.images.includes(src)) {
+      data.images.push(src);
+    }
+  });
+
+  // 如果preview-img没找到，找所有750px以上的图
+  if (data.images.length === 0) {
+    document.querySelectorAll("img").forEach(img => {
+      if (img.naturalWidth >= 400) {
+        const src = img.src || "";
+        if (src && src.startsWith("http") && !data.images.includes(src)) {
+          data.images.push(src);
         }
-      } catch(e) {}
-    });
-    return origSend.apply(this, arguments);
-  };
-
-  // 拦截 fetch
-  const origFetch = window.fetch;
-  window.fetch = function(input, init) {
-    return origFetch.apply(this, arguments).then(res => {
-      const url = typeof input === "string" ? input : (input.url || "");
-      if (url.includes("mtop.alibaba.detail") || 
-          url.includes("item.detail") ||
-          url.includes("offer.detail")) {
-        res.clone().json().then(json => {
-          parseOfferData(json);
-        }).catch(() => {});
       }
-      return res;
     });
-  };
-
-  function parseOfferData(json) {
-    try {
-      // 尝试各种1688接口结构
-      const data = json?.data || json?.result || json;
-      
-      // 图片
-      const imgs = data?.images || data?.mainImages || 
-                   data?.item?.images || data?.offerDetail?.images ||
-                   data?.detail?.images || [];
-      if (Array.isArray(imgs) && imgs.length > 0) {
-        capturedData.images = imgs.map(img => {
-          const url = typeof img === "string" ? img : (img.url || img.src || "");
-          return url.startsWith("//") ? "https:" + url : url;
-        }).filter(Boolean);
-      }
-
-      // 价格
-      const price = data?.price || data?.saleInfo?.priceInfo?.price ||
-                    data?.item?.price || data?.tradeInfo?.price;
-      if (price) capturedData.price = parseFloat(String(price).replace(/[^\d.]/g, ""));
-      
-      // 标题
-      const title = data?.subject || data?.title || data?.item?.title;
-      if (title) capturedData.title = title;
-
-    } catch(e) {}
   }
 
-  // 暴露给popup.js调用
-  window.__crosslyGetData = function() {
-    return capturedData;
-  };
-})();
+  // 价格：找页面上¥符号后跟的数字，过滤掉<1和>9999，取最小合理值
+  // 排除运费相关文字
+  const bodyText = document.body.innerText;
+  const pricePattern = /(?<![克千百万\d])[\¥￥]\s*(\d+(?:\.\d{1,2})?)(?!\s*(?:\/克|\/kg|元\/|起批|起订|运费|包邮|每克))/g;
+  const prices = [];
+  let m;
+  while ((m = pricePattern.exec(bodyText)) !== null) {
+    const n = parseFloat(m[1]);
+    if (n >= 1 && n <= 9999) prices.push(n);
+  }
+  // 1688通常：最高频出现的价格 或 第一个出现的>=5的价格
+  if (prices.length > 0) {
+    // 找>=1且出现最多次的
+    const freq = {};
+    prices.forEach(p => { freq[p] = (freq[p] || 0) + 1; });
+    // 取出现>=2次的最小价格
+    const repeated = prices.filter(p => freq[p] >= 2);
+    if (repeated.length > 0) {
+      data.price = Math.min(...repeated);
+    } else {
+      // 取第一个>=1的价格
+      data.price = prices[0];
+    }
+  }
+
+  window.__crosslyData = data;
+}
+
+// 页面加载完立即扫一次
+if (document.readyState === "complete") {
+  scanProductData();
+} else {
+  window.addEventListener("load", scanProductData);
+}
+
+// 3秒后再扫一次（等懒加载）
+setTimeout(scanProductData, 3000);
+
+// 监听来自popup的消息
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  if (msg.type === "GET_PRODUCT_DATA") {
+    // 重新扫描最新状态
+    scanProductData();
+    sendResponse(window.__crosslyData || {});
+  }
+  return true;
+});

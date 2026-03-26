@@ -908,11 +908,32 @@ async function setTab(tab, settings, tabId, condition) {
           }, 300);
         });
       }});
-      await new Promise(r => setTimeout(r, 1000));
+      await new Promise(r => setTimeout(r, 3000)); // 等content script扫描完
 
-      // 第三步：抓取数据
-      const results = await chrome.scripting.executeScript({ target: { tabId }, func: extractProductData });
-      const product = results?.[0]?.result;
+      // 第三步：通过sendMessage向content script请求数据（避免executeScript上下文隔离问题）
+      const product = await new Promise((resolve) => {
+        chrome.tabs.sendMessage(tabId, { type: "GET_PRODUCT_DATA" }, (response) => {
+          if (chrome.runtime.lastError || !response) {
+            // sendMessage失败，降级用executeScript
+            chrome.scripting.executeScript({ target: { tabId }, func: extractProductData })
+              .then(res => resolve(res?.[0]?.result))
+              .catch(() => resolve(null));
+          } else {
+            // 把content script数据和DOM数据合并
+            chrome.scripting.executeScript({ target: { tabId }, func: extractProductData })
+              .then(res => {
+                const domData = res?.[0]?.result || {};
+                // content script的图片和价格优先
+                if (response.images && response.images.length > 0) domData.images = response.images;
+                if (response.price && response.price > 0) domData.price = response.price;
+                if (response.title && !domData.title) domData.title = response.title;
+                resolve(domData);
+              })
+              .catch(() => resolve(response));
+          }
+        });
+      });
+
       if (product && product.title) {
         currentProduct = product;
         renderProduct(product, settings);
