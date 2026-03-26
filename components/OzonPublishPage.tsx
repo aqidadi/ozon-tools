@@ -137,8 +137,33 @@ export function OzonPublishPage({ products, settings }: Props) {
         })
       });
       const data = await res.json();
-      if (data.success) {
-        setStates(prev => ({ ...prev, [product.id]: { status: "ok", msg: `✅ 已发布 ₽${sell}`, taskId: data.taskId, price: sell } }));
+      if (data.success && data.taskId) {
+        setStates(prev => ({ ...prev, [product.id]: { status: "loading", msg: `⏳ 审核中（任务 ${data.taskId}）...`, taskId: data.taskId, price: sell } }));
+        // 轮询任务状态，最多等 30 秒
+        for (let i = 0; i < 10; i++) {
+          await new Promise(r => setTimeout(r, 3000));
+          try {
+            const checkRes = await fetch(`/api/ozon/publish?clientId=${encodeURIComponent(clientId)}&apiKey=${encodeURIComponent(apiKey)}&taskId=${data.taskId}`);
+            const checkData = await checkRes.json();
+            const items = checkData.result?.items || [];
+            const item = items[0];
+            if (item) {
+              if (item.status === "imported") {
+                setStates(prev => ({ ...prev, [product.id]: { status: "ok", msg: `✅ 已上架 ₽${sell}（商品ID: ${item.product_id}）`, taskId: data.taskId, price: sell } }));
+                return;
+              } else if (item.status === "failed") {
+                const errMsg = item.errors?.map((e: {message: string}) => e.message).join("；") || "未知错误";
+                setStates(prev => ({ ...prev, [product.id]: { status: "fail", msg: `❌ Ozon拒绝：${errMsg}` } }));
+                return;
+              }
+              // pending/processing 继续等
+            }
+          } catch { break; }
+        }
+        // 超时仍未完成，提示去后台看
+        setStates(prev => ({ ...prev, [product.id]: { status: "ok", msg: `⏳ 已提交审核（任务 ${data.taskId}），请去Ozon后台查看` } }));
+      } else if (data.success) {
+        setStates(prev => ({ ...prev, [product.id]: { status: "ok", msg: `✅ 已发布 ₽${sell}`, price: sell } }));
       } else {
         // 显示详细错误，方便诊断
         const detail = data.detail?.message || data.detail?.error || JSON.stringify(data.detail || {}).slice(0, 120);
