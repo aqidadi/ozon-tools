@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
       // type_id: 商品类型ID（配合类目使用，0 会报错）
       // 17028973 = 玩具/毛绒玩具类目，93726 = 毛绒玩具类型
       description_category_id: product.categoryId || 17028973,
-      type_id: product.typeId || 93726,
+      type_id: product.typeId || 92851,
       
       // 图片（Ozon要求公网可访问的HTTPS URL）
       images: (product.images || []).slice(0, 15),  // 最多15张主图
