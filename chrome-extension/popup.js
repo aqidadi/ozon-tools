@@ -957,20 +957,19 @@ async function setTab(tab, settings, tabId, condition) {
           func: () => {
             const host = location.hostname;
 
-            // 义乌购抓取
+            // 义乌购抓取（#productDesc不存在，改用class/全页扫描）
             if (host.includes("yiwugo.com")) {
-              const detailBox = document.querySelector("#productDesc");
-              if (!detailBox) {
-                // 调试：告诉我实际存在哪些容器
-                const ids = Array.from(document.querySelectorAll("[id]")).map(el=>el.id).filter(Boolean).slice(0,20);
-                console.log("Crossly yiwugo: #productDesc不存在，页面id列表:", ids.join(","));
-                return [];
-              }
-              const allImgs = Array.from(detailBox.querySelectorAll("img"));
-              console.log("Crossly yiwugo: #productDesc内img数量:", allImgs.length);
-              const finalUrls = allImgs.map(i => i.src)
-                .filter(src => src.includes("img.yiwugo.com"))
-                .map(src => src.split("?")[0].replace(/(_\d+x\d+)/, ""));
+              // 按优先级尝试各容器
+              const detailBox = document.querySelector(".detail-desc, .product-desc, .pro-desc, .goods-desc, [class*=detail][class*=desc], [class*=product][class*=detail]") ||
+                                document.querySelector("#app");
+              const scope = detailBox || document.body;
+              const allImgs = Array.from(scope.querySelectorAll("img"));
+              console.log("Crossly yiwugo: 容器=", scope.id||scope.className, "img数量:", allImgs.length);
+              const finalUrls = allImgs
+                .map(i => i.getAttribute("data-lazyload-src") || i.getAttribute("data-src") || i.src || "")
+                .filter(src => src.includes("img.yiwugo.com") || src.includes("img1.yiwugo.com") || src.includes("img2.yiwugo.com"))
+                .map(src => src.split("?")[0].replace(/(_\d+x\d+)/, ""))
+                .filter(src => src.length > 30 && !/icon|logo|avatar/i.test(src));
               return [...new Set(finalUrls)];
             }
 
