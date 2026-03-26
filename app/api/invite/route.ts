@@ -5,7 +5,9 @@ const supabase = createServiceClient();
 
 // GET /api/invite — 获取当前用户的邀请码 + 邀请记录
 export async function GET(req: NextRequest) {
-  const user = await getUserByToken(req);
+  const token = req.headers.get("authorization")?.replace("Bearer ", "") ||
+    req.headers.get("x-api-token") || "";
+  const user = await getUserByToken(token);
   if (!user) return NextResponse.json({ error: "未登录" }, { status: 401 });
 
   const { data: profile } = await supabase
