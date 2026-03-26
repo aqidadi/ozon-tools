@@ -952,18 +952,19 @@ async function setTab(tab, settings, tabId, condition) {
         const imgResults = await chrome.scripting.executeScript({
           target: { tabId, allFrames: true },
           func: () => {
-            const imgs = document.querySelectorAll("img");
-            let rawUrls = [];
-            imgs.forEach(img => {
-              let url = img.getAttribute("data-lazyload-src") ||
-                        img.getAttribute("data-lazy-src") ||
-                        img.getAttribute("src");
-              if (url && url.includes("cbu01.alicdn.com/img/ibank/")) {
-                if (url.startsWith("//")) url = "https:" + url;
-                rawUrls.push(url);
+            const allImgs = Array.from(document.querySelectorAll("img"));
+            let result = [];
+            allImgs.forEach(img => {
+              const src = img.getAttribute("data-lazyload-src") ||
+                          img.getAttribute("data-lazy-src") ||
+                          img.src;
+              if (src && src.includes("cbu01.alicdn.com/img/ibank/")) {
+                let finalUrl = src.startsWith("//") ? "https:" + src : src;
+                finalUrl = finalUrl.replace(/(_\d+x\d+.*\.jpg$)|(\.\d+x\d+.*\.jpg$)/i, "");
+                result.push(finalUrl);
               }
             });
-            return rawUrls;
+            return [...new Set(result)];
           }
         });
 
