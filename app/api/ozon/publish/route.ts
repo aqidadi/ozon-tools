@@ -50,11 +50,78 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "缺少商品信息" }, { status: 400 });
   }
 
+  // ── 自动翻译：如果标题是中文，调 DeepSeek 翻译成俄文 ──
+  function isChinese(text: string) {
+    return /[\u4e00-\u9fff]/.test(text);
+  }
+
+  async function translateToRu(text: string): Promise<string> {
+    if (!text || !isChinese(text)) return text;
+    try {
+      const res = await fetch("https://api.deepseek.com/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${process.env.DEEPSEEK_API_KEY || "sk-e8f1e6eb4be646b99c31686d5bd7bfe1"}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "deepseek-chat",
+          messages: [
+            { role: "system", content: "你是专业的电商翻译，将中文商品信息翻译成俄语。只输出翻译结果，不加任何解释。" },
+            { role: "user", content: `翻译成俄语：${text}` },
+          ],
+          temperature: 0.3,
+          max_tokens: 500,
+        }),
+      });
+      const data = await res.json();
+      return data.choices?.[0]?.message?.content?.trim() || text;
+    } catch {
+      return text;
+    }
+  }
+
+  // 翻译标题（如果没有俄文标题）
+  let titleRu = product.title;
+  if (isChinese(product.title)) {
+    titleRu = await translateToRu(product.title);
+  }
+
+  // 生成俄文描述（用 AI 基于标题生成简短描述）
+  let descriptionRu = product.description || titleRu;
+  if (isChinese(descriptionRu)) {
+    descriptionRu = await translateToRu(descriptionRu);
+  }
+  // 如果描述和标题相同，用 AI 生成更丰富的描述
+  if (descriptionRu === titleRu && process.env.DEEPSEEK_API_KEY) {
+    try {
+      const res = await fetch("https://api.deepseek.com/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${process.env.DEEPSEEK_API_KEY || "sk-e8f1e6eb4be646b99c31686d5bd7bfe1"}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "deepseek-chat",
+          messages: [
+            { role: "system", content: "你是Ozon平台的电商运营专家，专门为俄语市场撰写商品描述。" },
+            { role: "user", content: `根据以下商品标题，用俄语写一段50-100字的商品描述，突出材质柔软、适合送礼、质量好等卖点：\n${titleRu}` },
+          ],
+          temperature: 0.7,
+          max_tokens: 300,
+        }),
+      });
+      const data = await res.json();
+      const generated = data.choices?.[0]?.message?.content?.trim();
+      if (generated) descriptionRu = generated;
+    } catch { /* 失败用标题作描述 */ }
+  }
+
   // 构建Ozon商品数据结构
   const ozonProduct = {
     items: [{
       // 基础信息
-      name: product.title,                          // 商品名称（俄文）
+      name: titleRu.slice(0, 500),                 // 商品名称（俄文，最多500字符）
       offer_id: product.offerId || `crossly_${Date.now()}`, // 卖家自定义SKU
       
       // 价格库存
@@ -80,7 +147,7 @@ export async function POST(req: NextRequest) {
       dimension_unit: "cm",
       
       // 描述（富文本）
-      description: product.description || product.title,
+      description: descriptionRu,
       
       // 属性（必填项，根据类目不同）
       attributes: [
@@ -98,7 +165,7 @@ export async function POST(req: NextRequest) {
         ...(product.height ? [{ id: 7147, complex_id: 0, values: [{ value: String(product.height) }] }] : []),
         ...(product.country ? [{ id: 4389, complex_id: 0, values: [{ value: product.country || "Китай" }] }] : [{ id: 4389, complex_id: 0, values: [{ value: "Китай" }] }]),
         ...(product.weight ? [{ id: 4497, complex_id: 0, values: [{ value: String(product.weight) }] }] : []),
-        ...(product.description ? [{ id: 4191, complex_id: 0, values: [{ value: product.description.slice(0, 4000) }] }] : []),
+        { id: 4191, complex_id: 0, values: [{ value: descriptionRu.slice(0, 4000) }] },
         ...(product.toyType ? [{ id: 7173, complex_id: 0, values: [{ value: product.toyType }] }] : []),
       ],
       // 详情图（最多15张，单独字段）
@@ -133,8 +200,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: true,
       taskId: data.result?.task_id,
+      titleRu,         // 翻译后的俄文标题，前端可回写到商品
+      descriptionRu,   // 生成的俄文描述
       message: "商品已提交Ozon审核，通常1-3小时后上架",
-      raw: data,  // 把完整响应透传，方便前端调试
+      raw: data,
     });
 
   } catch (e) {

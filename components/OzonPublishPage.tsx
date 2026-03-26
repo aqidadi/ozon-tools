@@ -7,6 +7,7 @@ import { CheckCircle, XCircle, Loader2, RefreshCw, ExternalLink, Key } from "luc
 interface Props {
   products: Product[];
   settings: Settings;
+  onUpdate?: (id: string, updates: Partial<Product>) => void;
 }
 
 type PublishStatus = "idle" | "loading" | "ok" | "fail";
@@ -19,7 +20,7 @@ interface ProductPublishState {
   price?: number;
 }
 
-export function OzonPublishPage({ products, settings }: Props) {
+export function OzonPublishPage({ products, settings, onUpdate }: Props) {
   const [clientId, setClientId] = useState("");
   const [apiKey, setApiKey] = useState("");
   const [apiOk, setApiOk] = useState<null | boolean>(null);
@@ -137,6 +138,10 @@ export function OzonPublishPage({ products, settings }: Props) {
         })
       });
       const data = await res.json();
+      // 发布成功后，回写俄文标题到商品（服务端自动翻译的结果）
+      if (data.success && data.titleRu && onUpdate) {
+        onUpdate(product.id, { titleRu: data.titleRu });
+      }
       if (data.success && data.taskId) {
         setStates(prev => ({ ...prev, [product.id]: { status: "loading", msg: `⏳ 审核中（任务 ${data.taskId}）...`, taskId: data.taskId, price: sell } }));
         // 轮询任务状态，最多等 30 秒
@@ -317,7 +322,7 @@ export function OzonPublishPage({ products, settings }: Props) {
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-medium text-gray-800 truncate">{product.title}</p>
                     {product.titleRu && <p className="text-xs text-blue-500 truncate">{product.titleRu}</p>}
-                    {!product.titleRu && <p className="text-xs text-orange-400">⚠️ 无俄文标题，将用中文标题</p>}
+                    {!product.titleRu && <p className="text-xs text-orange-400">🤖 发布时自动翻译俄文</p>}
                   </div>
                   <div className="flex items-center gap-3 flex-shrink-0 text-xs">
                     <span className="text-gray-400">¥{product.price}</span>
