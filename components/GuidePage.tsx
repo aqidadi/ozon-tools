@@ -640,7 +640,7 @@ export function GuidePage() {
           <div className="space-y-3">
             {[
               { n: "1", title: "在1688找到一个卖得好的商品", detail: "看月销量>1000，价格<30元，体积小重量轻（省运费）", color: "#6366f1" },
-              { n: "2", title: "用Crossly一键导入，自动翻译定价", detail: "插件抓图、AI翻译俄文、系统自动算卢布售价，30秒搞定", color: "#8b5cf6" },
+              { n: "2", title: "用Crossly一键导入，自动翻译定价", detail: "插件抓图、AI翻译外语标题、系统自动换算外币售价，30秒搞定", color: "#8b5cf6" },
               { n: "3", title: "点发布，等收钱", detail: "商品自动上架Ozon，货代收货发货，你只需要在1688下单", color: "#a855f7" },
             ].map(s => (
               <div key={s.n} className="flex items-start gap-3 bg-white/5 rounded-2xl p-4">

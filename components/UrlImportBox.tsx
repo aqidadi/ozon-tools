@@ -121,7 +121,7 @@ export function UrlImportBox({ onImport, onBatchImport }: Props & { onBatchImpor
         <Link2 size={15} className="text-blue-500" />
         <div>
           <span className="text-sm font-bold text-gray-800">像发朋友圈一样简单 🚀</span>
-          <p className="text-xs text-gray-400 mt-0.5">复制1688链接贴这里，AI俄化+改价+上架，我们全包！无需PS，无需俄语，30秒搞定一件跨境爆款</p>
+          <p className="text-xs text-gray-400 mt-0.5">复制1688链接贴这里，AI翻译+改价+上架，我们全包！无需PS，无需外语，30秒搞定一件跨境爆款</p>
         </div>
         <div className="ml-auto flex items-center gap-1">
           <button

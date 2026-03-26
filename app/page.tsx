@@ -64,7 +64,7 @@ function RateBar() {
       {/* 运费估算 */}
       <div className="flex items-center gap-1 bg-blue-50 border border-blue-100 rounded-lg px-3 py-1 text-xs text-blue-600">
         <span>✈️</span>
-        <span>金华→莫斯科 RETS约<strong>14.5元/500g</strong></span>
+        <span>头程运费参考：约<strong>14-30元/500g</strong>（全球多线路）</span>
       </div>
     </div>
   );
@@ -521,19 +521,19 @@ function LandingPage({ onStart }: { onStart: () => void }) {
   const { user } = useAuth();
 
   return (
-    <div className="max-w-2xl mx-auto space-y-8 py-4">
+    <div className="space-y-6">
 
-      {/* ── 主 Hero：核心3句话钉死在这里 ── */}
-      <div className="relative rounded-3xl overflow-hidden text-center"
+      {/* ── 主 Hero：核心3句话钉死在这里，全幅铺满 ── */}
+      <div className="relative overflow-hidden -mx-6 -mt-6 text-center"
         style={{ background: "linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)" }}>
 
         {/* 背景光晕 */}
         <div className="absolute inset-0 opacity-30"
           style={{ backgroundImage: "radial-gradient(circle at 30% 40%, #6366f1 0%, transparent 55%), radial-gradient(circle at 75% 20%, #a855f7 0%, transparent 45%)" }} />
 
-        <div className="relative z-10 px-8 pt-10 pb-8">
+        <div className="relative z-10 px-6 pt-10 pb-8 max-w-3xl mx-auto">
           {/* 徽章 */}
-          <div className="inline-flex items-center gap-2 bg-white/10 text-white/70 text-xs font-semibold px-4 py-1.5 rounded-full mb-6 border border-white/20">
+          <div className="inline-flex items-center gap-2 bg-white/10 text-white/70 text-xs font-semibold px-4 py-1.5 rounded-full mb-5 border border-white/20">
             🚀 Crossly · 让跨境像微商一样简单
           </div>
 
@@ -542,36 +542,22 @@ function LandingPage({ onStart }: { onStart: () => void }) {
             让跨境像<span style={{ background: "linear-gradient(90deg, #a78bfa, #60a5fa)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>微商</span>一样简单
           </h1>
 
-          {/* ── 3句话钉死区域 ── */}
-          <div className="space-y-3 mb-8 text-left max-w-sm mx-auto">
-            <div className="flex items-start gap-3 bg-white/10 rounded-2xl px-5 py-4 border border-white/10">
-              <span className="text-2xl flex-shrink-0">✨</span>
-              <div>
-                <p className="text-white font-bold text-sm mb-0.5">在 Crossly，我们不只提供工具，我们提供可能。</p>
-                <p className="text-white/50 text-xs">普通人也能轻松开启属于自己的跨境之路</p>
+          {/* ── 4句话 2×2 网格 ── */}
+          <div className="grid grid-cols-2 gap-3 mb-8 text-left">
+            {[
+              { icon: "✨", title: "我们不只提供工具，我们提供可能。", sub: "普通人也能轻松开启跨境之路" },
+              { icon: "🚫", title: "零基础：无需外语，无需PS，AI帮你搞定一切。", sub: "图片自动翻译，标题自动生成" },
+              { icon: "📚", title: "零门槛：全网干货免费学，拆掉所有围墙。", sub: "不卖课，不收智商税，永久免费" },
+              { icon: "⚡", title: "全自动：像微商一样，复制链接，剩下交给我们。", sub: "30秒一件商品，全球平台同步" },
+            ].map(c => (
+              <div key={c.icon} className="flex items-start gap-3 bg-white/10 rounded-2xl px-4 py-4 border border-white/10 hover:bg-white/15 transition-colors">
+                <span className="text-xl flex-shrink-0 mt-0.5">{c.icon}</span>
+                <div>
+                  <p className="text-white font-bold text-sm mb-1 leading-snug">{c.title}</p>
+                  <p className="text-white/50 text-xs">{c.sub}</p>
+                </div>
               </div>
-            </div>
-            <div className="flex items-start gap-3 bg-white/10 rounded-2xl px-5 py-4 border border-white/10">
-              <span className="text-2xl flex-shrink-0">🚫</span>
-              <div>
-                <p className="text-white font-bold text-sm mb-0.5">零基础：无需俄语，无需 PS，AI 帮你搞定一切。</p>
-                <p className="text-white/50 text-xs">图片自动翻译，标题自动生成，小白也能上手</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3 bg-white/10 rounded-2xl px-5 py-4 border border-white/10">
-              <span className="text-2xl flex-shrink-0">📚</span>
-              <div>
-                <p className="text-white font-bold text-sm mb-0.5">零门槛：全网跨境干货免费学，我们帮你拆掉所有围墙。</p>
-                <p className="text-white/50 text-xs">不卖课，不收智商税，所有教程永久免费</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3 bg-white/10 rounded-2xl px-5 py-4 border border-white/10">
-              <span className="text-2xl flex-shrink-0">⚡</span>
-              <div>
-                <p className="text-white font-bold text-sm mb-0.5">全自动：像做微商一样简单，复制链接，剩下的交给我们。</p>
-                <p className="text-white/50 text-xs">30秒一件商品，自动发布到Ozon，坐等收卢布</p>
-              </div>
-            </div>
+            ))}
           </div>
 
           {/* CTA按钮 */}
@@ -581,9 +567,16 @@ function LandingPage({ onStart }: { onStart: () => void }) {
               style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)" }}>
               {user ? "进入工作台 →" : "免费开始，不用注册 →"}
             </button>
+            <button onClick={() => document.getElementById("guide-section")?.scrollIntoView({ behavior: "smooth" })}
+              className="px-6 py-3 rounded-2xl text-sm font-medium text-white/70 border border-white/20 hover:bg-white/10 transition-colors">
+              先看教程
+            </button>
           </div>
         </div>
       </div>
+
+      {/* 剩余内容收窄居中 */}
+      <div className="max-w-2xl mx-auto space-y-6" id="guide-section">
 
       {/* 使命宣言 */}
       <div className="relative rounded-3xl overflow-hidden p-8 text-center"
@@ -599,7 +592,7 @@ function LandingPage({ onStart }: { onStart: () => void }) {
             </span>
           </p>
           <p className="text-white/70 text-sm leading-loose max-w-lg mx-auto mb-5">
-            让每一个普通人都能 0 门槛赚到卢布。<br />
+            让每一个普通人都能 0 门槛赚到外币。<br />
             我们的宗旨：让跨境像做微商一样简单。
           </p>
           <div className="grid grid-cols-3 gap-3 max-w-md mx-auto">
@@ -623,7 +616,7 @@ function LandingPage({ onStart }: { onStart: () => void }) {
         <div className="space-y-3">
           {[
             { step: "01", emoji: "🔍", title: "选款", desc: "在爆品榜单里点「我要卖这个」，系统自动帮你找1688货源", color: "from-blue-500 to-indigo-500" },
-            { step: "02", emoji: "📦", title: "一键导入", desc: "商品图片、价格、规格全自动抓取，AI翻译成俄文，30秒完成", color: "from-purple-500 to-pink-500" },
+            { step: "02", emoji: "📦", title: "一键导入", desc: "商品图片、价格、规格全自动抓取，AI自动翻译，30秒完成", color: "from-purple-500 to-pink-500" },
             { step: "03", emoji: "💰", title: "智能定价", desc: "输入采购价，系统自动算出Ozon保本价和建议售价，绝不亏钱", color: "from-orange-500 to-red-500" },
             { step: "04", emoji: "🚀", title: "一键上架", desc: "点发布，商品自动出现在Ozon，货代收货发货，全程不用你动手", color: "from-green-500 to-teal-500" },
           ].map((s, i) => (
@@ -713,6 +706,7 @@ function LandingPage({ onStart }: { onStart: () => void }) {
         </p>
       </div>
 
+      </div>{/* end max-w-2xl */}
     </div>
   );
 }
