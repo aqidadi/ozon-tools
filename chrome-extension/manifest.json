@@ -8,7 +8,8 @@
     "https://*.1688.com/*",
     "https://*.ozon.ru/*",
     "https://localhost:3000/*",
-    "https://*.vercel.app/*"
+    "https://*.vercel.app/*",
+    "https://*.crossly.cn/*"
   ],
   "action": {
     "default_popup": "popup.html",
@@ -22,7 +23,8 @@
     {
       "matches": ["https://*.1688.com/*", "https://*.ozon.ru/*"],
       "js": ["content.js"],
-      "run_at": "document_idle"
+      "run_at": "document_idle",
+      "all_frames": true
     }
   ],
   "icons": {
