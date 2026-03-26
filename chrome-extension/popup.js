@@ -959,23 +959,20 @@ async function setTab(tab, settings, tabId, condition) {
 
             // 义乌购抓取
             if (host.includes("yiwugo.com")) {
-              const descContainer = document.getElementById("productDesc") || document.body;
-              const imgs = descContainer.querySelectorAll("img");
-              let yiwuResults = [];
+              const detailContainer = document.querySelector(".pro-detail-content") ||
+                                      document.getElementById("productDesc") ||
+                                      document.body;
+              const imgs = Array.from(detailContainer.querySelectorAll("img"));
+              let result = [];
               imgs.forEach(img => {
-                let url = img.src;
-                if (url && (url.includes("img.yiwugo.com") || url.includes("img1.yiwugo.com") || url.includes("img2.yiwugo.com"))) {
-                  let cleanUrl = url.split("?")[0].replace(/(_\d+x\d+)/, "");
-                  yiwuResults.push(cleanUrl);
+                let url = img.getAttribute("data-lazyload-src") || img.src;
+                if (url && url.includes("img.yiwugo.com")) {
+                  let cleanUrl = url.split("?")[0].replace(/(_\d+x\d+.*)/i, "");
+                  if (!cleanUrl.startsWith("http")) cleanUrl = "https:" + cleanUrl;
+                  result.push(cleanUrl);
                 }
               });
-              // 补扫全页（含主图缩略图列表）
-              document.querySelectorAll("img").forEach(img => {
-                if (img.src && img.src.includes("yiwugo.com") && !yiwuResults.includes(img.src.split("?")[0])) {
-                  yiwuResults.push(img.src.split("?")[0].replace(/(_\d+x\d+)/, ""));
-                }
-              });
-              return [...new Set(yiwuResults)].filter(u => u.length > 20);
+              return [...new Set(result)];
             }
 
             // 1688抓取（默认）
