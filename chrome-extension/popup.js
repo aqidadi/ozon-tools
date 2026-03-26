@@ -930,43 +930,47 @@ async function setTab(tab, settings, tabId, condition) {
       }});
       await new Promise(r => setTimeout(r, 1500)); // 等详情图异步加载
 
-      // 第三步：精准容器抓图
+      // 第三步：全域模糊匹配 + 硬核过滤
       let grabbedImages = [];
       let grabbedDetailImages = [];
       try {
         const imgResults = await chrome.scripting.executeScript({
           target: { tabId, allFrames: true },
           func: () => {
-            let cleanUrls = [];
-            const whitelistContainers = [
-              "#desc-lazyload-container",
-              ".tab-content-container",
-              ".content-detail",
-              ".desc-lazyload-container",
-              "#detail-content-container",
-            ];
-            whitelistContainers.forEach(selector => {
-              const container = document.querySelector(selector);
-              if (!container) return;
-              container.querySelectorAll("img").forEach(img => {
-                let url = img.getAttribute("data-lazyload-src") || img.getAttribute("src") || "";
-                if (!url || !url.includes("cbu01.alicdn.com")) return;
-                const highRes = url.replace(/(_\d+x\d+.*\.jpg$)|(\.\d+x\d+.*\.jpg$)/, "");
-                if (/logo|setting|icon|gear|check|loading|avatar/i.test(highRes)) return;
-                cleanUrls.push(highRes);
+            let allFound = [];
+
+            // 1. 模糊匹配所有疑似详情和主图容器
+            const selectors = ['[id*="desc"]','[class*="detail"]','.tab-content-container','.nav-tabs','[class*="gallery"]','[class*="preview"]'];
+            selectors.forEach(sel => {
+              document.querySelectorAll(sel).forEach(container => {
+                container.querySelectorAll("img").forEach(img => {
+                  const url = img.getAttribute("data-lazyload-src") || img.getAttribute("data-src") || img.getAttribute("src") || "";
+                  if (url) allFound.push(url);
+                });
               });
             });
-            return [...new Set(cleanUrls)];
+
+            // 2. 兜底：全页正则扫 ibank 路径
+            if (allFound.length < 5) {
+              const regex = /https?:\/\/cbu01\.alicdn\.com\/img\/ibank\/[0-9a-zA-Z/_-]+\.jpg/g;
+              const matches = document.documentElement.innerHTML.match(regex) || [];
+              allFound = allFound.concat(matches);
+            }
+
+            // 3. 提纯：黑名单 + 白名单 + 高清化
+            const cleanUrls = [...new Set(allFound)].filter(url => {
+              const isGarbage = /logo|setting|gear|icon|check|avatar|loading/i.test(url);
+              const isProduct = url.includes("ibank") || url.includes("cbu01.alicdn.com");
+              return !isGarbage && isProduct;
+            }).map(url => url.replace(/_\d+x\d+.*\.jpg$/, ""));
+
+            return cleanUrls;
           }
         });
 
-        // 合并所有frame结果
         const allUrls = [...new Set(imgResults.flatMap(r => r.result || []))];
-        // 主图：tab-content-container 里的（通常前5-10张）
-        // 详情图：desc-lazyload-container 里的
-        // 简单处理：前10张当主图，其余当详情图
         grabbedImages = allUrls.slice(0, 10);
-        grabbedDetailImages = allUrls.slice(10);
+        grabbedDetailImages = allUrls.slice(10, 25);
             } catch(e) {}
 
       // 第四步：抓标题、价格、规格等
