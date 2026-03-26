@@ -963,7 +963,7 @@ async function setTab(tab, settings, tabId, condition) {
                 const src = img.getAttribute("data-lazyload-src") ||
                             img.getAttribute("data-lazy-src") ||
                             img.getAttribute("src") || "";
-                if (src) pool.add(src);
+                if (src && src.includes("cbu01.alicdn.com")) pool.add(src);
               });
 
               // B: textarea逃生舱
@@ -990,21 +990,21 @@ async function setTab(tab, settings, tabId, condition) {
           }
         });
 
-        // 终极三步清洗：1.规范化 2.过滤 3.去重
-        const rawUrls = imgResults.flatMap(r => r.result || []).filter(Boolean);
-        const normalizedUrls = rawUrls.map(url => {
-          if (url.startsWith("//")) url = "https:" + url;
-          // 去掉所有尺寸后缀变体：_300x300.jpg / .300x300.jpg / _300x300.jpg_.webp
-          return url.replace(/[_.](\d+x\d+)[^?#]*/i, "").replace(/\?.*$/, "");
+        // 串行清洗：1.砍参数/webp 2.只留ibank 3.去重
+        const allRawUrls = imgResults.flatMap(r => r.result || []).filter(Boolean);
+        const cleanList = allRawUrls.map(url => {
+          let u = url.split("?")[0];
+          u = u.replace(/\.webp$/, "");
+          return u.replace(/(_\d+x\d+.*\.jpg$)|(\.\d+x\d+.*\.jpg$)/, "");
         });
-        const productUrls = normalizedUrls.filter(url =>
-          url.includes("cbu01.alicdn.com/img/ibank/") &&
-          !/logo|setting|gear|icon|check|avatar|loading/i.test(url)
-        );
-        const allUrls = [...new Set(productUrls)];
-        console.log("Crossly 提纯后图片数量:", allUrls.length);
-        grabbedDetailImages = allUrls.slice(0, 20);
-        grabbedImages = allUrls.slice(0, 10); // 主图取前10，详情图独立
+        const productOnly = cleanList.filter(url => {
+          const isProduct = url.includes("cbu01.alicdn.com/img/ibank/");
+          const isGarbage = /logo|setting|gear|icon|check|avatar/i.test(url);
+          return isProduct && !isGarbage;
+        });
+        const finalUnique = [...new Set(productOnly)];
+        grabbedImages = finalUnique.slice(0, 10);
+        grabbedDetailImages = finalUnique.slice(10, 25);
             } catch(e) {}
 
       // 第四步：抓标题、价格、规格等
