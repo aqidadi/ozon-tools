@@ -4,8 +4,95 @@ import { useState } from "react";
 import { AdBanner } from "@/components/AdBanner";
 import {
   ChevronDown, ChevronRight, BookOpen, Store, TrendingUp,
-  Package, Truck, Star, ExternalLink, Wrench, Globe, BarChart2, ShoppingCart
+  Package, Truck, Star, ExternalLink, Wrench, Globe, BarChart2, ShoppingCart,
+  MessageCircle, Loader2, Send
 } from "lucide-react";
+
+// ── FAQ 智能问答组件 ──────────────────────────────────────────
+function FAQBox() {
+  const [question, setQuestion] = useState("");
+  const [answer, setAnswer] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const QUICK_QUESTIONS = [
+    "怎么设置运费？",
+    "新手卖什么最好？",
+    "Ozon怎么注册开店？",
+    "怎么定价不亏钱？",
+    "图片怎么处理？",
+    "货代怎么选？",
+  ];
+
+  const ask = async (q: string) => {
+    if (!q.trim() || loading) return;
+    setLoading(true);
+    setAnswer("");
+    try {
+      const res = await fetch("/api/faq", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question: q }),
+      });
+      const data = await res.json();
+      setAnswer(data.answer || "暂时无法回答，请查看下方指南。");
+    } catch {
+      setAnswer("网络错误，请稍后再试。");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="bg-white border border-indigo-100 rounded-2xl overflow-hidden shadow-sm">
+      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-5 py-3 flex items-center gap-2">
+        <MessageCircle size={16} className="text-white" />
+        <span className="text-white font-semibold text-sm">AI 智能答疑</span>
+        <span className="text-white/60 text-xs ml-1">· 有任何问题直接问</span>
+      </div>
+
+      {/* 快捷问题 */}
+      <div className="px-4 pt-3 pb-2 flex flex-wrap gap-2">
+        {QUICK_QUESTIONS.map(q => (
+          <button key={q} onClick={() => { setQuestion(q); ask(q); }}
+            className="text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-full transition-colors border border-indigo-100">
+            {q}
+          </button>
+        ))}
+      </div>
+
+      {/* 输入框 */}
+      <div className="px-4 pb-3">
+        <div className="flex gap-2">
+          <input
+            value={question}
+            onChange={e => setQuestion(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && ask(question)}
+            placeholder="输入你的问题，比如：Ozon佣金怎么算？"
+            className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+          />
+          <button onClick={() => ask(question)} disabled={loading || !question.trim()}
+            className="px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 disabled:opacity-50 transition-colors flex-shrink-0">
+            {loading ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+          </button>
+        </div>
+      </div>
+
+      {/* 回答 */}
+      {(loading || answer) && (
+        <div className="border-t border-gray-100 px-5 py-4 bg-gray-50">
+          {loading ? (
+            <div className="flex items-center gap-2 text-sm text-gray-400">
+              <Loader2 size={14} className="animate-spin" />
+              AI正在思考...
+            </div>
+          ) : (
+            <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{answer}</div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 const GUIDES = [
   {
@@ -587,6 +674,9 @@ export function GuidePage() {
           ))}
         </div>
       </div>
+
+      {/* FAQ 智能问答 */}
+      <FAQBox />
 
       {/* 页面标题 */}
       <div>

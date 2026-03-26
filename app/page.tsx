@@ -81,7 +81,7 @@ const DEFAULT_SETTINGS: Settings = {
 type Tab = "landing" | "products" | "ozon" | "hot" | "picker" | "guide" | "tools" | "mintools" | "clock" | "monitor" | "analytics" | "settings" | "batch";
 
 const NAV_ITEMS = [
-  { id: "guide",     label: "新手指南", icon: BookOpen,     color: "indigo", badge: "免费" },
+  { id: "guide",     label: "🔥 新手指南", icon: BookOpen,     color: "red", badge: "免费教学" },
   { id: "landing",   label: "关于我们", icon: Globe,        color: "blue" },
   { id: "hot",       label: "爆品榜单", icon: Flame,        color: "red" },
   { id: "batch",     label: "批量导入", icon: DatabaseZap,  color: "purple" },
