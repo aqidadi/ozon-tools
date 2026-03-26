@@ -1041,22 +1041,24 @@ async function setTab(tab, settings, tabId, condition) {
             function purify(urlSet, isDetail) {
               return [...new Set([...urlSet])]
                 .map(u => {
-                  // 彻底去掉所有尺寸后缀
                   u = u.replace(/[_.](\d+x\d+)[^"'\s]*/gi, "");
                   u = u.replace(/_(sum|compress|q\d+)[^"'\s]*/gi, "");
                   return u;
                 })
                 .filter(u => {
-                  if (!u || u.length < 40) return false;
-                  if (/60x60|32x32|50x50|lazyload|blank|spaceball|icon|logo/i.test(u)) return false;
-                  // 详情图只保留ibank路径（最准确的商品大图特征）
-                  if (isDetail) return u.includes("cbu01.alicdn.com") || u.includes("img/ibank");
-                  return isAliImg(u);
+                  if (!u || u.length < 50) return false;
+                  if (/60x60|32x32|50x50|64x64|lazyload|blank|spaceball|\.gif/i.test(u)) return false;
+                  if (/\/icon|\/logo|favicon|alphashop|banner|platform|helpIcon/i.test(u)) return false;
+                  // 必须是阿里系图片且包含 /img/ 路径（排除网站UI图标）
+                  if (!isAliImg(u) || !u.includes("/img/")) return false;
+                  return true;
                 });
             }
 
-            const finalMain = purify(mainImgs, false).slice(0, 12);
-            const finalDetail = purify(detailImgs, true).slice(0, 15); // 只取前15张
+            const finalMain = purify(mainImgs, false).slice(0, 10);
+            const finalDetail = purify(detailImgs, true)
+              .filter(u => !finalMain.includes(u)) // 详情图不与主图重复
+              .slice(0, 15);
 
             return {
               main: finalMain,
