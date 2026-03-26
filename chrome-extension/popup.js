@@ -134,22 +134,25 @@ function extractProductData() {
       // 义乌购专用提取
       if (location.hostname.includes("yiwugo.com")) {
         const title = document.querySelector(".product-name, .goods-name, h1.name, .detail-title, h1")?.textContent?.trim() || document.title;
-        // 价格：找含数字的价格元素
+        // 价格：从全页文本正则扫阶梯价，取最小起购价
         let price = 0;
-        for (const sel of [".price-num", ".sale-price", ".cur-price", "[class*='price'] em", "[class*='price'] span"]) {
-          const el = document.querySelector(sel);
-          if (el) { const n = parseFloat(el.textContent.replace(/[^\d.]/g,"")); if (n > 0) { price = n; break; } }
-        }
-        // 规格：只取规格参数表，不取评价
+        const pageText = document.body.innerText;
+        const priceMatches = [...pageText.matchAll(/[¥￥]\s*(\d+(?:\.\d{1,2})?)/g)];
+        const priceNums = priceMatches.map(m => parseFloat(m[1])).filter(n => n >= 1 && n <= 9999);
+        if (priceNums.length) price = Math.min(...priceNums);
+        // 规格：扫颜色/库存表，提取规格名
         const specs = {};
-        const specTable = document.querySelector(".product-attr, .goods-attr, .spec-table, [class*='proAttr'], [class*='product-param']");
+        const specTable = document.querySelector(".product-attr, .goods-attr, .spec-table, [class*=proAttr], [class*=product-param]");
         if (specTable) {
           specTable.querySelectorAll("li, tr, .item").forEach(row => {
             const kv = row.textContent.trim().split(/[:：]/);
-            if (kv.length >= 2) specs[kv[0].trim()] = kv.slice(1).join("：").trim();
+            if (kv.length >= 2 && kv[0].trim().length < 20) specs[kv[0].trim()] = kv.slice(1).join("：").trim();
           });
         }
-        return resolve({ title, price, specs, images: [], detailImages: [], monthlySales: 0, moq: 1 });
+        // MOQ：从文本里找X个起购
+        const moqMatch = pageText.match(/(\d+)个起购/);
+        const moq = moqMatch ? parseInt(moqMatch[1]) : 1;
+        return resolve({ title, price, specs, images: [], detailImages: [], monthlySales: 0, moq });
       }
 
       // 优先用content script拦截到的接口数据
