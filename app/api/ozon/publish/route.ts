@@ -2,6 +2,33 @@ import { NextRequest, NextResponse } from "next/server";
 
 const OZON_API = "https://api-seller.ozon.ru";
 
+// 颜色映射：中文→Ozon颜色ID
+const COLOR_MAP: Record<string, {id: number, value: string}> = {
+  "白": {id: 61571, value: "белый"}, "白色": {id: 61571, value: "белый"},
+  "黑": {id: 61574, value: "черный"}, "黑色": {id: 61574, value: "черный"},
+  "棕": {id: 61575, value: "коричневый"}, "棕色": {id: 61575, value: "коричневый"}, "褐色": {id: 61575, value: "коричневый"},
+  "灰": {id: 61576, value: "серый"}, "灰色": {id: 61576, value: "серый"},
+  "黄": {id: 61578, value: "желтый"}, "黄色": {id: 61578, value: "желтый"},
+  "红": {id: 61579, value: "красный"}, "红色": {id: 61579, value: "красный"},
+  "粉": {id: 61580, value: "розовый"}, "粉色": {id: 61580, value: "розовый"}, "粉红": {id: 61580, value: "розовый"},
+  "蓝": {id: 61581, value: "синий"}, "蓝色": {id: 61581, value: "синий"},
+  "绿": {id: 61583, value: "зеленый"}, "绿色": {id: 61583, value: "зеленый"},
+  "橙": {id: 61585, value: "оранжевый"}, "橙色": {id: 61585, value: "оранжевый"},
+  "紫": {id: 61586, value: "фиолетовый"}, "紫色": {id: 61586, value: "фиолетовый"},
+  "米": {id: 61573, value: "бежевый"}, "米色": {id: 61573, value: "бежевый"}, "奶油色": {id: 61573, value: "бежевый"},
+  "彩色": {id: 61591, value: "мультиколор"}, "多色": {id: 61591, value: "мультиколор"},
+};
+
+function getColor(colorZh: string) {
+  if (!colorZh) return null;
+  for (const [key, val] of Object.entries(COLOR_MAP)) {
+    if (colorZh.includes(key)) return val;
+  }
+  return null;
+}
+
+
+
 // Ozon API 一键刊登接口
 // 文档: https://docs.ozon.ru/api/seller/#operation/ProductAPI_ImportProductsV3
 export async function POST(req: NextRequest) {
@@ -53,22 +80,27 @@ export async function POST(req: NextRequest) {
       
       // 属性（必填项，根据类目不同）
       attributes: [
-        {
-          id: 9048,       // 型号名称（用于合并同款）
-          complex_id: 0,
-          values: [{ value: (product.title || "").slice(0, 100) }]
-        },
-        {
-          id: 85,         // 品牌（无品牌用固定id=126745801）
-          complex_id: 0,
-          values: [{ dictionary_value_id: product.brandId || 126745801, value: product.brand || "Нет бренда" }]
-        },
-        {
-          id: 8229,       // 类型
-          complex_id: 0,
-          values: [{ value: product.typeName || "Мягкая игрушка" }]
-        },
+        // ★ 必填
+        { id: 9048, complex_id: 0, values: [{ value: (product.title || "").slice(0, 100) }] },
+        { id: 85, complex_id: 0, values: [{ dictionary_value_id: product.brandId || 126745801, value: product.brand || "Нет бренда" }] },
+        { id: 8229, complex_id: 0, values: [{ value: product.typeName || "Мягкая игрушка" }] },
+        // 可选但重要
+        ...(() => {
+          const c = getColor(product.color || "");
+          return c ? [{ id: 10096, complex_id: 0, values: [{ dictionary_value_id: c.id, value: c.value }] }] : [];
+        })(),
+        ...(product.colorName ? [{ id: 10097, complex_id: 0, values: [{ value: product.colorName }] }] : []),
+        ...(product.material ? [{ id: 4975, complex_id: 0, values: [{ value: product.material }] }] : []),
+        ...(product.height ? [{ id: 7147, complex_id: 0, values: [{ value: String(product.height) }] }] : []),
+        ...(product.country ? [{ id: 4389, complex_id: 0, values: [{ value: product.country || "Китай" }] }] : [{ id: 4389, complex_id: 0, values: [{ value: "Китай" }] }]),
+        ...(product.weight ? [{ id: 4497, complex_id: 0, values: [{ value: String(product.weight) }] }] : []),
+        ...(product.description ? [{ id: 4191, complex_id: 0, values: [{ value: product.description.slice(0, 4000) }] }] : []),
+        ...(product.toyType ? [{ id: 7173, complex_id: 0, values: [{ value: product.toyType }] }] : []),
       ],
+      // 详情图（最多15张，单独字段）
+      ...(product.detailImages?.length ? { 
+        images360: product.detailImages.slice(0, 15)
+      } : {}),
     }]
   };
 
