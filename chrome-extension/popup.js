@@ -990,11 +990,17 @@ async function setTab(tab, settings, tabId, condition) {
           }
         });
 
-        const allUrls = [...new Set(imgResults.flatMap(r => r.result || []).filter(Boolean))];
-        // ibank路径的是详情图，其余是主图；主图取前10，详情图取前20
+        // 先规范化（去缩略图后缀）再去重，防止带后缀和不带后缀被当成两张
+        const normalize = url => (url.startsWith("//") ? "https:" + url : url)
+          .replace(/(_\d+x\d+.*\.jpg$)|(\.\d+x\d+.*\.jpg$)/i, "");
+        const allRaw = imgResults.flatMap(r => r.result || []).filter(Boolean);
+        const allUrls = [...new Set(allRaw.map(normalize))].filter(url => {
+          const isIbank = url.includes("cbu01.alicdn.com/img/ibank/");
+          const isGarbage = /logo|setting|gear|icon|check|avatar/i.test(url);
+          return isIbank && !isGarbage;
+        });
         grabbedDetailImages = allUrls.filter(u => u.includes("/img/ibank/")).slice(0, 20);
         grabbedImages = allUrls.filter(u => !grabbedDetailImages.includes(u)).slice(0, 10);
-        // 如果主图为空（全是ibank），前10张当主图
         if (grabbedImages.length === 0) { grabbedImages = allUrls.slice(0, 10); grabbedDetailImages = allUrls.slice(10, 25); }
             } catch(e) {}
 
