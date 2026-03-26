@@ -965,14 +965,22 @@ async function setTab(tab, settings, tabId, condition) {
         });
 
         // 串行清洗：1.砍参数/webp 2.只留ibank 3.去重
-        const allRawUrls = imgResults.flatMap(r => r.result || []).filter(Boolean);
-        const finalUnique = [...new Set(allRawUrls)].filter(u =>
-          u.includes("cbu01.alicdn.com/img/ibank/") &&
-          !/logo|setting|gear|icon|check|avatar|loading|blank/i.test(u)
-        );
-        console.log("Crossly 提纯图片数量:", finalUnique.length, finalUnique);
-        grabbedImages = finalUnique.slice(0, 10);
-        grabbedDetailImages = finalUnique.slice(10, 25);
+        let rawDirtyUrls = imgResults.flatMap(r => r.result || []).filter(Boolean);
+        const superPurify = (urls) => {
+          const normalized = urls.map(u => {
+            let clean = u.split("?")[0].replace(/\.webp$/, "");
+            return clean.replace(/(_\d+x\d+.*\.jpg$)|(\.\d+x\d+.*\.jpg$)/i, "");
+          });
+          const uniqueList = [...new Set(normalized)];
+          return uniqueList.filter(url => {
+            const isIbank = url.includes("cbu01.alicdn.com/img/ibank/");
+            const isGarbage = /logo|setting|gear|icon|check|avatar|loading|blank|spaceball/i.test(url);
+            return isIbank && !isGarbage;
+          });
+        };
+        const finalOutput = superPurify(rawDirtyUrls);
+        grabbedImages = finalOutput.slice(0, 10);
+        grabbedDetailImages = finalOutput.slice(10, 25);
             } catch(e) {}
 
       // 第四步：抓标题、价格、规格等
