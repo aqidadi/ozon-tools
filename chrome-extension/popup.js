@@ -192,6 +192,12 @@ function extractProductData() {
       // 主图
       const mainImages = [], seenMain = new Set();
       const mainSelectors = [
+        // 1688 Ant Design 组件（最准确）
+        "img.preview-img",
+        "img.active-preview-img",
+        "[class*='preview-img']",
+        "img.ant-image-img",
+        // 通用gallery选择器
         "[class*='gallery'] img","[class*='Gallery'] img",
         "[class*='thumb'] img","[class*='Thumb'] img",
         "[class*='img-list'] img","[class*='imgList'] img",
@@ -209,11 +215,17 @@ function extractProductData() {
           const src = getBestSrc(img);
           if (!src || isLogo(src) || seenMain.has(src)) continue;
           if (!/\.(jpg|jpeg|png|webp)/i.test(src.split("?")[0])) continue;
+          // 过滤掉太小的（图标/logo），750x750以上才是商品图
+          const w = img.naturalWidth || 0;
+          const h = img.naturalHeight || 0;
+          if (w > 0 && w < 100) continue;
+          if (h > 0 && h < 100) continue;
           seenMain.add(src); mainImages.push(upscale(src));
           if (mainImages.length >= 10) break;
         }
-        if (mainImages.length >= 5) break;
+        if (mainImages.length >= 3) break;
       }
+      // 兜底：扫所有img，找>=300px的
       if (mainImages.length < 3) {
         for (const img of document.querySelectorAll("img")) {
           const src = getBestSrc(img);
@@ -221,7 +233,8 @@ function extractProductData() {
           if (!/\.(jpg|jpeg|png|webp)/i.test(src.split("?")[0])) continue;
           const w = img.naturalWidth || parseInt(img.getAttribute("width")||"0");
           const h = img.naturalHeight || parseInt(img.getAttribute("height")||"0");
-          if ((w > 0 && w < 100) || (h > 0 && h < 100)) continue;
+          if (w > 0 && w < 300) continue;
+          if (h > 0 && h < 300) continue;
           seenMain.add(src); mainImages.push(upscale(src));
           if (mainImages.length >= 10) break;
         }
