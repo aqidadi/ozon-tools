@@ -930,58 +930,43 @@ async function setTab(tab, settings, tabId, condition) {
       }});
       await new Promise(r => setTimeout(r, 1500)); // 等详情图异步加载
 
-      // 第三步：精准容器抓图（Gemini精简版）
+      // 第三步：精准容器抓图
       let grabbedImages = [];
       let grabbedDetailImages = [];
       try {
         const imgResults = await chrome.scripting.executeScript({
           target: { tabId, allFrames: true },
           func: () => {
-            const blackList = ['logo','setting','icon','gear','60x60','32x32','50x50','loading','placeholder','avatar','spaceball','blank','.gif','\.svg'];
-            function grabFromContainers(selectors, attrPriority) {
-              const urls = [];
-              selectors.forEach(sel => {
-                const el = document.querySelector(sel);
-                if (!el) return;
-                el.querySelectorAll("img").forEach(img => {
-                  let url = null;
-                  for (const attr of attrPriority) {
-                    const v = img.getAttribute(attr);
-                    if (v && v.includes("cbu01.alicdn.com")) { url = v; break; }
-                  }
-                  if (!url && img.src && img.src.includes("cbu01.alicdn.com")) url = img.src;
-                  if (!url) return;
-                  // 高清化
-                  url = url.replace(/_\d+x\d+[^"'\s]*\.(jpg|jpeg|png|webp)/gi, ".$1");
-                  urls.push(url);
-                });
+            let cleanUrls = [];
+            const whitelistContainers = [
+              "#desc-lazyload-container",
+              ".tab-content-container",
+              ".content-detail",
+              ".desc-lazyload-container",
+              "#detail-content-container",
+            ];
+            whitelistContainers.forEach(selector => {
+              const container = document.querySelector(selector);
+              if (!container) return;
+              container.querySelectorAll("img").forEach(img => {
+                let url = img.getAttribute("data-lazyload-src") || img.getAttribute("src") || "";
+                if (!url || !url.includes("cbu01.alicdn.com")) return;
+                const highRes = url.replace(/(_\d+x\d+.*\.jpg$)|(\.\d+x\d+.*\.jpg$)/, "");
+                if (/logo|setting|icon|gear|check|loading|avatar/i.test(highRes)) return;
+                cleanUrls.push(highRes);
               });
-              return [...new Set(urls)].filter(u =>
-                u.length > 40 && !blackList.some(k => u.toLowerCase().includes(k))
-              );
-            }
-
-            const main = grabFromContainers(
-              [".tab-content-container", ".vertical-img-list", "img.preview-img", "[class*='gallery']"],
-              ["data-lazyload-src", "data-lazy-src", "data-src", "src"]
-            );
-
-            const detail = grabFromContainers(
-              ["#desc-lazyload-container", ".desc-lazyload-container", "#detail-content-container", ".content-detail", "#mod-detail-desc"],
-              ["data-lazyload-src", "data-lazy-src", "data-src", "data-original", "src"]
-            ).filter(u => !main.includes(u));
-
-            return { main: main.slice(0, 10), detail: detail.slice(0, 15) };
+            });
+            return [...new Set(cleanUrls)];
           }
         });
 
-        const mainSet = new Set(), detailSet = new Set();
-        imgResults.forEach(r => {
-          (r.result?.main || []).forEach(u => mainSet.add(u));
-          (r.result?.detail || []).forEach(u => detailSet.add(u));
-        });
-        grabbedImages = [...mainSet];
-        grabbedDetailImages = [...detailSet].filter(u => !mainSet.has(u));
+        // 合并所有frame结果
+        const allUrls = [...new Set(imgResults.flatMap(r => r.result || []))];
+        // 主图：tab-content-container 里的（通常前5-10张）
+        // 详情图：desc-lazyload-container 里的
+        // 简单处理：前10张当主图，其余当详情图
+        grabbedImages = allUrls.slice(0, 10);
+        grabbedDetailImages = allUrls.slice(10);
             } catch(e) {}
 
       // 第四步：抓标题、价格、规格等
