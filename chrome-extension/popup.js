@@ -930,146 +930,59 @@ async function setTab(tab, settings, tabId, condition) {
       }});
       await new Promise(r => setTimeout(r, 1500)); // 等详情图异步加载
 
-      // 第三步：allFrames 抓主图 + 详情图（分类返回）
+      // 第三步：精准容器抓图（Gemini精简版）
       let grabbedImages = [];
       let grabbedDetailImages = [];
       try {
         const imgResults = await chrome.scripting.executeScript({
           target: { tabId, allFrames: true },
           func: () => {
-            function cleanUrl(url) {
-              if (!url || url.includes("blank.gif") || url.includes("spaceball")) return null;
-              if (url.startsWith("//")) url = "https:" + url;
-              // 去掉所有缩略图后缀，还原高清图
-              // 匹配 _50x50.jpg / _220x220.jpg / _60x60xz.jpg 等各种格式
-              url = url.replace(/_\d+x\d+[^"'\s]*\.(jpg|jpeg|png|webp)/gi, ".$1");
-              url = url.replace(/_\d+x\d+/gi, ""); // 去掉残留的 _NxN
-              if (!/\.(jpg|jpeg|png|webp)/i.test(url)) return null;
-              return url;
-            }
-            function isAliImg(url) {
-              return url.includes("alicdn.com") || url.includes("aliyuncs.com") || url.includes("1688.com");
-            }
-            function isTinyIcon(url) {
-              // 过滤掉图标/logo小图
-              return /_\d{1,2}x\d{1,2}\./.test(url) || 
-                     /\/icon|\/logo|favicon|\.gif/i.test(url) ||
-                     url.length < 40;
-            }
-
-            // 主图选择器
-            const mainSelectors = [
-              "img.preview-img", "img.active-preview-img",
-              ".tab-content-container img", ".vertical-img-list img", ".nav-tabs img",
-              "[class*='gallery'] img", "[class*='thumb'] img", "[class*='swiper'] img",
-            ];
-            const mainImgs = new Set();
-            mainSelectors.forEach(sel => {
-              document.querySelectorAll(sel).forEach(img => {
-                const url = cleanUrl(img.getAttribute("data-lazy-src") || img.getAttribute("data-src") || img.src || "");
-                if (url && isAliImg(url)) mainImgs.add(url);
-              });
-            });
-
-            // 详情图：精准定位1688详情容器，提取data-lazyload-src
-            const detailSelectors = [
-              "#desc-lazyload-container",    // 1688最常见详情容器
-              "#detail-content-container",   // 另一种
-              ".desc-lazyload-container",
-              ".content-detail",
-              "#mod-detail-desc",
-              "[class*='detail-desc']",
-              "[class*='detailDesc']",
-              "[class*='product-desc']",
-            ];
-            const detailImgs = new Set();
-            for (const sel of detailSelectors) {
-              const container = document.querySelector(sel);
-              if (!container) continue;
-              container.querySelectorAll("img").forEach(img => {
-                // data-lazyload-src 是1688详情图真实URL的关键属性
-                const url = cleanUrl(
-                  img.getAttribute("data-lazyload-src") ||
-                  img.getAttribute("data-lazy-src") ||
-                  img.getAttribute("data-src") ||
-                  img.getAttribute("data-original") ||
-                  img.src || ""
-                );
-                if (url && !mainImgs.has(url)) detailImgs.add(url);
-              });
-              // 正则全扫innerHTML（捞所有懒加载属性）
-              const html = container.innerHTML;
-              const urlPat = /(?:data-lazyload-src|data-lazy-src|data-src|data-original|src)=["'](https?:\/\/[^"'\s>]+\.(?:jpg|jpeg|png|webp))/gi;
-              for (const m of html.matchAll(urlPat)) {
-                const url = cleanUrl(m[1]);
-                if (url && !mainImgs.has(url)) detailImgs.add(url);
-              }
-              if (detailImgs.size >= 3) break;
-            }
-
-            // textarea 逃生舱（1688把详情HTML藏在textarea里）
-            const textareas = document.querySelectorAll("textarea.visual-engine-data, .desc-lazyload-container textarea, textarea[class*='desc'], textarea[class*='detail']");
-            textareas.forEach(ta => {
-              const raw = ta.value || ta.textContent || "";
-              const matched = raw.match(/https?:\/\/[^"'\s<>]+\.(?:jpg|jpeg|png|webp)/gi) || [];
-              matched.forEach(u => {
-                const url = cleanUrl(u);
-                if (url && !mainImgs.has(url)) detailImgs.add(url);
-              });
-            });
-
-            // 最后手段：全页HTML正则暴力扫描（只取cbu01详情图域名，过滤主图域名）
-            if (detailImgs.size < 3) {
-              const pageHtml = document.documentElement.innerHTML;
-              // 专扫ibank路径（1688详情图特征路径）
-              const ibankUrls = pageHtml.match(/https?:\/\/cbu01\.alicdn\.com\/img\/ibank\/[^"'\s<>]+/g) || [];
-              ibankUrls.forEach(u => {
-                const url = cleanUrl(u);
-                if (url && !mainImgs.has(url)) detailImgs.add(url);
-              });
-              // 也扫其他alicdn详情图
-              if (detailImgs.size < 3) {
-                const allAliImgs = pageHtml.match(/https?:\/\/[^"'\s<>]+\.alicdn\.com\/[^"'\s<>]+\.(?:jpg|jpeg|png|webp)/gi) || [];
-                allAliImgs.forEach(u => {
-                  const url = cleanUrl(u);
-                  if (url && !mainImgs.has(url) && url.length > 40) detailImgs.add(url);
+            const blackList = ['logo','setting','icon','gear','60x60','32x32','50x50','loading','placeholder','avatar','spaceball','blank','.gif','\.svg'];
+            function grabFromContainers(selectors, attrPriority) {
+              const urls = [];
+              selectors.forEach(sel => {
+                const el = document.querySelector(sel);
+                if (!el) return;
+                el.querySelectorAll("img").forEach(img => {
+                  let url = null;
+                  for (const attr of attrPriority) {
+                    const v = img.getAttribute(attr);
+                    if (v && v.includes("cbu01.alicdn.com")) { url = v; break; }
+                  }
+                  if (!url && img.src && img.src.includes("cbu01.alicdn.com")) url = img.src;
+                  if (!url) return;
+                  // 高清化
+                  url = url.replace(/_\d+x\d+[^"'\s]*\.(jpg|jpeg|png|webp)/gi, ".$1");
+                  urls.push(url);
                 });
-              }
+              });
+              return [...new Set(urls)].filter(u =>
+                u.length > 40 && !blackList.some(k => u.toLowerCase().includes(k))
+              );
             }
 
-            // 终极黑白名单过滤
-            const filterImages = (urls) => {
-              const blackList = ['logo','setting','icon','loading','placeholder','avatar','check','gear','banner','alphashop','platform','helpIcon','spaceball','blank'];
-              return [...new Set(urls)].filter(url => {
-                const lower = url.toLowerCase();
-                const isGarbage = blackList.some(key => lower.includes(key));
-                const isProductImg = url.includes("ibank") || url.includes("cbu01.alicdn.com/img/");
-                const isThumbnail = /_\d+x\d+/.test(url) && !url.includes("800x800");
-                return !isGarbage && isProductImg && !isThumbnail;
-              });
-            };
+            const main = grabFromContainers(
+              [".tab-content-container", ".vertical-img-list", "img.preview-img", "[class*='gallery']"],
+              ["data-lazyload-src", "data-lazy-src", "data-src", "src"]
+            );
 
-            const finalMain = filterImages([...mainImgs]).slice(0, 10);
-            const finalDetail = filterImages([...detailImgs])
-              .filter(u => !finalMain.includes(u))
-              .slice(0, 15);
+            const detail = grabFromContainers(
+              ["#desc-lazyload-container", ".desc-lazyload-container", "#detail-content-container", ".content-detail", "#mod-detail-desc"],
+              ["data-lazyload-src", "data-lazy-src", "data-src", "data-original", "src"]
+            ).filter(u => !main.includes(u));
 
-            return {
-              main: finalMain,
-              detail: finalDetail,
-            };
+            return { main: main.slice(0, 10), detail: detail.slice(0, 15) };
           }
         });
 
-        // 合并所有frame结果去重
         const mainSet = new Set(), detailSet = new Set();
         imgResults.forEach(r => {
           (r.result?.main || []).forEach(u => mainSet.add(u));
           (r.result?.detail || []).forEach(u => detailSet.add(u));
         });
         grabbedImages = [...mainSet];
-        grabbedDetailImages = [...detailSet];
-      } catch(e) {}
+        grabbedDetailImages = [...detailSet].filter(u => !mainSet.has(u));
+            } catch(e) {}
 
       // 第四步：抓标题、价格、规格等
       const res = await chrome.scripting.executeScript({ target: { tabId }, func: extractProductData });
