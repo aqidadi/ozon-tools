@@ -131,6 +131,9 @@ function extractProductData() {
   return new Promise((resolve) => {
     const doExtract = () => {
     try {
+      // 优先用content script拦截到的接口数据
+      const intercepted = window.__crosslyGetData ? window.__crosslyGetData() : {};
+
       function getBestSrc(el) {
         const attrs = ["src","data-src","data-lazy-src","data-original","data-lazy","data-img-src","data-url","data-image","data-origin-src","data-real-src"];
         for (const attr of attrs) {
@@ -150,9 +153,11 @@ function extractProductData() {
       function upscale(src) { return src.replace(/_(\d+x\d+)\.(jpg|jpeg|png|webp)/i, "_800x800.$2"); }
 
       // 标题
-      let title = "";
-      const ogTitle = document.querySelector("meta[property='og:title']")?.content;
-      if (ogTitle && ogTitle.length > 5) title = ogTitle;
+      let title = intercepted.title || "";
+      if (!title) {
+        const ogTitle = document.querySelector("meta[property='og:title']")?.content;
+        if (ogTitle && ogTitle.length > 5) title = ogTitle;
+      }
       if (!title) {
         for (const sel of ["[class*='title-container'] h1","[class*='offer-title']","[class*='product-title'] h1",".title-text h1",".mod-offer-title","h1[class*='title']","h1"]) {
           for (const el of document.querySelectorAll(sel)) {
@@ -164,37 +169,23 @@ function extractProductData() {
       }
       if (!title) title = document.title.replace(/[-_|].*?(1688|阿里).*$/, "").trim();
 
-      // 价格（四重保险）
-      let price = 0;
-      const metaPrice = document.querySelector("meta[property='og:product:price:amount']")?.content;
-      if (metaPrice) price = parseFloat(metaPrice);
+      // 价格 - 优先拦截数据，否则从页面文本提取（取¥符号后的数字，范围1-9999）
+      let price = intercepted.price || 0;
       if (!price) {
-        const dpEl = document.querySelector("[data-price]");
-        if (dpEl) price = parseFloat(dpEl.getAttribute("data-price") || "0");
-      }
-      if (!price) {
-        const priceNums = [];
-        for (const el of document.querySelectorAll("[class*='price'],[class*='Price']")) {
-          const text = el.textContent.replace(/[^\d.]/g, "").trim();
-          const n = parseFloat(text);
-          // 只取合理价格范围：0.1元 到 9999元，且小数点后不超过2位
-          if (n >= 0.1 && n < 9999 && /^\d+(\.\d{1,2})?$/.test(text)) priceNums.push(n);
-        }
-        if (priceNums.length) price = Math.min(...priceNums);
-      }
-      if (!price) {
-        const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
-        let node;
-        while ((node = walker.nextNode())) {
-          const m = node.textContent.match(/[¥￥]\s*([\d.]+)/);
-          if (m) { price = parseFloat(m[1]); break; }
-        }
+        // 直接扫描页面文本找¥价格，取最小的合理值（1-9999，最多2位小数）
+        const allText = document.body.innerText;
+        const matches = [...allText.matchAll(/[¥￥]\s*(\d+(?:\.\d{1,2})?)/g)];
+        const nums = matches.map(m => parseFloat(m[1])).filter(n => n >= 1 && n <= 9999);
+        if (nums.length) price = Math.min(...nums);
       }
 
-      // 主图
+      // 主图 - 优先拦截数据
       const mainImages = [], seenMain = new Set();
+      if (intercepted.images && intercepted.images.length > 0) {
+        intercepted.images.forEach(src => { if (src && !seenMain.has(src)) { seenMain.add(src); mainImages.push(src); } });
+      }
+      if (mainImages.length < 3) {
       const mainSelectors = [
-        // 1688 Ant Design 组件（最准确）
         "img.preview-img",
         "img.active-preview-img",
         "[class*='preview-img']",
@@ -241,6 +232,7 @@ function extractProductData() {
           if (mainImages.length >= 10) break;
         }
       }
+      } // end if(mainImages.length < 3) for intercepted
 
       // 详情图
       const detailImages = [], seenDetail = new Set();
