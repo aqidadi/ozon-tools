@@ -891,70 +891,103 @@ async function setTab(tab, settings, tabId, condition) {
       }});
       await new Promise(r => setTimeout(r, 800));
 
-      // 第二步：分段滚动，触发懒加载图片渲染
+      // 第二步：分段滚动触发懒加载（先滚到底，再回顶）
       await chrome.scripting.executeScript({ target: { tabId }, func: () => {
         return new Promise(resolve => {
           const total = document.body.scrollHeight;
-          const steps = 8;
+          const steps = 10;
           let i = 0;
           const timer = setInterval(() => {
             window.scrollTo(0, (total / steps) * i);
             i++;
-            if (i > steps) {
-              clearInterval(timer);
-              window.scrollTo(0, 0);
-              resolve();
-            }
+            if (i > steps) { clearInterval(timer); window.scrollTo(0, 0); resolve(); }
           }, 300);
         });
       }});
       await new Promise(r => setTimeout(r, 2000));
 
-      // 第三步：用 allFrames:true + 多选择器 抓主图（Gemini方案）
+      // 第三步：allFrames 抓主图 + 详情图（分类返回）
       let grabbedImages = [];
+      let grabbedDetailImages = [];
       try {
         const imgResults = await chrome.scripting.executeScript({
           target: { tabId, allFrames: true },
           func: () => {
-            const selectors = [
-              "img.preview-img",
-              "img.active-preview-img",
-              ".tab-content-container img",
-              ".vertical-img-list img",
-              ".nav-tabs img",
-              "[class*='gallery'] img",
-              "[class*='thumb'] img",
-              "[class*='swiper'] img",
+            function cleanUrl(url) {
+              if (!url || url.includes("blank.gif") || url.includes("spaceball")) return null;
+              if (url.startsWith("//")) url = "https:" + url;
+              url = url.replace(/_\d+x\d+[^.]*\.(jpg|jpeg|png|webp)/i, ".$1");
+              if (!/\.(jpg|jpeg|png|webp)/i.test(url)) return null;
+              return url;
+            }
+            function isAliImg(url) {
+              return url.includes("alicdn.com") || url.includes("aliyuncs.com") || url.includes("1688.com");
+            }
+
+            // 主图选择器
+            const mainSelectors = [
+              "img.preview-img", "img.active-preview-img",
+              ".tab-content-container img", ".vertical-img-list img", ".nav-tabs img",
+              "[class*='gallery'] img", "[class*='thumb'] img", "[class*='swiper'] img",
             ];
-            let allImgs = [];
-            selectors.forEach(sel => {
-              allImgs = allImgs.concat(Array.from(document.querySelectorAll(sel)));
+            const mainImgs = new Set();
+            mainSelectors.forEach(sel => {
+              document.querySelectorAll(sel).forEach(img => {
+                const url = cleanUrl(img.getAttribute("data-lazy-src") || img.getAttribute("data-src") || img.src || "");
+                if (url && isAliImg(url)) mainImgs.add(url);
+              });
             });
-            if (allImgs.length === 0) return [];
-            const results = allImgs.map(img => {
-              let rawUrl = img.getAttribute("data-lazy-src") || img.getAttribute("data-src") || img.getAttribute("src") || "";
-              if (!rawUrl || rawUrl.includes("blank.gif") || rawUrl.includes("spaceball")) return null;
-              if (rawUrl.startsWith("//")) rawUrl = "https:" + rawUrl;
-              // 去掉缩略图后缀，还原高清图
-              rawUrl = rawUrl.replace(/_\d+x\d+[^.]*\.(jpg|jpeg|png|webp)/i, ".$1");
-              if (!/\.(jpg|jpeg|png|webp)/i.test(rawUrl)) return null;
-              return rawUrl;
-            }).filter(Boolean);
-            // 去重，过滤掉非图片域名
-            return [...new Set(results)].filter(url =>
-              url.includes("alicdn.com") || url.includes("aliyuncs.com") || url.includes("1688.com")
-            );
+
+            // 详情图选择器（1688详情区）
+            const detailSelectors = [
+              ".desc-lazyload-container", ".content-detail",
+              "#mod-detail-desc", "[class*='detail-desc']", "[class*='detailDesc']",
+              "[class*='product-desc']", "[class*='description']",
+            ];
+            const detailImgs = new Set();
+            for (const sel of detailSelectors) {
+              const container = document.querySelector(sel);
+              if (!container) continue;
+              container.querySelectorAll("img").forEach(img => {
+                const url = cleanUrl(
+                  img.getAttribute("data-lazy-src") || img.getAttribute("data-src") ||
+                  img.getAttribute("data-original") || img.src || ""
+                );
+                if (url && !mainImgs.has(url)) detailImgs.add(url);
+              });
+              // 正则扫innerHTML捞懒加载
+              const matches = container.innerHTML.matchAll(/(?:data-src|data-lazy-src|data-original|src)=["'](https?:\/\/[^"']+\.(?:jpg|jpeg|png|webp))/gi);
+              for (const m of matches) {
+                const url = cleanUrl(m[1]);
+                if (url && !mainImgs.has(url)) detailImgs.add(url);
+              }
+              if (detailImgs.size > 0) break;
+            }
+
+            return {
+              main: [...mainImgs].slice(0, 15),
+              detail: [...detailImgs].slice(0, 40),
+            };
           }
         });
-        // 扁平化合并所有frame结果并去重
-        const allCaptured = imgResults.flatMap(r => r.result || []).filter(Boolean);
-        grabbedImages = [...new Set(allCaptured)];
+
+        // 合并所有frame结果去重
+        const mainSet = new Set(), detailSet = new Set();
+        imgResults.forEach(r => {
+          (r.result?.main || []).forEach(u => mainSet.add(u));
+          (r.result?.detail || []).forEach(u => detailSet.add(u));
+        });
+        grabbedImages = [...mainSet];
+        grabbedDetailImages = [...detailSet];
       } catch(e) {}
 
-      // 第四步：抓其他数据（标题、价格、规格）
+      // 第四步：抓标题、价格、规格等
       const res = await chrome.scripting.executeScript({ target: { tabId }, func: extractProductData });
       const product = res?.[0]?.result;
-      if (product && grabbedImages.length > 0) product.images = grabbedImages;
+      if (product) {
+        if (grabbedImages.length > 0) product.images = grabbedImages;
+        if (grabbedDetailImages.length > 0) product.detailImages = grabbedDetailImages;
+      }
 
       if (product && product.title) {
         currentProduct = product;
