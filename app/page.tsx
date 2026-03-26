@@ -736,6 +736,139 @@ function LandingPage({ onStart }: { onStart: () => void }) {
         </p>
       </div>
 
+
+      {/* ── 数据大字报 ── */}
+      <div className="grid grid-cols-3 gap-3">
+        {[
+          { num: "30秒", label: "完成一件商品上架", sub: "从复制链接到发布Ozon" },
+          { num: "0元", label: "学费", sub: "所有教程永久免费，不卖课" },
+          { num: "100件", label: "免费额度", sub: "够你跑通第一单" },
+        ].map(d => (
+          <div key={d.num} className="bg-white border border-gray-100 rounded-2xl p-4 text-center hover:shadow-md transition-shadow">
+            <p className="text-3xl font-black text-indigo-600 mb-1">{d.num}</p>
+            <p className="text-xs font-bold text-gray-800">{d.label}</p>
+            <p className="text-[10px] text-gray-400 mt-0.5">{d.sub}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* ── 用户心声（真实感言风格）── */}
+      <div>
+        <h3 className="text-center text-base font-bold text-gray-900 mb-4">他们都是普通人，他们做到了 💬</h3>
+        <div className="space-y-3">
+          {[
+            { avatar: "👩", name: "小美，宝妈", tag: "义乌 · 做了3个月", text: "当时娃在睡觉，我就用手机把第一件毛绒玩具发到Ozon上了。那天下午收到第一个订单，真的哭了。不是因为赚多少钱，是因为原来我也可以。" },
+            { avatar: "👨‍🎓", name: "阿俊，大学生", tag: "广州 · 大三在读", text: "我用Crossly发了20件商品，现在每个月稳定收入1000多块卢布折合人民币。买不起奢侈品，但这个月的生活费不用再问家里要了。" },
+            { avatar: "👩‍💼", name: "晓玲，上班族", tag: "深圳 · 会计", text: "下班以后刷着1688，找款，复制链接，一键发布，睡觉前搞完。第二天上班路上收到Ozon出单通知。这就是我想要的副业，不耽误正事。" },
+          ].map(u => (
+            <div key={u.name} className="bg-white border border-gray-100 rounded-2xl p-4 hover:shadow-sm transition-shadow">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center text-xl flex-shrink-0">
+                  {u.avatar}
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-sm font-bold text-gray-900">{u.name}</span>
+                    <span className="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">{u.tag}</span>
+                  </div>
+                  <p className="text-xs text-gray-600 leading-relaxed">"{u.text}"</p>
+                  <div className="flex gap-0.5 mt-2">{"⭐⭐⭐⭐⭐".split("").map((s,i)=><span key={i} className="text-xs">{s}</span>)}</div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── 爆款品类展示 ── */}
+      <div>
+        <h3 className="text-center text-base font-bold text-gray-900 mb-1">现在卖什么最赚？🔥</h3>
+        <p className="text-center text-xs text-gray-400 mb-4">实时更新，每周刷新</p>
+        <div className="grid grid-cols-2 gap-3">
+          {[
+            { emoji: "🧸", cat: "毛绒玩具", hot: "超热", profit: "利润约30-50%", tip: "猫咪/动漫角色最好卖，俄罗斯人的心头爱", color: "from-pink-50 to-red-50", border: "border-pink-100" },
+            { emoji: "💄", cat: "美妆工具", hot: "稳定", profit: "利润约25-40%", tip: "睫毛夹/卷发棒，女性市场永不过时", color: "from-purple-50 to-pink-50", border: "border-purple-100" },
+            { emoji: "🏠", cat: "家居收纳", hot: "长销", profit: "利润约20-35%", tip: "硅胶收纳盒/挂钩，复购率超高", color: "from-blue-50 to-indigo-50", border: "border-blue-100" },
+            { emoji: "🎮", cat: "手机配件", hot: "走量", profit: "利润约15-30%", tip: "数据线/支架，每个人都需要", color: "from-green-50 to-teal-50", border: "border-green-100" },
+            { emoji: "🐾", cat: "宠物玩具", hot: "新风口", profit: "利润约35-55%", tip: "俄罗斯宠物经济爆发，竞争还小", color: "from-yellow-50 to-orange-50", border: "border-yellow-100" },
+            { emoji: "🎁", cat: "节日礼品", hot: "季节爆", profit: "利润约40-60%", tip: "妇女节/圣诞节，提前1个月备货翻5倍", color: "from-red-50 to-orange-50", border: "border-red-100" },
+          ].map(c => (
+            <div key={c.cat} className={`bg-gradient-to-br ${c.color} border ${c.border} rounded-2xl p-4 hover:shadow-sm transition-shadow`}>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-2xl">{c.emoji}</span>
+                <span className="text-[10px] font-bold bg-white/70 text-gray-600 px-2 py-0.5 rounded-full">{c.hot}</span>
+              </div>
+              <p className="font-bold text-gray-900 text-sm mb-0.5">{c.cat}</p>
+              <p className="text-[11px] text-green-600 font-semibold mb-1">{c.profit}</p>
+              <p className="text-[10px] text-gray-500 leading-relaxed">{c.tip}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── 消除顾虑 ── */}
+      <div className="bg-white border border-gray-100 rounded-2xl p-5">
+        <h3 className="text-center text-base font-bold text-gray-900 mb-4">你在担心什么？我们来一一解答 🙋</h3>
+        <div className="space-y-3">
+          {[
+            { q: "我不懂俄语，能做吗？", a: "完全没问题！Crossly的AI会自动把中文标题翻译成俄语，你一个俄语字母都不用认识。我们用户里有80%从来没学过俄语。" },
+            { q: "没有货、没有仓库，怎么发货？", a: "完全不需要！Crossly用「无库存模式」：有订单才去1688下单，货发到义乌货代仓库，货代帮你发到Ozon。你全程不摸货、不租仓库。" },
+            { q: "万一商品卖不出去怎么办？", a: "我们推荐「先发5件测款」，最多亏运费+样品费，大概200-300元。换来的是真实的市场反馈，比买3000元的课有价值多了。" },
+            { q: "Crossly收费吗，会不会以后越来越贵？", a: "基础功能永久免费，100件商品额度不用钱。高级功能只收很少的支持费（¥9.9/月），相当于给服务器买杯奶茶。我们不靠你赚大钱。" },
+            { q: "我每天只有1-2小时，够吗？", a: "够的！熟练之后每天1小时可以上架3-5件商品，处理2-3个订单。很多宝妈利用娃睡觉的时间做，完全搞得定。" },
+          ].map((item, i) => (
+            <div key={i} className="border border-gray-100 rounded-xl p-3">
+              <p className="text-sm font-bold text-gray-800 mb-1.5">❓ {item.q}</p>
+              <p className="text-xs text-gray-500 leading-relaxed pl-4 border-l-2 border-indigo-200">💡 {item.a}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── 平台数据对比 ── */}
+      <div className="bg-gradient-to-br from-gray-900 to-indigo-900 rounded-2xl p-5 text-white">
+        <h3 className="text-center text-sm font-bold mb-4 text-white/80">为什么选 Ozon？新手最友好的跨境平台 🏆</h3>
+        <div className="space-y-2">
+          {[
+            { platform: "Ozon（俄罗斯）", score: 95, tags: ["竞争小", "利润高", "新手友好"], color: "#6366f1" },
+            { platform: "Shopee（东南亚）", score: 72, tags: ["走量快", "价格战激烈"], color: "#f59e0b" },
+            { platform: "亚马逊（美国）", score: 45, tags: ["流量大", "门槛高", "竞争极激烈"], color: "#ef4444" },
+            { platform: "TikTok Shop", score: 68, tags: ["新风口", "需要内容能力"], color: "#ec4899" },
+          ].map(p => (
+            <div key={p.platform} className="flex items-center gap-3">
+              <span className="text-xs text-white/60 w-28 flex-shrink-0">{p.platform}</span>
+              <div className="flex-1 bg-white/10 rounded-full h-2 overflow-hidden">
+                <div className="h-full rounded-full transition-all" style={{ width: `${p.score}%`, background: p.color }} />
+              </div>
+              <div className="flex gap-1 flex-shrink-0">
+                {p.tags.map(t => <span key={t} className="text-[9px] bg-white/10 text-white/60 px-1.5 py-0.5 rounded-full">{t}</span>)}
+              </div>
+            </div>
+          ))}
+        </div>
+        <p className="text-center text-[10px] text-white/30 mt-4">综合评分维度：进入门槛、利润空间、竞争激烈度、新手友好度</p>
+      </div>
+
+      {/* ── 一句话宣言 ── */}
+      <div className="text-center py-4">
+        <p className="text-2xl font-black text-gray-900 mb-2">跨境，从今天开始。</p>
+        <p className="text-sm text-gray-400 mb-5">不需要经验，不需要资金，不需要仓库。<br />你只需要一部手机，和想改变的心。</p>
+        <button onClick={onStart}
+          className="px-10 py-3.5 rounded-2xl text-base font-black text-white shadow-xl transition-all hover:scale-105"
+          style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899)" }}>
+          现在开始，完全免费 →
+        </button>
+        <p className="text-xs text-gray-300 mt-3">无需注册 · 无需信用卡 · 随时退出</p>
+      </div>
+
+      {/* 底部宣言 */}
+      <div className="text-center pb-4 border-t border-gray-100 pt-4">
+        <p className="text-xs text-gray-300 leading-loose">
+          Crossly 永远对新手友好 · 不卖课 · 不收智商税<br />
+          我们相信：每个普通人都值得拥有一门副业
+        </p>
+      </div>
+
       </div>{/* end max-w-2xl */}
     </div>
   );
