@@ -307,6 +307,36 @@ export default function Home() {
 
       {/* Main content */}
       <div className="flex-1 ml-56">
+        {/* 搞笑广告走马灯 */}
+        <div className="overflow-hidden bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white text-xs font-medium">
+          <div className="flex animate-marquee whitespace-nowrap py-1.5">
+            {[
+              "🧸 据说卖毛绒玩具的人，睡觉都是笑着的",
+              "💰 今日份励志：你的第一个卢布，正在义乌的某个仓库等你",
+              "🚀 Crossly 用户平均上架速度：30秒。你邻居还在手动填表格",
+              "😂 不懂俄语没关系，AI也不懂，但它会翻译",
+              "🏆 本周最励志：一位宝妈边喂奶边上架了3件商品",
+              "📦 货代：我又收到Crossly的货了。Crossly：😎",
+              "💡 跨境秘诀只有一个：先发5件，别问为什么，先发就对了",
+              "🌍 你知道吗？俄罗斯人在用你卖的抱枕睡觉，他们不知道你是谁，但他们睡得很好",
+              "⚡ Ozon刚刚又来了一个订单，主人，快去1688补货吧",
+              "🎯 选品时间超过1小时=选品恐惧症，治疗方法：随便选一个先发出去",
+              "🤖 AI翻译提示：「毛茸茸的猫咪」翻成俄语后，俄罗斯人疯狂下单",
+              "💸 广告位招租，价格面议，付卢布也行",
+            ].concat([
+              "🧸 据说卖毛绒玩具的人，睡觉都是笑着的",
+              "💰 今日份励志：你的第一个卢布，正在义乌的某个仓库等你",
+              "🚀 Crossly 用户平均上架速度：30秒。你邻居还在手动填表格",
+              "😂 不懂俄语没关系，AI也不懂，但它会翻译",
+            ]).map((ad, i) => (
+              <span key={i} className="inline-flex items-center gap-1 px-6">
+                <span>{ad}</span>
+                <span className="text-white/30 px-4">·</span>
+              </span>
+            ))}
+          </div>
+        </div>
+
         {/* Top bar */}
         <header className="bg-white/80 backdrop-blur border-b border-gray-200/80 px-4 py-2.5 flex items-center justify-between sticky top-0 z-10">
           <div>
