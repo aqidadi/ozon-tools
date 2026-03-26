@@ -549,315 +549,233 @@ function ComingSoonPage({ tab }: { tab: string }) {
 
 function LandingPage({ onStart }: { onStart: () => void }) {
   const { user } = useAuth();
-  const [slide, setSlide] = useState(0);
 
-  const SLIDES = [
-    {
-      id: "hero",
-      label: "我们是谁",
-      content: (
-        <div className="flex flex-col items-center justify-center h-full text-center px-6">
+  return (
+    <div className="space-y-5 pb-8">
+
+      {/* ── Hero 全幅深色 ── */}
+      <div className="-mx-6 -mt-6 relative overflow-hidden text-center"
+        style={{ background: "linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)" }}>
+        <div className="absolute inset-0 opacity-25 pointer-events-none"
+          style={{ backgroundImage: "radial-gradient(circle at 25% 50%, #6366f1 0%, transparent 55%), radial-gradient(circle at 75% 25%, #a855f7 0%, transparent 45%)" }} />
+        <div className="relative z-10 px-6 pt-10 pb-8 max-w-3xl mx-auto">
           <div className="inline-flex items-center gap-2 bg-white/10 text-white/70 text-xs font-semibold px-4 py-1.5 rounded-full mb-5 border border-white/20">
-            🚀 Crossly · 跨境工具箱
+            🚀 Crossly · 让跨境像微商一样简单
           </div>
           <h1 className="text-4xl font-black text-white leading-tight mb-4">
             让跨境像<span style={{ background: "linear-gradient(90deg, #a78bfa, #60a5fa)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>微商</span>一样简单
           </h1>
-          <p className="text-white/60 text-sm mb-6 max-w-md leading-relaxed">
-            在 Crossly，我们不只提供工具，我们提供可能。<br/>
-            让每一个普通人都能 0 门槛赚到外币。
-          </p>
-          <div className="grid grid-cols-2 gap-3 w-full max-w-md mb-6">
+          <div className="grid grid-cols-2 gap-3 mb-6 text-left max-w-xl mx-auto">
             {[
-              { icon: "🚫", t: "零基础", s: "无需外语，无需PS，AI全搞定" },
-              { icon: "📚", t: "零门槛", s: "全网干货免费学，不卖课" },
-              { icon: "⚡", t: "全自动", s: "复制链接，剩下交给我们" },
-              { icon: "🌍", t: "全世界", s: "Ozon/Shopee/TikTok全平台" },
+              { icon: "✨", t: "我们不只提供工具，我们提供可能", s: "普通人也能轻松开启跨境之路" },
+              { icon: "🚫", t: "零基础：无需外语，无需PS", s: "AI帮你翻译标题、处理图片" },
+              { icon: "📚", t: "零门槛：全网干货免费学", s: "不卖课，不收智商税，永久免费" },
+              { icon: "⚡", t: "全自动：复制链接交给我们", s: "30秒一件商品，全球平台同步" },
             ].map(c => (
-              <div key={c.t} className="bg-white/10 rounded-2xl p-3 text-left border border-white/10">
-                <p className="text-base mb-1">{c.icon}</p>
-                <p className="text-white font-bold text-sm">{c.t}</p>
-                <p className="text-white/50 text-xs">{c.s}</p>
-              </div>
-            ))}
-          </div>
-          <button onClick={onStart}
-            className="px-8 py-3 rounded-2xl text-base font-black text-white shadow-xl transition-all hover:scale-105"
-            style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)" }}>
-            {user ? "进入工作台 →" : "免费开始，不用注册 →"}
-          </button>
-        </div>
-      ),
-    },
-    {
-      id: "why",
-      label: "为什么选我们",
-      content: (
-        <div className="flex flex-col justify-center h-full px-6 py-4">
-          <h2 className="text-white text-xl font-black text-center mb-2">为什么选 Crossly？</h2>
-          <p className="text-white/50 text-xs text-center mb-6">三个理由，打消你所有顾虑</p>
-
-          {/* 3大核心卖点 */}
-          <div className="space-y-3 mb-6">
-            <div className="rounded-2xl p-5 border border-white/20 relative overflow-hidden"
-              style={{ background: "linear-gradient(135deg, rgba(99,102,241,0.3), rgba(99,102,241,0.1))" }}>
-              <div className="absolute right-4 top-3 text-5xl opacity-20">📦</div>
-              <p className="text-indigo-300 text-xs font-bold mb-1">第一条</p>
-              <p className="text-white text-lg font-black mb-1">无货源，无库存</p>
-              <p className="text-white/60 text-sm leading-relaxed">
-                有订单才去1688下单，货发义乌货代，货代帮你发全球。<br/>
-                <span className="text-white/80 font-medium">你永远不摸货、不租仓库、不压钱。</span>
-              </p>
-            </div>
-
-            <div className="rounded-2xl p-5 border border-white/20 relative overflow-hidden"
-              style={{ background: "linear-gradient(135deg, rgba(168,85,247,0.3), rgba(168,85,247,0.1))" }}>
-              <div className="absolute right-4 top-3 text-5xl opacity-20">🆓</div>
-              <p className="text-purple-300 text-xs font-bold mb-1">第二条</p>
-              <p className="text-white text-lg font-black mb-1">注册不要钱</p>
-              <p className="text-white/60 text-sm leading-relaxed">
-                Crossly 基础功能永久免费，100件商品免费发。<br/>
-                <span className="text-white/80 font-medium">赚到钱了再支持我们，赚不到你一分不亏。</span>
-              </p>
-            </div>
-
-            <div className="rounded-2xl p-5 border border-white/20 relative overflow-hidden"
-              style={{ background: "linear-gradient(135deg, rgba(236,72,153,0.3), rgba(236,72,153,0.1))" }}>
-              <div className="absolute right-4 top-3 text-5xl opacity-20">🛡️</div>
-              <p className="text-pink-300 text-xs font-bold mb-1">第三条</p>
-              <p className="text-white text-lg font-black mb-1">卖不出去也没损失</p>
-              <p className="text-white/60 text-sm leading-relaxed">
-                先发5件测试，只花运费样品费约200-300元。<br/>
-                <span className="text-white/80 font-medium">卖不动就换款，反正没压库存，不怕亏。</span>
-              </p>
-            </div>
-          </div>
-
-          <button onClick={onStart}
-            className="w-full py-3 rounded-2xl text-sm font-black text-white transition-all hover:scale-[1.02]"
-            style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)" }}>
-            0风险开始，现在就试试 →
-          </button>
-        </div>
-      ),
-    },
-    {
-      id: "stories",
-      label: "他们做到了",
-      content: (
-        <div className="flex flex-col justify-center h-full px-6 py-4">
-          <h2 className="text-white text-xl font-black text-center mb-5">普通人，真的做到了 💬</h2>
-          <div className="space-y-3">
-            {[
-              { avatar: "👩", name: "小美", tag: "宝妈 · 义乌 · Shopee · 做了3个月", text: "娃在睡觉，我用手机把第一件毛绒玩具上架到Shopee。那天下午收到第一个订单，真的哭了。原来我也可以。" },
-              { avatar: "👨‍🎓", name: "阿俊", tag: "大学生 · 广州 · 东南亚市场 · 大三在读", text: "用Crossly把商品卖到东南亚，每月稳定赚1000多块外币。这个月生活费不用问家里要了，那种感觉没法形容。" },
-              { avatar: "👩‍💼", name: "晓玲", tag: "上班族 · 深圳 · TikTok Shop · 会计", text: "下班刷1688找款，复制链接一键发布，AI自动翻译。第二天上班路上收到TikTok Shop出单通知。这就是我想要的副业。" },
-            ].map(u => (
-              <div key={u.name} className="flex items-start gap-3 bg-white/8 rounded-xl p-3 border border-white/10">
-                <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-lg flex-shrink-0">{u.avatar}</div>
+              <div key={c.t} className="flex items-start gap-3 bg-white/10 rounded-2xl px-4 py-3 border border-white/10">
+                <span className="text-lg flex-shrink-0">{c.icon}</span>
                 <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-white font-bold text-sm">{u.name}</span>
-                    <span className="text-white/30 text-[10px]">{u.tag}</span>
-                  </div>
-                  <p className="text-white/60 text-xs leading-relaxed">"{u.text}"</p>
+                  <p className="text-white font-bold text-xs leading-snug mb-0.5">{c.t}</p>
+                  <p className="text-white/45 text-[10px]">{c.s}</p>
                 </div>
               </div>
             ))}
           </div>
-          <button onClick={onStart}
-            className="mt-5 w-full py-3 rounded-2xl text-sm font-black text-white transition-all hover:scale-[1.02]"
-            style={{ background: "linear-gradient(135deg, #6366f1, #ec4899)" }}>
-            我也要开始 →
-          </button>
+          <div className="flex items-center justify-center gap-3">
+            <button onClick={onStart}
+              className="px-8 py-3 rounded-2xl text-sm font-black text-white shadow-xl transition-all hover:scale-105"
+              style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)" }}>
+              {user ? "进入工作台 →" : "免费开始，不用注册 →"}
+            </button>
+            <span className="text-white/30 text-xs">无需信用卡</span>
+          </div>
         </div>
-      ),
-    },
-    {
-      id: "platforms",
-      label: "选平台",
-      content: (
-        <div className="flex flex-col h-full px-5 py-4 overflow-y-auto">
-          <h2 className="text-white text-xl font-black text-center mb-1">全球平台怎么选？🌍</h2>
-          <p className="text-white/40 text-xs text-center mb-4">没有最好，只有最适合你的</p>
-          <div className="space-y-2.5">
-            {[
-              {
-                flag: "🇷🇺", name: "Ozon", region: "俄罗斯",
-                score: 92, color: "#6366f1",
-                pros: ["竞争极小，中国卖家少", "溢价高，利润丰厚", "无需库存直接发货", "新手最友好"],
-                cons: ["汇率有波动", "需要科学上网操作后台"],
-                best: "新手首选 🏆",
-                bestColor: "bg-indigo-500",
-              },
-              {
-                flag: "🌏", name: "Shopee", region: "东南亚·台湾",
-                score: 75, color: "#f59e0b",
-                pros: ["体量大，用户多", "物流便宜", "中国卖家熟悉"],
-                cons: ["价格战激烈", "买家很会砍价", "利润相对薄"],
-                best: "走量选这里",
-                bestColor: "bg-amber-500",
-              },
-              {
-                flag: "🎵", name: "TikTok Shop", region: "东南亚·美国·英国",
-                score: 78, color: "#ec4899",
-                pros: ["爆单快，内容驱动", "佣金低（2-8%）", "年轻用户消费力强"],
-                cons: ["需要会拍视频", "流量不稳定", "退货率较高"],
-                best: "会拍视频选这",
-                bestColor: "bg-pink-500",
-              },
-              {
-                flag: "🌟", name: "Lazada", region: "东南亚·马来/泰国",
-                score: 65, color: "#10b981",
-                pros: ["阿里系，物流稳定", "马来西亚/泰国市场强", "入驻门槛低"],
-                cons: ["竞争日趋激烈", "流量不如Shopee", "部分品类饱和"],
-                best: "东南亚补充战场",
-                bestColor: "bg-emerald-500",
-              },
-              {
-                flag: "🇧🇷", name: "Mercado Libre", region: "拉美·巴西/墨西哥",
-                score: 70, color: "#8b5cf6",
-                pros: ["竞争最少", "市场增长快", "利润高"],
-                cons: ["物流复杂", "葡萄牙语/西班牙语", "退款纠纷多"],
-                best: "冒险家的蓝海",
-                bestColor: "bg-violet-500",
-              },
-              {
-                flag: "📦", name: "亚马逊", region: "美国·欧洲·日本",
-                score: 45, color: "#ef4444",
-                pros: ["流量最大", "品牌背书强", "全球最大电商"],
-                cons: ["门槛极高", "竞争极激烈", "FBA仓储费贵", "封号风险大"],
-                best: "有经验再来",
-                bestColor: "bg-red-500",
-              },
-            ].map(p => (
-              <div key={p.name} className="bg-white/8 rounded-2xl p-4 border border-white/10">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xl">{p.flag}</span>
-                    <div>
-                      <span className="text-white font-black text-sm">{p.name}</span>
-                      <span className="text-white/40 text-xs ml-1.5">{p.region}</span>
-                    </div>
-                  </div>
-                  <span className={`text-[10px] font-bold text-white px-2 py-0.5 rounded-full ${p.bestColor}`}>{p.best}</span>
+      </div>
+
+      {/* ── 3大核心优势 ── */}
+      <div className="space-y-3">
+        <h2 className="text-center text-base font-black text-gray-900">为什么选 Crossly？</h2>
+        <div className="grid grid-cols-3 gap-3">
+          {[
+            { emoji: "📦", title: "无货源无库存", desc: "有订单才下单，货代全代办，永远不摸货不压钱", color: "from-indigo-50 to-blue-50", border: "border-indigo-100", tag: "零风险" },
+            { emoji: "🆓", title: "注册不要钱", desc: "基础功能永久免费，100件商品额度，赚到钱再支持", color: "from-purple-50 to-indigo-50", border: "border-purple-100", tag: "零成本" },
+            { emoji: "🛡️", title: "卖不出去没损失", desc: "先发5件测款，只花200-300元，卖不动随时换款", color: "from-pink-50 to-rose-50", border: "border-pink-100", tag: "零损失" },
+          ].map(c => (
+            <div key={c.title} className={`bg-gradient-to-br ${c.color} border ${c.border} rounded-2xl p-4 text-center`}>
+              <div className="text-2xl mb-2">{c.emoji}</div>
+              <div className="text-[10px] font-bold text-white bg-indigo-500 px-2 py-0.5 rounded-full inline-block mb-1.5">{c.tag}</div>
+              <p className="font-black text-gray-900 text-xs mb-1">{c.title}</p>
+              <p className="text-[10px] text-gray-500 leading-relaxed">{c.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── 数据大字报 ── */}
+      <div className="grid grid-cols-3 gap-3">
+        {[
+          { num: "30秒", label: "完成一件商品上架", sub: "从链接到发布全自动" },
+          { num: "0元", label: "学费永远免费", sub: "不卖课·不收智商税" },
+          { num: "100件", label: "免费商品额度", sub: "够你跑通第一单" },
+        ].map(d => (
+          <div key={d.num} className="bg-white border border-gray-100 rounded-2xl p-4 text-center shadow-sm">
+            <p className="text-2xl font-black text-indigo-600 mb-0.5">{d.num}</p>
+            <p className="text-xs font-bold text-gray-800">{d.label}</p>
+            <p className="text-[10px] text-gray-400 mt-0.5">{d.sub}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* ── 全球平台对比 ── */}
+      <div>
+        <h2 className="text-center text-base font-black text-gray-900 mb-1">选哪个平台？🌍</h2>
+        <p className="text-center text-xs text-gray-400 mb-3">没有最好，只有最适合你的</p>
+        <div className="space-y-2">
+          {[
+            { flag: "🇷🇺", name: "Ozon", region: "俄罗斯", score: 92, color: "#6366f1", pros: "竞争小·利润高·新手友好", cons: "需科学上网", tag: "新手首选 🏆", tagBg: "bg-indigo-500" },
+            { flag: "🌏", name: "Shopee", region: "东南亚·台湾", score: 75, color: "#f59e0b", pros: "走量快·物流便宜·中国卖家熟悉", cons: "价格战激烈·利润薄", tag: "走量之选", tagBg: "bg-amber-500" },
+            { flag: "🎵", name: "TikTok Shop", region: "东南亚·美国·英国", score: 78, color: "#ec4899", pros: "爆单快·佣金低·年轻用户多", cons: "需要拍视频·流量不稳", tag: "内容创作者", tagBg: "bg-pink-500" },
+            { flag: "🌟", name: "Lazada", region: "马来西亚·泰国", score: 65, color: "#10b981", pros: "阿里系·物流稳定·门槛低", cons: "流量不如Shopee", tag: "东南亚补充", tagBg: "bg-emerald-500" },
+            { flag: "🇧🇷", name: "Mercado Libre", region: "巴西·墨西哥", score: 70, color: "#8b5cf6", pros: "竞争极少·增长快·利润高", cons: "物流复杂·语言障碍", tag: "蓝海市场", tagBg: "bg-violet-500" },
+            { flag: "📦", name: "亚马逊", region: "美国·欧洲·日本", score: 45, color: "#ef4444", pros: "流量最大·品牌背书强", cons: "门槛高·竞争极激烈·封号风险", tag: "进阶再来", tagBg: "bg-red-500" },
+          ].map(p => (
+            <div key={p.name} className="bg-white border border-gray-100 rounded-xl px-4 py-3 flex items-center gap-3">
+              <span className="text-xl flex-shrink-0">{p.flag}</span>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="font-bold text-gray-900 text-sm">{p.name}</span>
+                  <span className="text-[9px] text-gray-400">{p.region}</span>
+                  <span className={`text-[9px] font-bold text-white px-1.5 py-0.5 rounded-full flex-shrink-0 ${p.tagBg}`}>{p.tag}</span>
                 </div>
-                {/* 进度条 */}
-                <div className="flex items-center gap-2 mb-2.5">
-                  <div className="flex-1 bg-white/10 rounded-full h-1.5 overflow-hidden">
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="flex-1 bg-gray-100 rounded-full h-1.5">
                     <div className="h-full rounded-full" style={{ width: `${p.score}%`, background: p.color }} />
                   </div>
-                  <span className="text-white/40 text-[10px] w-6 flex-shrink-0">{p.score}</span>
+                  <span className="text-[10px] text-gray-400 flex-shrink-0">{p.score}分</span>
                 </div>
-                <div className="flex gap-3">
-                  <div className="flex-1">
-                    <p className="text-green-400 text-[10px] font-bold mb-1">✅ 优势</p>
-                    {p.pros.map(t => <p key={t} className="text-white/50 text-[10px] leading-relaxed">· {t}</p>)}
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-red-400 text-[10px] font-bold mb-1">⚠️ 注意</p>
-                    {p.cons.map(t => <p key={t} className="text-white/50 text-[10px] leading-relaxed">· {t}</p>)}
-                  </div>
+                <p className="text-[10px] text-green-600 truncate">✅ {p.pros}</p>
+                <p className="text-[10px] text-red-400 truncate">⚠️ {p.cons}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+        <p className="text-center text-[10px] text-gray-300 mt-2">Crossly 支持全平台一键上架，你选平台，我们搞定其余</p>
+      </div>
+
+      {/* ── 爆款品类 ── */}
+      <div>
+        <h2 className="text-center text-base font-black text-gray-900 mb-1">现在卖什么最赚？🔥</h2>
+        <p className="text-center text-xs text-gray-400 mb-3">经验证的爆款品类，新手首选</p>
+        <div className="grid grid-cols-3 gap-2">
+          {[
+            { e: "🧸", c: "毛绒玩具", p: "30-50%", h: true, t: "全球通吃" },
+            { e: "💄", c: "美妆工具", p: "25-40%", t: "女性必买" },
+            { e: "🏠", c: "家居收纳", p: "20-35%", t: "高复购" },
+            { e: "🐾", c: "宠物玩具", p: "35-55%", h: true, t: "新风口" },
+            { e: "🎮", c: "手机配件", p: "15-30%", t: "刚需走量" },
+            { e: "🎁", c: "节日礼品", p: "40-60%", t: "季节爆单" },
+          ].map(c => (
+            <div key={c.c} className="bg-white border border-gray-100 rounded-xl p-3 text-center">
+              <div className="text-xl mb-1">{c.e}</div>
+              <p className="text-xs font-bold text-gray-900">{c.c}</p>
+              <p className="text-[10px] text-green-600 font-semibold">{c.p}</p>
+              <div className="flex items-center justify-center gap-1 mt-1">
+                {c.h && <span className="text-[9px] bg-red-500 text-white px-1 py-0.5 rounded-full font-bold">热</span>}
+                <span className="text-[9px] text-gray-400">{c.t}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── 用户故事 ── */}
+      <div>
+        <h2 className="text-center text-base font-black text-gray-900 mb-3">普通人，真的做到了 💬</h2>
+        <div className="space-y-3">
+          {[
+            { avatar: "👩", name: "小美，宝妈", tag: "义乌·Shopee·做了3个月", text: "娃在睡觉，我用手机把第一件毛绒玩具上架到Shopee。那天下午收到第一个订单，真的哭了。原来我也可以。" },
+            { avatar: "👨‍🎓", name: "阿俊，大学生", tag: "广州·东南亚市场·大三在读", text: "用Crossly把商品卖到东南亚，每月稳定赚1000多块外币。这个月生活费不用问家里要了。" },
+            { avatar: "👩‍💼", name: "晓玲，上班族", tag: "深圳·TikTok Shop·会计", text: "下班刷1688找款，复制链接一键发布，AI自动翻译。第二天上班路上收到出单通知。这就是我想要的副业。" },
+          ].map(u => (
+            <div key={u.name} className="bg-white border border-gray-100 rounded-2xl p-4 flex items-start gap-3">
+              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center text-lg flex-shrink-0">{u.avatar}</div>
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-sm font-bold text-gray-900">{u.name}</span>
+                  <span className="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">{u.tag}</span>
                 </div>
+                <p className="text-xs text-gray-600 leading-relaxed">"{u.text}"</p>
+                <p className="text-yellow-400 text-xs mt-1.5">⭐⭐⭐⭐⭐</p>
               </div>
-            ))}
-          </div>
-          <p className="text-white/20 text-[10px] text-center mt-3 pb-2">Crossly 支持全平台上架，你选好平台，我们帮你搞定</p>
+            </div>
+          ))}
         </div>
-      ),
-    },
-    {
-      id: "faq",
-      label: "你在担心什么",
-      content: (
-        <div className="flex flex-col justify-center h-full px-6 py-4">
-          <h2 className="text-white text-xl font-black text-center mb-4">你在担心什么？🙋</h2>
-          <div className="space-y-2.5 mb-5">
-            {[
-              { q: "不懂外语能做吗？", a: "完全可以！AI自动翻译标题和描述，你一个字母不用认识" },
-              { q: "没仓库，货放哪？", a: "不需要仓库！有订单才去1688下单，发到义乌货代，货代帮你搞定一切" },
-              { q: "卖不出去怎么办？", a: "先发5件测款，最多亏200-300元，换来真实市场反馈，比买课划算" },
-              { q: "每天只有1-2小时够吗？", a: "够！熟练后每天1小时能上架3-5件，很多宝妈利用娃睡觉时间做" },
-              { q: "Crossly收费贵吗？", a: "基础功能永久免费，支持费只要¥9.9/月，相当于给服务器买杯奶茶" },
-            ].map(item => (
-              <div key={item.q} className="bg-white/8 rounded-xl px-4 py-2.5 border border-white/10">
-                <p className="text-white font-semibold text-xs mb-1">❓ {item.q}</p>
-                <p className="text-white/50 text-xs leading-relaxed">💡 {item.a}</p>
-              </div>
-            ))}
-          </div>
-          <div className="flex gap-3">
-            <button onClick={onStart}
-              className="flex-1 py-2.5 rounded-2xl text-sm font-bold text-white"
-              style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)" }}>
-              消除顾虑，免费开始 →
-            </button>
-          </div>
+      </div>
+
+      {/* ── 消除顾虑 ── */}
+      <div>
+        <h2 className="text-center text-base font-black text-gray-900 mb-3">你在担心什么？🙋</h2>
+        <div className="space-y-2">
+          {[
+            { q: "不懂外语能做吗？", a: "完全没问题！AI自动翻译标题和描述，你一个字母不用认识" },
+            { q: "没仓库，货放哪？", a: "不需要仓库！有订单才去1688下单，发到义乌货代，全程不摸货" },
+            { q: "卖不出去怎么办？", a: "先发5件测款，最多亏200-300元，换来真实市场反馈，随时换款" },
+            { q: "每天只有1-2小时够吗？", a: "够！熟练后每天1小时能上架3-5件，很多宝妈利用娃睡觉时间做" },
+            { q: "Crossly收费贵吗？", a: "基础功能永久免费，支持费¥9.9/月，相当于给服务器买杯奶茶" },
+          ].map(item => (
+            <div key={item.q} className="bg-white border border-gray-100 rounded-xl px-4 py-3">
+              <p className="text-sm font-bold text-gray-800 mb-1">❓ {item.q}</p>
+              <p className="text-xs text-gray-500 leading-relaxed pl-3 border-l-2 border-indigo-200">💡 {item.a}</p>
+            </div>
+          ))}
         </div>
-      ),
-    },
-    {
-      id: "support",
-      label: "支持我们",
-      content: (
-        <div className="flex flex-col justify-center h-full px-6 py-4 text-center">
-          <div className="text-4xl mb-3">🔋</div>
-          <h2 className="text-white text-xl font-black mb-2">给 Crossly 充个电？</h2>
-          <p className="text-white/60 text-sm mb-1">Crossly 所有功能永远对新手免费。</p>
-          <p className="text-white/60 text-sm mb-5">但服务器、AI翻译都需要成本。<br/>
-            <span className="text-pink-400 font-semibold">如果我们帮到了你，请支持我们活下去 ❤️</span>
+      </div>
+
+      {/* ── 给Crossly充电 ── */}
+      <div className="rounded-2xl overflow-hidden border border-pink-100 bg-gradient-to-br from-pink-50 to-purple-50">
+        <div className="p-5 text-center">
+          <div className="text-3xl mb-2">🔋</div>
+          <h2 className="text-base font-black text-gray-900 mb-1">给 Crossly 充个电？</h2>
+          <p className="text-xs text-gray-500 mb-4 leading-relaxed">
+            所有功能永远免费开放。但服务器、AI翻译都需要成本。<br/>
+            <span className="text-pink-600 font-semibold">如果帮到了你，请支持我们活下去 ❤️</span>
           </p>
-          <div className="grid grid-cols-3 gap-3 mb-5">
+          <div className="grid grid-cols-3 gap-2 mb-4">
             {[
-              { emoji: "🧋", label: "喝杯奶茶", price: "¥9.9", sub: "跑1天服务器" },
-              { emoji: "🍜", label: "一顿午饭", price: "¥19.9", sub: "感谢最多 🙏", hot: true },
-              { emoji: "💪", label: "一年支持", price: "¥69", sub: "你是最强后盾" },
+              { e: "🧋", l: "喝杯奶茶", p: "¥9.9", s: "跑1天服务器" },
+              { e: "🍜", l: "一顿午饭", p: "¥19.9", s: "感谢最多 🙏", hot: true },
+              { e: "💪", l: "一年支持", p: "¥69", s: "最强后盾" },
             ].map(p => (
-              <div key={p.label} className={`rounded-2xl p-4 border-2 relative ${p.hot ? "border-pink-400 bg-white/15" : "border-white/10 bg-white/8"}`}>
-                {p.hot && <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-pink-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">感谢最多</div>}
-                <div className="text-xl mb-1">{p.emoji}</div>
-                <p className="text-white/60 text-[11px]">{p.label}</p>
-                <p className={`text-xl font-black ${p.hot ? "text-pink-400" : "text-white"}`}>{p.price}</p>
-                <p className="text-white/30 text-[10px]">{p.sub}</p>
+              <div key={p.l} className={`rounded-xl p-3 text-center border-2 relative bg-white ${p.hot ? "border-pink-400 shadow-md" : "border-pink-100"}`}>
+                {p.hot && <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-pink-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-full">感谢最多</div>}
+                <div className="text-lg mb-0.5">{p.e}</div>
+                <p className="text-[10px] text-gray-500">{p.l}</p>
+                <p className={`text-lg font-black ${p.hot ? "text-pink-500" : "text-gray-800"}`}>{p.p}</p>
+                <p className="text-[9px] text-gray-400">{p.s}</p>
               </div>
             ))}
           </div>
           <button onClick={onStart}
-            className="w-full py-3 rounded-2xl text-sm font-bold text-white"
+            className="w-full py-2.5 rounded-xl text-sm font-bold text-white"
             style={{ background: "linear-gradient(135deg, #ec4899, #8b5cf6)" }}>
             先免费用，赚到钱再支持我们 →
           </button>
-          <p className="text-white/30 text-xs mt-2">不充电也完全可以 · 免费额度100件商品</p>
-        </div>
-      ),
-    },
-  ];
-
-  const current = SLIDES[slide];
-
-  return (
-    <div className="-mx-6 -mt-6 flex flex-col overflow-hidden" style={{ height: "calc(100vh - 88px)" }}>
-      {/* 深色背景全屏 */}
-      <div className="flex-1 relative overflow-hidden"
-        style={{ background: "linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)" }}>
-        <div className="absolute inset-0 opacity-20 pointer-events-none"
-          style={{ backgroundImage: "radial-gradient(circle at 20% 50%, #6366f1 0%, transparent 55%), radial-gradient(circle at 80% 20%, #a855f7 0%, transparent 45%)" }} />
-
-        {/* 内容区 */}
-        <div className="relative z-10 h-full overflow-y-auto">
-          {current.content}
+          <p className="text-[10px] text-gray-400 mt-2">不充电也完全可以 · 免费额度100件</p>
         </div>
       </div>
 
-      {/* 底部Tab导航 */}
-      <div className="bg-white border-t border-gray-100 flex">
-        {SLIDES.map((s, i) => (
-          <button key={s.id} onClick={() => setSlide(i)}
-            className={`flex-1 py-2 text-[10px] font-semibold transition-colors ${slide === i ? "text-indigo-600 border-t-2 border-indigo-600 -mt-px bg-indigo-50/50" : "text-gray-400 hover:text-gray-600"}`}>
-            {s.label}
-          </button>
-        ))}
+      {/* ── 最终CTA ── */}
+      <div className="text-center py-4">
+        <p className="text-xl font-black text-gray-900 mb-2">跨境，从今天开始。</p>
+        <p className="text-xs text-gray-400 mb-4">不需要经验，不需要资金，不需要仓库。只需要一部手机。</p>
+        <button onClick={onStart}
+          className="px-10 py-3 rounded-2xl text-sm font-black text-white shadow-xl transition-all hover:scale-105"
+          style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899)" }}>
+          现在开始，完全免费 →
+        </button>
+        <p className="text-[10px] text-gray-300 mt-2">无需注册 · 无需信用卡 · 随时退出</p>
       </div>
+
     </div>
   );
 }
