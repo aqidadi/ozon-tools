@@ -175,8 +175,10 @@ function extractProductData() {
       if (!price) {
         const priceNums = [];
         for (const el of document.querySelectorAll("[class*='price'],[class*='Price']")) {
-          const n = parseFloat(el.textContent.replace(/[^\d.]/g, ""));
-          if (n > 0 && n < 99999) priceNums.push(n);
+          const text = el.textContent.replace(/[^\d.]/g, "").trim();
+          const n = parseFloat(text);
+          // 只取合理价格范围：0.1元 到 9999元，且小数点后不超过2位
+          if (n >= 0.1 && n < 9999 && /^\d+(\.\d{1,2})?$/.test(text)) priceNums.push(n);
         }
         if (priceNums.length) price = Math.min(...priceNums);
       }
@@ -309,8 +311,9 @@ function extractProductData() {
       if (monthlySales) noteParts.push(`月销${monthlySales}`);
       if (moq > 1) noteParts.push(`起订${moq}件`);
 
+      const urlHash = window.location.href.replace(/[^a-zA-Z0-9]/g, "").slice(-32);
       resolve({
-        id: crypto.randomUUID(),
+        id: "p_" + urlHash,
         title, titleRu: "", price: price || 0, weight: 0,
         images: mainImages, detailImages, specs, monthlySales, moq,
         sellPrices: {}, sellPriceRub: 0,
