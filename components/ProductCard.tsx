@@ -25,9 +25,10 @@ interface Props {
   settings: Settings;
   onUpdate: (id: string, updates: Partial<Product>) => void;
   onDelete: (id: string) => void;
+  accessToken?: string;
 }
 
-export function ProductCard({ product, settings, onUpdate, onDelete }: Props) {
+export function ProductCard({ product, settings, onUpdate, onDelete, accessToken }: Props) {
   const [expanded, setExpanded] = useState(false);
   const [selectedLang, setSelectedLang] = useState(product.targetLang || "ru");
   const [translating, setTranslating] = useState(false);
@@ -62,7 +63,7 @@ export function ProductCard({ product, settings, onUpdate, onDelete }: Props) {
         onUpdate(product.id, updates);
         await fetch("/api/product-update", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}) },
           body: JSON.stringify({ id: product.id, ...updates }),
         });
       }

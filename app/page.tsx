@@ -136,7 +136,7 @@ export default function Home() {
           setProducts((prev) => prev.map((item) => item.id === p.id ? { ...item, ...updates } : item));
           await fetch("/api/product-update", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "application/json", ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}) },
             body: JSON.stringify({ id: p.id, ...updates }),
           });
         }
@@ -431,6 +431,7 @@ export default function Home() {
                       settings={settings}
                       onUpdate={handleUpdateProduct}
                       onDelete={handleDeleteProduct}
+                      accessToken={accessToken || undefined}
                     />
                   ))}
                 </div>
