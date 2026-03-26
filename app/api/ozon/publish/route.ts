@@ -117,26 +117,53 @@ export async function POST(req: NextRequest) {
     } catch { /* 失败用标题作描述 */ }
   }
 
-  // ── 服务端图片缓存：把1688图片缓存到 Supabase，绕过防盗链 ──
+  // ── 服务端图片缓存：直接下载+上传到 Supabase，不走 HTTP 自调用 ──
   async function cacheImages(urls: string[]): Promise<string[]> {
     if (!urls || urls.length === 0) return [];
-    try {
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://www.crossly.cn";
-      const res = await fetch(`${baseUrl}/api/img-cache`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ urls: urls.filter(u => u?.startsWith("https://")) }),
-      });
-      const data = await res.json();
-      return (data.urls || []).filter(Boolean);
-    } catch {
-      return urls.filter(u => u?.startsWith("https://"));
+    const { createServiceClient } = await import("@/lib/supabase");
+    const sb = createServiceClient();
+    // 确保 bucket 存在
+    await sb.storage.createBucket("crossly", { public: true }).catch(() => {});
+
+    const results: string[] = [];
+    for (const rawUrl of urls.slice(0, 15)) {
+      if (!rawUrl?.startsWith("https://")) { results.push(""); continue; }
+
+      const urlHash = Buffer.from(rawUrl).toString("base64url").slice(0, 40);
+      const ext = rawUrl.match(/\.(jpg|jpeg|png|webp)/i)?.[1] || "jpg";
+      const filePath = `product-images/${urlHash}.${ext}`;
+
+      // 检查是否已缓存
+      const { data: pub } = sb.storage.from("crossly").getPublicUrl(filePath);
+      // 先尝试 head 请求验证文件是否存在
+      try {
+        const headRes = await fetch(pub.publicUrl, { method: "HEAD" });
+        if (headRes.ok) { results.push(pub.publicUrl); continue; }
+      } catch {}
+
+      // 下载原图（带 1688 Referer 绕过防盗链）
+      try {
+        const fetchRes = await fetch(rawUrl, {
+          headers: {
+            "Referer": "https://detail.1688.com/",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36",
+          },
+          signal: AbortSignal.timeout(12000),
+        });
+        if (!fetchRes.ok) { results.push(""); continue; }
+        const buf = await fetchRes.arrayBuffer();
+        const ct = fetchRes.headers.get("content-type") || "image/jpeg";
+        const { error } = await sb.storage.from("crossly").upload(filePath, buf, { contentType: ct, upsert: true });
+        if (error) { results.push(""); continue; }
+        results.push(pub.publicUrl);
+      } catch { results.push(""); }
     }
+    return results.filter(Boolean);
   }
 
   const rawImages = (product.images || []).filter((u: string) => u?.startsWith("https://"));
   const rawDetailImages = (product.detailImages || []).filter((u: string) => u?.startsWith("https://"));
-  const cachedImages = await cacheImages(rawImages.slice(0, 15));
+  const cachedImages = await cacheImages(rawImages.slice(0, 10));
   const cachedDetailImages = await cacheImages(rawDetailImages.slice(0, 15));
 
   // 构建Ozon商品数据结构
