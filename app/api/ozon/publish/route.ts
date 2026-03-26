@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
       // 价格库存
       price: String(product.sellPrice || 999),      // 售价（卢布）
       old_price: String(product.oldPrice || 0),     // 原价（可选）
-      vat: "0",                                      // 税率（0=无税）
+      vat: "0",                                      // 税率0%（中国卖家）
       
       // 类目（需要用Ozon类目ID）
       category_id: product.categoryId || 17028973,  // 默认：玩具类
@@ -54,14 +54,19 @@ export async function POST(req: NextRequest) {
       // 属性（必填项，根据类目不同）
       attributes: [
         {
-          id: 9048,       // 品牌
+          id: 9048,       // 型号名称（用于合并同款）
           complex_id: 0,
-          values: [{ value: product.brand || "Без бренда" }]
+          values: [{ value: (product.title || "").slice(0, 100) }]
         },
         {
-          id: 85,         // 名称
+          id: 85,         // 品牌（无品牌用固定id=126745801）
           complex_id: 0,
-          values: [{ value: product.title }]
+          values: [{ dictionary_value_id: product.brandId || 126745801, value: product.brand || "Нет бренда" }]
+        },
+        {
+          id: 8229,       // 类型
+          complex_id: 0,
+          values: [{ value: product.typeName || "Мягкая игрушка" }]
         },
       ],
     }]
