@@ -594,39 +594,50 @@ function LandingPage({ onStart }: { onStart: () => void }) {
       label: "为什么选我们",
       content: (
         <div className="flex flex-col justify-center h-full px-6 py-4">
-          <h2 className="text-white text-xl font-black text-center mb-5">为什么选 Crossly？🏆</h2>
-          <div className="space-y-3 mb-4">
-            {[
-              { icon: "🧸", t: "毛绒玩具", profit: "利润30-50%", hot: true, tip: "俄罗斯人的心头爱，全球月销5000件不是梦" },
-              { icon: "💄", t: "美妆工具", profit: "利润25-40%", tip: "女性市场永不过时，睫毛夹/卷发棒最好卖" },
-              { icon: "🏠", t: "家居收纳", profit: "利润20-35%", tip: "复购率超高，一个买家会买10件不同款" },
-              { icon: "🐾", t: "宠物玩具", profit: "利润35-55%", hot: true, tip: "新风口！竞争还小，现在进正是时候" },
-            ].map(c => (
-              <div key={c.t} className="flex items-center gap-3 bg-white/8 rounded-xl px-4 py-3 border border-white/10">
-                <span className="text-2xl">{c.icon}</span>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-white font-bold text-sm">{c.t}</span>
-                    {c.hot && <span className="text-[10px] bg-red-500 text-white px-1.5 py-0.5 rounded-full font-bold">热</span>}
-                  </div>
-                  <p className="text-white/40 text-xs">{c.tip}</p>
-                </div>
-                <span className="text-green-400 text-xs font-bold flex-shrink-0">{c.profit}</span>
-              </div>
-            ))}
+          <h2 className="text-white text-xl font-black text-center mb-2">为什么选 Crossly？</h2>
+          <p className="text-white/50 text-xs text-center mb-6">三个理由，打消你所有顾虑</p>
+
+          {/* 3大核心卖点 */}
+          <div className="space-y-3 mb-6">
+            <div className="rounded-2xl p-5 border border-white/20 relative overflow-hidden"
+              style={{ background: "linear-gradient(135deg, rgba(99,102,241,0.3), rgba(99,102,241,0.1))" }}>
+              <div className="absolute right-4 top-3 text-5xl opacity-20">📦</div>
+              <p className="text-indigo-300 text-xs font-bold mb-1">第一条</p>
+              <p className="text-white text-lg font-black mb-1">无货源，无库存</p>
+              <p className="text-white/60 text-sm leading-relaxed">
+                有订单才去1688下单，货发义乌货代，货代帮你发全球。<br/>
+                <span className="text-white/80 font-medium">你永远不摸货、不租仓库、不压钱。</span>
+              </p>
+            </div>
+
+            <div className="rounded-2xl p-5 border border-white/20 relative overflow-hidden"
+              style={{ background: "linear-gradient(135deg, rgba(168,85,247,0.3), rgba(168,85,247,0.1))" }}>
+              <div className="absolute right-4 top-3 text-5xl opacity-20">🆓</div>
+              <p className="text-purple-300 text-xs font-bold mb-1">第二条</p>
+              <p className="text-white text-lg font-black mb-1">注册不要钱</p>
+              <p className="text-white/60 text-sm leading-relaxed">
+                Crossly 基础功能永久免费，100件商品免费发。<br/>
+                <span className="text-white/80 font-medium">赚到钱了再支持我们，赚不到你一分不亏。</span>
+              </p>
+            </div>
+
+            <div className="rounded-2xl p-5 border border-white/20 relative overflow-hidden"
+              style={{ background: "linear-gradient(135deg, rgba(236,72,153,0.3), rgba(236,72,153,0.1))" }}>
+              <div className="absolute right-4 top-3 text-5xl opacity-20">🛡️</div>
+              <p className="text-pink-300 text-xs font-bold mb-1">第三条</p>
+              <p className="text-white text-lg font-black mb-1">卖不出去也没损失</p>
+              <p className="text-white/60 text-sm leading-relaxed">
+                先发5件测试，只花运费样品费约200-300元。<br/>
+                <span className="text-white/80 font-medium">卖不动就换款，反正没压库存，不怕亏。</span>
+              </p>
+            </div>
           </div>
-          <div className="grid grid-cols-3 gap-2">
-            {[
-              { n: "30秒", l: "一件商品上架" },
-              { n: "0元", l: "学费永远免费" },
-              { n: "100件", l: "免费起步额度" },
-            ].map(d => (
-              <div key={d.n} className="bg-white/10 rounded-xl p-3 text-center border border-white/10">
-                <p className="text-xl font-black text-indigo-300">{d.n}</p>
-                <p className="text-white/50 text-[10px] mt-0.5">{d.l}</p>
-              </div>
-            ))}
-          </div>
+
+          <button onClick={onStart}
+            className="w-full py-3 rounded-2xl text-sm font-black text-white transition-all hover:scale-[1.02]"
+            style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)" }}>
+            0风险开始，现在就试试 →
+          </button>
         </div>
       ),
     },
