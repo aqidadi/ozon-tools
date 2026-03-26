@@ -959,16 +959,18 @@ async function setTab(tab, settings, tabId, condition) {
 
             // 义乌购抓取
             if (host.includes("yiwugo.com")) {
-              const container = document.getElementById("productDesc");
-              if (!container) return [];
-              const imgs = Array.from(container.querySelectorAll("img"));
-              const finalUrls = imgs.map(img => {
-                const src = img.src;
-                if (src && src.includes("img.yiwugo.com")) {
-                  return src.split("?")[0].replace(/(_\d+x\d+)/, "");
-                }
-                return null;
-              }).filter(Boolean);
+              const detailBox = document.querySelector("#productDesc");
+              if (!detailBox) {
+                // 调试：告诉我实际存在哪些容器
+                const ids = Array.from(document.querySelectorAll("[id]")).map(el=>el.id).filter(Boolean).slice(0,20);
+                console.log("Crossly yiwugo: #productDesc不存在，页面id列表:", ids.join(","));
+                return [];
+              }
+              const allImgs = Array.from(detailBox.querySelectorAll("img"));
+              console.log("Crossly yiwugo: #productDesc内img数量:", allImgs.length);
+              const finalUrls = allImgs.map(i => i.src)
+                .filter(src => src.includes("img.yiwugo.com"))
+                .map(src => src.split("?")[0].replace(/(_\d+x\d+)/, ""));
               return [...new Set(finalUrls)];
             }
 
