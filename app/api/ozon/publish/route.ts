@@ -134,7 +134,7 @@ export async function POST(req: NextRequest) {
       success: true,
       taskId: data.result?.task_id,
       message: "商品已提交Ozon审核，通常1-3小时后上架",
-      raw: data,
+      raw: data,  // 把完整响应透传，方便前端调试
     });
 
   } catch (e) {

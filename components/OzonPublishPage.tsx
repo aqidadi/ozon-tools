@@ -148,11 +148,12 @@ export function OzonPublishPage({ products, settings }: Props) {
             const items = checkData.result?.items || [];
             const item = items[0];
             if (item) {
-              if (item.status === "imported") {
-                setStates(prev => ({ ...prev, [product.id]: { status: "ok", msg: `✅ 已上架 ₽${sell}（商品ID: ${item.product_id}）`, taskId: data.taskId, price: sell } }));
+              // Ozon 状态：imported / processed = 成功；failed / error = 失败
+              if (item.status === "imported" || item.status === "processed") {
+                setStates(prev => ({ ...prev, [product.id]: { status: "ok", msg: `✅ 已上架 ₽${sell}（商品ID: ${item.product_id || item.offer_id}）`, taskId: data.taskId, price: sell } }));
                 return;
-              } else if (item.status === "failed") {
-                const errMsg = item.errors?.map((e: {message: string}) => e.message).join("；") || "未知错误";
+              } else if (item.status === "failed" || item.status === "error") {
+                const errMsg = item.errors?.map((e: {message: string}) => e.message).join("；") || item.error || JSON.stringify(item).slice(0, 100);
                 setStates(prev => ({ ...prev, [product.id]: { status: "fail", msg: `❌ Ozon拒绝：${errMsg}` } }));
                 return;
               }
@@ -161,9 +162,11 @@ export function OzonPublishPage({ products, settings }: Props) {
           } catch { break; }
         }
         // 超时仍未完成，提示去后台看
-        setStates(prev => ({ ...prev, [product.id]: { status: "ok", msg: `⏳ 已提交审核（任务 ${data.taskId}），请去Ozon后台查看` } }));
+        setStates(prev => ({ ...prev, [product.id]: { status: "ok", msg: `⏳ 已提交（任务 ${data.taskId}），Ozon处理中，请去后台「商品列表」查看` } }));
       } else if (data.success) {
-        setStates(prev => ({ ...prev, [product.id]: { status: "ok", msg: `✅ 已发布 ₽${sell}`, price: sell } }));
+        // 没有 taskId，说明返回格式异常，把 raw 显示出来
+        const rawStr = JSON.stringify(data.raw || {}).slice(0, 150);
+        setStates(prev => ({ ...prev, [product.id]: { status: "fail", msg: `⚠️ 提交成功但无任务ID，raw: ${rawStr}` } }));
       } else {
         // 显示详细错误，方便诊断
         const detail = data.detail?.message || data.detail?.error || JSON.stringify(data.detail || {}).slice(0, 120);
