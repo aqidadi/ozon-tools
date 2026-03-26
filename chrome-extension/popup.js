@@ -172,16 +172,26 @@ function extractProductData() {
     }
     if (!title) title = document.title.replace(/[-_|].*?(1688|阿里).*$/, "").trim();
 
-    // ── 价格 ──
+    // ── 价格（支持券后价、阶梯价、普通价）──
     let price = 0;
-    for (const sel of ["[class*='price-common'] [class*='price-value']","[class*='price-box'] [class*='value']",".price-common-wrap [class*='value']","[class*='price']:not([class*='del'])"]) {
-      const el = document.querySelector(sel);
-      if (el) { const n = parseFloat(el.textContent.replace(/[^\d.]/g,"")); if (n>0&&n<999999){price=n;break;} }
+    // 优先抓"券后价"（1688常见：¥6.00 券后）
+    const allPriceEls = document.querySelectorAll("[class*='price'],[class*='Price']");
+    const priceNums = [];
+    for (const el of allPriceEls) {
+      const text = el.textContent.replace(/[^\d.]/g, "").trim();
+      const n = parseFloat(text);
+      if (n > 0 && n < 99999 && text.length < 10) priceNums.push(n);
     }
+    // 取最小值（通常是最低价/券后价）
+    if (priceNums.length) price = Math.min(...priceNums);
+    // 兜底：文本扫描
     if (!price) {
       const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
       let node;
-      while ((node = walker.nextNode())) { const m = node.textContent.match(/[¥￥]\s*([\d.]+)/); if (m){price=parseFloat(m[1]);break;} }
+      while ((node = walker.nextNode())) {
+        const m = node.textContent.match(/[¥￥]\s*([\d.]+)/);
+        if (m) { price = parseFloat(m[1]); break; }
+      }
     }
 
     // ── 主图（宽网撒捞，找页面上半部分大图）──
@@ -260,23 +270,40 @@ function extractProductData() {
       if (detailImages.length >= 40) break;
     }
 
-    // ── 规格参数 ──
+    // ── 规格参数（支持table格式、dt/dd格式、list格式）──
     const specs = {};
-    for (const sel of ["[class*='prop-wrap'], [class*='attribute-item'], [class*='spec-item']","[class*='detail-prop'] li","table[class*='prop'] tr","[class*='sku-prop'] [class*='item']"]) {
-      for (const item of document.querySelectorAll(sel)) {
-        const text = item.textContent.trim();
-        const colonIdx = text.indexOf("：") !== -1 ? text.indexOf("：") : text.indexOf(":");
-        if (colonIdx > 0) {
-          const k = text.slice(0,colonIdx).trim().slice(0,20), v = text.slice(colonIdx+1).trim().slice(0,100);
-          if (k && v && !specs[k]) specs[k] = v;
-        }
+    // table格式（1688商品属性常见）：<tr><td>材质</td><td>PVC</td></tr>
+    for (const row of document.querySelectorAll("table tr")) {
+      const cells = row.querySelectorAll("td, th");
+      for (let i = 0; i + 1 < cells.length; i += 2) {
+        const k = cells[i].textContent.trim().replace(/：$/,"").slice(0, 20);
+        const v = cells[i+1].textContent.trim().slice(0, 100);
+        if (k && v && !specs[k]) specs[k] = v;
       }
-      if (Object.keys(specs).length > 5) break;
     }
+    // dt/dd格式
     if (Object.keys(specs).length === 0) {
       for (const dt of document.querySelectorAll("dt")) {
         const dd = dt.nextElementSibling;
-        if (dd?.tagName === "DD") { const k=dt.textContent.trim().replace(/：$/,""), v=dd.textContent.trim(); if(k&&v&&k.length<20) specs[k]=v.slice(0,100); }
+        if (dd?.tagName === "DD") {
+          const k = dt.textContent.trim().replace(/：$/, ""), v = dd.textContent.trim();
+          if (k && v && k.length < 20) specs[k] = v.slice(0, 100);
+        }
+      }
+    }
+    // class匹配格式
+    if (Object.keys(specs).length === 0) {
+      for (const sel of ["[class*='prop-wrap'],[class*='attribute-item'],[class*='spec-item']","[class*='detail-prop'] li","[class*='sku-prop'] [class*='item']"]) {
+        for (const item of document.querySelectorAll(sel)) {
+          const text = item.textContent.trim();
+          const idx = text.indexOf("：") !== -1 ? text.indexOf("：") : text.indexOf(":");
+          if (idx > 0) {
+            const k = text.slice(0, idx).trim().slice(0, 20);
+            const v = text.slice(idx+1).trim().slice(0, 100);
+            if (k && v && !specs[k]) specs[k] = v;
+          }
+        }
+        if (Object.keys(specs).length > 3) break;
       }
     }
 
@@ -830,14 +857,15 @@ function extractOzonProducts() {
 // ─────────────────────────────────────────────────────────────
 async function init() {
   const settings = await loadSettings();
+  // 每次打开插件都重新获取当前活跃tab（不缓存）
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   const url = tab?.url || "";
 
   const is1688 = url.includes("1688.com");
-  const is1688Product = is1688 && (url.includes("/offer/") || url.includes("detail.1688.com") || url.includes("offerId="));
+  const is1688Product = is1688 && (url.includes("/offer/") || url.includes("detail.1688.com") || url.includes("offerId=") || url.includes("offer_id="));
   const isOzon = url.includes("ozon.ru");
 
-  // 显示登录状态
+  // 显示登录状态 + 当前页面URL提示
   const headerUserEl = document.getElementById("headerUser");
   if (headerUserEl) {
     headerUserEl.textContent = settings.userEmail
@@ -846,8 +874,12 @@ async function init() {
     headerUserEl.style.color = settings.apiToken ? "#4ade80" : "#fbbf24";
   }
 
+  // 每次点tab都重新从当前页抓，不复用currentProduct
   document.getElementById("tabSearch").addEventListener("click", () => setTab("search", settings, tab.id, is1688));
-  document.getElementById("tabImport").addEventListener("click", () => setTab("import", settings, tab.id, is1688Product));
+  document.getElementById("tabImport").addEventListener("click", async () => {
+    currentProduct = null; // 清空缓存，强制重新抓
+    setTab("import", settings, tab.id, is1688Product);
+  });
   document.getElementById("tabBatch").addEventListener("click", () => setTab("batch", settings, tab.id, false));
   document.getElementById("tabAccount").addEventListener("click", () => setTab("account", settings, tab.id, false));
 
