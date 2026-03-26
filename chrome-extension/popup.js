@@ -930,42 +930,31 @@ async function setTab(tab, settings, tabId, condition) {
       }});
       await new Promise(r => setTimeout(r, 1500)); // 等详情图异步加载
 
-      // 第三步：全域正则暴力搜索 ibank 图片
+      // 第三步：扫全部img标签，稳定版
       let grabbedImages = [];
       let grabbedDetailImages = [];
       try {
         const imgResults = await chrome.scripting.executeScript({
           target: { tabId, allFrames: true },
           func: () => {
-            let rawSet = new Set();
-
-            // 1. 全页HTML正则暴力抠ibank链接
-            const htmlString = document.documentElement.outerHTML;
-            const regex = /https?:\/\/cbu01\.alicdn\.com\/img\/ibank\/[0-9a-zA-Z/_.-]+\.jpg/g;
-            (htmlString.match(regex) || []).forEach(m => rawSet.add(m));
-
-            // 2. 扫所有img标签
-            document.querySelectorAll("img").forEach(img => {
-              for (const attr of ["data-lazyload-src","data-lazy-src","data-src","original","src"]) {
-                const val = img.getAttribute(attr);
-                if (val && val.includes("cbu01.alicdn.com")) { rawSet.add(val); break; }
-              }
-            });
-
-            // 3. 高清化 + 黑名单过滤
-            return [...new Set(
-              Array.from(rawSet).map(url => {
+            try {
+              let images = [];
+              document.querySelectorAll("img").forEach(img => {
+                let url = img.getAttribute("data-lazyload-src") ||
+                          img.getAttribute("data-lazy-src") ||
+                          img.getAttribute("src") || "";
+                if (!url || !url.includes("cbu01.alicdn.com")) return;
                 if (url.startsWith("//")) url = "https:" + url;
-                return url.replace(/(_\d+x\d+.*\.jpg$)|(\.\d+x\d+.*\.jpg$)/, "");
-              }).filter(url => {
-                const isGarbage = /logo|setting|icon|gear|check|loading|avatar/i.test(url);
-                return !isGarbage && url.includes("ibank");
-              })
-            )];
+                const clean = url.replace(/(_\d+x\d+.*\.jpg$)|(\.\d+x\d+.*\.jpg$)/, "");
+                if (/logo|setting|icon|gear|check|loading|avatar/i.test(clean)) return;
+                images.push(clean);
+              });
+              return [...new Set(images)];
+            } catch(e) { return []; }
           }
         });
 
-        const allUrls = [...new Set(imgResults.flatMap(r => r.result || []))];
+        const allUrls = [...new Set(imgResults.flatMap(r => r.result || []).filter(Boolean))];
         grabbedImages = allUrls.slice(0, 10);
         grabbedDetailImages = allUrls.slice(10, 25);
             } catch(e) {}
