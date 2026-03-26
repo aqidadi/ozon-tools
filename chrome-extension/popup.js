@@ -18,13 +18,15 @@ function formatPrice(price) {
 
 async function loadSettings() {
   return new Promise((resolve) => {
-    chrome.storage.local.get(["siteUrl", "weight", "sellPrice", "apiToken", "userEmail"], (data) => {
+    chrome.storage.local.get(["siteUrl", "weight", "sellPrice", "apiToken", "userEmail", "ozonClientId", "ozonApiKey"], (data) => {
       resolve({
         siteUrl: data.siteUrl || DEFAULT_SITE,
         weight: data.weight || 400,
         sellPrice: data.sellPrice || 0,
         apiToken: data.apiToken || "",
         userEmail: data.userEmail || "",
+        ozonClientId: data.ozonClientId || "",
+        ozonApiKey: data.ozonApiKey || "",
       });
     });
   });
@@ -81,6 +83,21 @@ function renderLogin(settings) {
         style="flex:1;border:1px solid #e2e8f0;border-radius:6px;padding:7px 8px;font-size:11px;font-family:monospace;" />
       <button id="saveTokenBtn" style="background:#475569;color:white;border:none;border-radius:6px;padding:7px 10px;font-size:12px;cursor:pointer;">保存</button>
     </div>
+    <div class="divider" style="height:1px;background:#e2e8f0;margin:10px 0;"></div>
+    <div style="font-size:12px;font-weight:600;color:#1d4ed8;margin-bottom:6px;">🚀 Ozon API 配置</div>
+    <div style="margin-bottom:6px;">
+      <label style="font-size:11px;color:#64748b;display:block;margin-bottom:3px;">Client-Id</label>
+      <input type="text" id="ozonClientIdInput" value="${settings.ozonClientId}" placeholder="例：4301277"
+        style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:6px 10px;font-size:12px;font-family:monospace;box-sizing:border-box;" />
+    </div>
+    <div style="margin-bottom:8px;">
+      <label style="font-size:11px;color:#64748b;display:block;margin-bottom:3px;">Api-Key</label>
+      <input type="password" id="ozonApiKeyInput" value="${settings.ozonApiKey}" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+        style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:6px 10px;font-size:12px;font-family:monospace;box-sizing:border-box;" />
+    </div>
+    <button id="saveOzonKeyBtn" style="width:100%;background:#005bff;color:white;border:none;border-radius:6px;padding:8px;font-size:12px;font-weight:600;cursor:pointer;">
+      💾 保存 Ozon Key
+    </button>
   `;
 
   document.getElementById("loginBtn").addEventListener("click", async () => {
@@ -120,6 +137,14 @@ function renderLogin(settings) {
     await saveSettings({ apiToken: token });
     showToast("✅ Token 已保存");
     init();
+  });
+
+  document.getElementById("saveOzonKeyBtn").addEventListener("click", async () => {
+    const clientId = document.getElementById("ozonClientIdInput").value.trim();
+    const apiKey = document.getElementById("ozonApiKeyInput").value.trim();
+    if (!clientId || !apiKey) { showToast("❌ 请填写 Client-Id 和 Api-Key"); return; }
+    await saveSettings({ ozonClientId: clientId, ozonApiKey: apiKey });
+    showToast("✅ Ozon Key 已保存");
   });
 }
 
@@ -786,6 +811,8 @@ function renderProduct(product, settings) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          clientId: settings.ozonClientId || undefined,
+          apiKey: settings.ozonApiKey || undefined,
           product: {
             title: product.title,
             price: sellPrice,
