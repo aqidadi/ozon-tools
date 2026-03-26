@@ -306,7 +306,7 @@ export default function Home() {
       </aside>
 
       {/* Main content */}
-      <div className="flex-1 ml-56">
+      <div className="flex-1 ml-56 overflow-x-hidden">
         {/* 搞笑广告走马灯 */}
         <div className="overflow-hidden bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white text-xs font-medium">
           <div className="flex animate-marquee whitespace-nowrap py-1.5">
@@ -836,7 +836,7 @@ function LandingPage({ onStart }: { onStart: () => void }) {
   const current = SLIDES[slide];
 
   return (
-    <div className="-mx-6 -mt-6 flex flex-col" style={{ height: "calc(100vh - 88px)" }}>
+    <div className="-mx-6 -mt-6 flex flex-col overflow-hidden" style={{ height: "calc(100vh - 88px)" }}>
       {/* 深色背景全屏 */}
       <div className="flex-1 relative overflow-hidden"
         style={{ background: "linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)" }}>
