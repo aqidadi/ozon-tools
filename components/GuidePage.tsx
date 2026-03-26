@@ -912,6 +912,147 @@ const CHAPTERS = [
     ],
   },
   {
+    id: "shopee-register",
+    emoji: "🌏",
+    title: "Shopee（虾皮）开店全攻略",
+    badge: "东南亚首选",
+    badgeColor: "bg-amber-500",
+    desc: "东南亚最大电商，走量快，新手友好",
+    steps: [
+      {
+        title: "Shopee 是什么？适合谁做？",
+        tip: "📊 覆盖：马来西亚·泰国·越南·菲律宾·印尼·台湾·巴西",
+        items: [
+          { icon: "🛒", text: "Shopee 简介", detail: "东南亚+台湾最大电商平台，月活超3亿，中国卖家很多，入驻门槛低。适合走量型商品，单价低但订单多" },
+          { icon: "✅", text: "适合做Shopee的人", detail: "有1688货源、想稳定走量的卖家；或者已经在做Ozon、想多开一个平台增加收入的" },
+          { icon: "⚠️", text: "不适合的情况", detail: "只想赚高利润的：Shopee价格战激烈，利润通常比Ozon低10-20%。喜欢小众蓝海的也建议先做Ozon" },
+        ],
+      },
+      {
+        title: "注册Shopee卖家账号",
+        tip: "🌐 访问：seller.shopee.cn（中国卖家专区）",
+        items: [
+          { icon: "1️⃣", text: "访问 seller.shopee.cn", detail: "这是Shopee专门给中国跨境卖家开的入口，国内可以直接访问，不需要科学上网！" },
+          { icon: "2️⃣", text: "选择入驻市场", detail: "可以同时入驻多个国家：马来西亚、泰国、越南、菲律宾、印尼、台湾，推荐新手先选马来+泰国" },
+          { icon: "3️⃣", text: "准备材料", detail: "营业执照（个体户就行）+ 法人身份证 + 手机号 + 银行卡。比Ozon简单，通常1-3个工作日审核" },
+          { icon: "4️⃣", text: "填写店铺信息", detail: "店铺名随便取，建议用英文或当地语言，后期可以修改。类目选你主要卖的商品种类" },
+          { icon: "5️⃣", text: "等待审核通过", detail: "审核比Ozon快，通常1-2个工作日。通过后即可上传商品" },
+        ],
+      },
+      {
+        title: "Shopee上架商品要点",
+        tip: "📦 和1688联动，无货源模式同样适用",
+        items: [
+          { icon: "🖼️", text: "主图要求", detail: "白底图最好，尺寸至少500×500，商品占80%以上画面。不能有水印，不能有促销文字叠加" },
+          { icon: "📝", text: "标题要求", detail: "用当地语言写关键词，比如马来西亚用马来语或英语。用Crossly AI可以自动翻译，省时省力" },
+          { icon: "💰", text: "定价策略", detail: "参考同款竞品，定在中低位。Shopee买家特别喜欢「优惠券」和「免运费」，开启这两个可以大幅提升转化" },
+          { icon: "🚚", text: "Shopee物流", detail: "跨境直发：用Shopee官方物流（SLS），7-14天到达。比Ozon RETS便宜一些，约15-35元/500g" },
+          { icon: "💡", text: "新手小技巧", detail: "上架前10件商品建议开「新手优惠」低价测款，积累评价后提价。有5个以上好评之后，销量会明显提升" },
+        ],
+      },
+      {
+        title: "Shopee赚钱核心：走量不走利",
+        tip: "💰 Shopee的玩法和Ozon不一样",
+        items: [
+          { icon: "📊", text: "Shopee佣金", detail: "约2-6%（各市场不同），比Ozon低。但价格战激烈，净利润通常15-25%，低于Ozon的30-50%" },
+          { icon: "🔄", text: "适合做复购品", detail: "家居收纳、厨房小物、美妆工具，买家会反复购买。一个老客带来的利润比拉10个新客还多" },
+          { icon: "📅", text: "活动很重要", detail: "Shopee每月都有大促：每月1号、15号的品类日，双11、双12，购物节期间流量暴增5-10倍，提前备货！" },
+          { icon: "⭐", text: "评价是命根", detail: "Shopee算法极度看重评价数量和评分。新品期主动私信买家要好评，回复所有评论（用翻译软件）" },
+        ],
+      },
+    ],
+  },
+  {
+    id: "tiktok-register",
+    emoji: "🎵",
+    title: "TikTok Shop 开店全攻略",
+    badge: "内容变现",
+    badgeColor: "bg-pink-500",
+    desc: "会拍视频就能爆单，东南亚+欧美双市场",
+    steps: [
+      {
+        title: "TikTok Shop 是什么？",
+        tip: "🎬 内容驱动电商，爆单快但需要视频能力",
+        items: [
+          { icon: "🎯", text: "什么是TikTok Shop", detail: "TikTok在电商App里内置的购物功能。用户刷视频时直接点击购买，不用跳转到其他App。冲动消费为主，爆单快" },
+          { icon: "🌍", text: "覆盖市场", detail: "东南亚（马来西亚、泰国、越南、菲律宾、印尼）、英国、美国。其中东南亚和英国开放给中国卖家" },
+          { icon: "✅", text: "适合做TikTok Shop的人", detail: "会拍简单短视频（哪怕用手机拍），或者有内容创作能力的；年轻用户喜欢的商品（潮品/美妆/趣味小物）" },
+          { icon: "⚠️", text: "不适合的情况", detail: "不会拍视频、不想做内容的，建议先做Ozon或Shopee。TikTok Shop纯靠搜索很难出单，视频才是核心流量" },
+        ],
+      },
+      {
+        title: "注册TikTok Shop卖家账号",
+        tip: "🌐 访问：seller-id.tiktok.com（按国家不同）",
+        items: [
+          { icon: "1️⃣", text: "选择目标市场", detail: "东南亚：seller.tiktok.com/region/SE；英国：seller.tiktok.com/en/UK。国内访问需要科学上网" },
+          { icon: "2️⃣", text: "准备材料", detail: "营业执照（英国市场需要英文版/翻译件）+ 法人护照或身份证 + 银行卡（支持国内卡绑定）" },
+          { icon: "3️⃣", text: "创建TikTok账号", detail: "需要先有TikTok账号，建议用新账号专门做店铺，避免个人内容和店铺内容混在一起" },
+          { icon: "4️⃣", text: "申请卖家资质", detail: "填写公司信息→上传证件→等待审核（1-3个工作日）→开通店铺" },
+          { icon: "5️⃣", text: "设置支付方式", detail: "国内卖家可以用连连支付或万里汇接收款项，换成人民币提到国内银行" },
+        ],
+      },
+      {
+        title: "TikTok Shop 出单方法",
+        tip: "🎬 视频是核心，没有视频几乎没有订单",
+        items: [
+          { icon: "📱", text: "方法1：自己拍开箱视频", detail: "最简单：收到1688样品→用手机拍开箱→加个背景音乐→发到TikTok账号。素人开箱反而比广告感强" },
+          { icon: "🤝", text: "方法2：找当地网红带货", detail: "在TikTok Creator Marketplace找东南亚网红合作，给他们寄样品，让他们拍视频推荐。小网红（1-10万粉）效果往往比大V好" },
+          { icon: "🏪", text: "方法3：店铺广告投流", detail: "TikTok Ads投「商品页点击广告」，按点击付费。新手建议每天预算100-200元测试，找到ROI>2的广告再放量" },
+          { icon: "💡", text: "不会拍视频怎么办？", detail: "用Crossly的图片拼接功能，把商品图自动生成幻灯片视频，加上TikTok热门BGM，简单但有效" },
+        ],
+      },
+      {
+        title: "TikTok Shop 定价和物流",
+        tip: "💰 佣金低，但要注意退货率",
+        items: [
+          { icon: "💰", text: "佣金约2-8%（新手期更低）", detail: "比Ozon和Shopee都低！新手期前3个月通常只收2%，之后恢复正常费率" },
+          { icon: "🚚", text: "物流：TikTok官方物流或第三方", detail: "推荐用TikTok官方合作物流（J&T、虾皮物流），稳定且买家信任度高。约10-25天到达" },
+          { icon: "🔄", text: "退货率较高", detail: "TikTok冲动消费多，退货率比Ozon高。建议商品图片和视频真实准确，减少「货不对板」退货" },
+          { icon: "🎯", text: "爆款品类", detail: "美妆工具、居家创意小物、服装配件（东南亚尺码接近中国）、零食（部分品类可做）" },
+        ],
+      },
+    ],
+  },
+  {
+    id: "lazada-register",
+    emoji: "🌟",
+    title: "Lazada 开店全攻略",
+    badge: "阿里系·稳",
+    badgeColor: "bg-emerald-500",
+    desc: "阿里巴巴旗下，马来西亚/泰国市场强",
+    steps: [
+      {
+        title: "Lazada 基本介绍",
+        tip: "🏪 阿里系电商，东南亚补充战场",
+        items: [
+          { icon: "🌍", text: "覆盖市场", detail: "马来西亚、泰国、印尼、越南、菲律宾、新加坡。其中马来西亚和泰国最强，流量比Shopee略低" },
+          { icon: "✅", text: "最大优势", detail: "阿里系物流稳定，中国卖家操作习惯和1688/速卖通相似，上手快。大促活动（双11/双12）有阿里资源加持" },
+          { icon: "💡", text: "和Shopee怎么选？", detail: "建议两个都做！商品发布一次，Shopee和Lazada同步上架，用Crossly批量导入，多一个平台多一份收入" },
+        ],
+      },
+      {
+        title: "注册Lazada卖家",
+        tip: "🌐 访问：sellercenter.lazada.com",
+        items: [
+          { icon: "1️⃣", text: "访问 sellercenter.lazada.com", detail: "选择「中国卖家入驻（LazMall/跨境）」，有中文界面，操作比Ozon友好很多" },
+          { icon: "2️⃣", text: "材料和Shopee一样", detail: "营业执照 + 身份证 + 银行卡。如果已经有Shopee账号，很多信息可以直接复用" },
+          { icon: "3️⃣", text: "选择店铺类型", detail: "「跨境卖家」：无需在当地有仓库，直接从中国发货。这是新手最推荐的方式" },
+          { icon: "4️⃣", text: "审核约1-3个工作日", detail: "通过率很高，材料齐全几乎100%通过。比亚马逊宽松太多" },
+        ],
+      },
+      {
+        title: "Lazada 运营技巧",
+        tip: "💡 和Shopee思路类似，但有独特玩法",
+        items: [
+          { icon: "🎯", text: "LazMall vs 普通店铺", detail: "新手开普通店铺即可，LazMall要求品牌授权。普通店铺没有流量限制，完全够用" },
+          { icon: "💰", text: "佣金约2-4%", detail: "比Shopee还低！但流量也相对少一些，需要靠广告或参加活动获取流量" },
+          { icon: "📅", text: "必须参加大促", detail: "Lazada的流量主要集中在大促期间（双11/双12/各国购物节），平时流量相对平稳，大促要提前报名参加" },
+          { icon: "⭐", text: "物流选Lazada官方", detail: "用Lazada自有物流（LEX）最稳，买家信任度最高，也有利于搜索排名" },
+        ],
+      },
+    ],
+  },
+  {
     id: "faq-detail",
     emoji: "🙋",
     title: "高频问题大全（随时查）",
