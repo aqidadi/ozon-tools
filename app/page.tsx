@@ -674,6 +674,99 @@ function LandingPage({ onStart }: { onStart: () => void }) {
       ),
     },
     {
+      id: "platforms",
+      label: "选平台",
+      content: (
+        <div className="flex flex-col h-full px-5 py-4 overflow-y-auto">
+          <h2 className="text-white text-xl font-black text-center mb-1">全球平台怎么选？🌍</h2>
+          <p className="text-white/40 text-xs text-center mb-4">没有最好，只有最适合你的</p>
+          <div className="space-y-2.5">
+            {[
+              {
+                flag: "🇷🇺", name: "Ozon", region: "俄罗斯",
+                score: 92, color: "#6366f1",
+                pros: ["竞争极小，中国卖家少", "溢价高，利润丰厚", "无需库存直接发货", "新手最友好"],
+                cons: ["汇率有波动", "需要科学上网操作后台"],
+                best: "新手首选 🏆",
+                bestColor: "bg-indigo-500",
+              },
+              {
+                flag: "🌏", name: "Shopee", region: "东南亚·台湾",
+                score: 75, color: "#f59e0b",
+                pros: ["体量大，用户多", "物流便宜", "中国卖家熟悉"],
+                cons: ["价格战激烈", "买家很会砍价", "利润相对薄"],
+                best: "走量选这里",
+                bestColor: "bg-amber-500",
+              },
+              {
+                flag: "🎵", name: "TikTok Shop", region: "东南亚·美国·英国",
+                score: 78, color: "#ec4899",
+                pros: ["爆单快，内容驱动", "佣金低（2-8%）", "年轻用户消费力强"],
+                cons: ["需要会拍视频", "流量不稳定", "退货率较高"],
+                best: "会拍视频选这",
+                bestColor: "bg-pink-500",
+              },
+              {
+                flag: "🌟", name: "Lazada", region: "东南亚·马来/泰国",
+                score: 65, color: "#10b981",
+                pros: ["阿里系，物流稳定", "马来西亚/泰国市场强", "入驻门槛低"],
+                cons: ["竞争日趋激烈", "流量不如Shopee", "部分品类饱和"],
+                best: "东南亚补充战场",
+                bestColor: "bg-emerald-500",
+              },
+              {
+                flag: "🇧🇷", name: "Mercado Libre", region: "拉美·巴西/墨西哥",
+                score: 70, color: "#8b5cf6",
+                pros: ["竞争最少", "市场增长快", "利润高"],
+                cons: ["物流复杂", "葡萄牙语/西班牙语", "退款纠纷多"],
+                best: "冒险家的蓝海",
+                bestColor: "bg-violet-500",
+              },
+              {
+                flag: "📦", name: "亚马逊", region: "美国·欧洲·日本",
+                score: 45, color: "#ef4444",
+                pros: ["流量最大", "品牌背书强", "全球最大电商"],
+                cons: ["门槛极高", "竞争极激烈", "FBA仓储费贵", "封号风险大"],
+                best: "有经验再来",
+                bestColor: "bg-red-500",
+              },
+            ].map(p => (
+              <div key={p.name} className="bg-white/8 rounded-2xl p-4 border border-white/10">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">{p.flag}</span>
+                    <div>
+                      <span className="text-white font-black text-sm">{p.name}</span>
+                      <span className="text-white/40 text-xs ml-1.5">{p.region}</span>
+                    </div>
+                  </div>
+                  <span className={`text-[10px] font-bold text-white px-2 py-0.5 rounded-full ${p.bestColor}`}>{p.best}</span>
+                </div>
+                {/* 进度条 */}
+                <div className="flex items-center gap-2 mb-2.5">
+                  <div className="flex-1 bg-white/10 rounded-full h-1.5 overflow-hidden">
+                    <div className="h-full rounded-full" style={{ width: `${p.score}%`, background: p.color }} />
+                  </div>
+                  <span className="text-white/40 text-[10px] w-6 flex-shrink-0">{p.score}</span>
+                </div>
+                <div className="flex gap-3">
+                  <div className="flex-1">
+                    <p className="text-green-400 text-[10px] font-bold mb-1">✅ 优势</p>
+                    {p.pros.map(t => <p key={t} className="text-white/50 text-[10px] leading-relaxed">· {t}</p>)}
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-red-400 text-[10px] font-bold mb-1">⚠️ 注意</p>
+                    {p.cons.map(t => <p key={t} className="text-white/50 text-[10px] leading-relaxed">· {t}</p>)}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="text-white/20 text-[10px] text-center mt-3 pb-2">Crossly 支持全平台上架，你选好平台，我们帮你搞定</p>
+        </div>
+      ),
+    },
+    {
       id: "faq",
       label: "你在担心什么",
       content: (
@@ -760,7 +853,7 @@ function LandingPage({ onStart }: { onStart: () => void }) {
       <div className="bg-white border-t border-gray-100 flex">
         {SLIDES.map((s, i) => (
           <button key={s.id} onClick={() => setSlide(i)}
-            className={`flex-1 py-2.5 text-[11px] font-semibold transition-colors ${slide === i ? "text-indigo-600 border-t-2 border-indigo-600 -mt-px bg-indigo-50/50" : "text-gray-400 hover:text-gray-600"}`}>
+            className={`flex-1 py-2 text-[10px] font-semibold transition-colors ${slide === i ? "text-indigo-600 border-t-2 border-indigo-600 -mt-px bg-indigo-50/50" : "text-gray-400 hover:text-gray-600"}`}>
             {s.label}
           </button>
         ))}
