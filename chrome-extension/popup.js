@@ -891,20 +891,25 @@ async function setTab(tab, settings, tabId, condition) {
       }});
       await new Promise(r => setTimeout(r, 800));
 
-      // 第二步：分段滚动触发懒加载（先滚到底，再回顶）
+      // 第二步：地毯式深度滚动（先慢速滚到底唤醒详情区，再回顶）
       await chrome.scripting.executeScript({ target: { tabId }, func: () => {
         return new Promise(resolve => {
           const total = document.body.scrollHeight;
-          const steps = 10;
+          const steps = 12;
           let i = 0;
           const timer = setInterval(() => {
             window.scrollTo(0, (total / steps) * i);
             i++;
-            if (i > steps) { clearInterval(timer); window.scrollTo(0, 0); resolve(); }
-          }, 300);
+            if (i > steps) {
+              clearInterval(timer);
+              // 滚到中部停留（确保详情容器进入viewport）
+              window.scrollTo(0, total * 0.6);
+              setTimeout(() => { window.scrollTo(0, 0); resolve(); }, 1000);
+            }
+          }, 350);
         });
       }});
-      await new Promise(r => setTimeout(r, 2000));
+      await new Promise(r => setTimeout(r, 1500)); // 等详情图异步加载
 
       // 第三步：allFrames 抓主图 + 详情图（分类返回）
       let grabbedImages = [];
@@ -938,30 +943,40 @@ async function setTab(tab, settings, tabId, condition) {
               });
             });
 
-            // 详情图选择器（1688详情区）
+            // 详情图：精准定位1688详情容器，提取data-lazyload-src
             const detailSelectors = [
-              ".desc-lazyload-container", ".content-detail",
-              "#mod-detail-desc", "[class*='detail-desc']", "[class*='detailDesc']",
-              "[class*='product-desc']", "[class*='description']",
+              "#desc-lazyload-container",    // 1688最常见详情容器
+              "#detail-content-container",   // 另一种
+              ".desc-lazyload-container",
+              ".content-detail",
+              "#mod-detail-desc",
+              "[class*='detail-desc']",
+              "[class*='detailDesc']",
+              "[class*='product-desc']",
             ];
             const detailImgs = new Set();
             for (const sel of detailSelectors) {
               const container = document.querySelector(sel);
               if (!container) continue;
               container.querySelectorAll("img").forEach(img => {
+                // data-lazyload-src 是1688详情图真实URL的关键属性
                 const url = cleanUrl(
-                  img.getAttribute("data-lazy-src") || img.getAttribute("data-src") ||
-                  img.getAttribute("data-original") || img.src || ""
+                  img.getAttribute("data-lazyload-src") ||
+                  img.getAttribute("data-lazy-src") ||
+                  img.getAttribute("data-src") ||
+                  img.getAttribute("data-original") ||
+                  img.src || ""
                 );
                 if (url && !mainImgs.has(url)) detailImgs.add(url);
               });
-              // 正则扫innerHTML捞懒加载
-              const matches = container.innerHTML.matchAll(/(?:data-src|data-lazy-src|data-original|src)=["'](https?:\/\/[^"']+\.(?:jpg|jpeg|png|webp))/gi);
-              for (const m of matches) {
+              // 正则全扫innerHTML（捞所有懒加载属性）
+              const html = container.innerHTML;
+              const urlPat = /(?:data-lazyload-src|data-lazy-src|data-src|data-original|src)=["'](https?:\/\/[^"'\s>]+\.(?:jpg|jpeg|png|webp))/gi;
+              for (const m of html.matchAll(urlPat)) {
                 const url = cleanUrl(m[1]);
                 if (url && !mainImgs.has(url)) detailImgs.add(url);
               }
-              if (detailImgs.size > 0) break;
+              if (detailImgs.size >= 3) break;
             }
 
             return {
