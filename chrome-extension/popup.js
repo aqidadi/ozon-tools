@@ -1147,20 +1147,23 @@ async function setTab(tab, settings, tabId, condition) {
               return [...new Set(finalUrls)];
             }
 
-            // 1688抓取（默认）
+            // 1688抓取（默认）：扫全页HTML，覆盖所有阿里系图片域名
             const rawText = document.documentElement.outerHTML;
-            const regex = /https?:\/\/cbu01\.alicdn\.com\/img\/ibank\/[0-9a-zA-Z_!/-]+\.jpg/g;
+            // 覆盖 cbu01.alicdn / img.alicdn / gw.alicdn / img.1688 / sc.alicdn 等
+            const regex = /https?:\/\/(?:cbu01|img|gw|sc|p)\.(?:alicdn|1688)\.com\/(?:img\/ibank|imgextra|i\d|kf|fban|bao|cms)\/[^"'\s>?#]{10,}\.(?:jpg|jpeg|png|webp)/gi;
             const matches = rawText.match(regex) || [];
-            return [...new Set(matches)].map(url =>
-              url.replace(/(_\d+x\d+.*\.jpg$)|(\.\d+x\d+.*\.jpg$)/i, "")
-            );
+            // 同时扫 img 标签的 data-src 属性（懒加载）
+            const dataSrcMatches = [...rawText.matchAll(/data-src=["'](https?:\/\/[^"']+\.(?:jpg|jpeg|png|webp))/gi)].map(m => m[1]);
+            return [...new Set([...matches, ...dataSrcMatches])].map(url => url.split("?")[0]);
           }
         });
 
-        // 串行清洗：1.砍参数/webp 2.只留ibank 3.去重
+        // 串行清洗：只保留阿里系图片，去重
         const allRaw = imgResults.flatMap(r => r.result || []).filter(Boolean);
         const finalUnique = [...new Set(allRaw)].filter(u =>
-          u.includes("cbu01.alicdn.com/img/ibank/") || u.includes("yiwugou.com") || u.includes("yiwugo.com")
+          /alicdn\.com|aliyuncs\.com|1688\.com|yiwugou\.com|yiwugo\.com/i.test(u) &&
+          !/logo|icon|avatar|taobao|tmall|jd\.com|pinduoduo|xiaohongshu|tiktok|douyin|weixin|wechat/i.test(u) &&
+          u.length > 30
         );
         console.log("Crossly frames结果:", imgResults.map((r,i) => `frame${i}:${(r.result||[]).length}张`).join(", "), "→合并去重后:", finalUnique.length, "张");
         grabbedImages = finalUnique.slice(0, 10);
