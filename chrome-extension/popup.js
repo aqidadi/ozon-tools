@@ -952,24 +952,20 @@ async function setTab(tab, settings, tabId, condition) {
         const imgResults = await chrome.scripting.executeScript({
           target: { tabId, allFrames: true },
           func: () => {
-            const allImgs = Array.from(document.querySelectorAll("img"));
-            let result = [];
-            allImgs.forEach(img => {
-              const src = img.getAttribute("data-lazyload-src") ||
-                          img.getAttribute("data-lazy-src") ||
-                          img.src;
-              if (src && src.includes("cbu01.alicdn.com/img/ibank/")) {
-                let finalUrl = src.startsWith("//") ? "https:" + src : src;
-                finalUrl = finalUrl.replace(/(_\d+x\d+.*\.jpg$)|(\.\d+x\d+.*\.jpg$)/i, "");
-                result.push(finalUrl);
-              }
-            });
-            return [...new Set(result)];
+            const rawText = document.documentElement.outerHTML;
+            const regex = /https?:\/\/cbu01\.alicdn\.com\/img\/ibank\/[0-9a-zA-Z_!/-]+\.jpg/g;
+            const matches = rawText.match(regex) || [];
+            return [...new Set(matches)].map(url =>
+              url.replace(/(_\d+x\d+.*\.jpg$)|(\.\d+x\d+.*\.jpg$)/i, "")
+            );
           }
         });
 
         // 串行清洗：1.砍参数/webp 2.只留ibank 3.去重
-        const finalUnique = [...new Set(imgResults.flatMap(r => r.result || []).filter(Boolean))];
+        const allRaw = imgResults.flatMap(r => r.result || []).filter(Boolean);
+        const finalUnique = [...new Set(allRaw)];
+        // 调试：popup console里显示各frame抓到多少张
+        console.log("Crossly frames结果:", imgResults.map((r,i) => `frame${i}:${(r.result||[]).length}张`).join(", "), "→合并去重后:", finalUnique.length, "张");
         grabbedImages = finalUnique.slice(0, 10);
         grabbedDetailImages = finalUnique.slice(10, 25);
             } catch(e) {}
