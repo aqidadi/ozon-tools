@@ -2,7 +2,7 @@
 // 在页面加载完成后扫描商品数据，存到window供popup读取
 
 function scanProductData() {
-  const data = { images: [], price: 0, title: "" };
+  const data = { images: [], detailImages: [], price: 0, title: "", specs: {} };
 
   // 标题
   const h1 = document.querySelector("h1");
@@ -19,7 +19,7 @@ function scanProductData() {
     }
   });
 
-  // 如果preview-img没找到，找所有750px以上的图
+  // 如果preview-img没找到，找所有400px以上的图
   if (data.images.length === 0) {
     document.querySelectorAll("img").forEach(img => {
       if (img.naturalWidth >= 400) {
@@ -31,27 +31,56 @@ function scanProductData() {
     });
   }
 
+  // 详情图：1688 详情区的大图
+  // 选择器覆盖常见的 1688 详情图容器
+  const detailSelectors = [
+    ".desc-img-list img",
+    ".detail-desc img",
+    ".mod-detail-main img",
+    ".desc-module img",
+    "#description img",
+    ".offer-detail-main img",
+    '[class*="detail"] img',
+    '[class*="desc"] img',
+  ];
+  const detailSeen = new Set(data.images); // 避免和主图重复
+  for (const sel of detailSelectors) {
+    document.querySelectorAll(sel).forEach(img => {
+      let src = img.getAttribute("data-src") || img.src || "";
+      if (src && src.startsWith("http") && !detailSeen.has(src) && img.naturalWidth >= 100) {
+        detailSeen.add(src);
+        data.detailImages.push(src);
+      }
+    });
+    if (data.detailImages.length >= 20) break;
+  }
+
+  // 规格参数
+  try {
+    const specRows = document.querySelectorAll(".sku-item, .attribute-item, .spec-item, [class*='prop-item']");
+    specRows.forEach(row => {
+      const label = row.querySelector(".name, .label, .key")?.textContent?.trim();
+      const value = row.querySelector(".value, .val, .content")?.textContent?.trim();
+      if (label && value) data.specs[label] = value;
+    });
+  } catch {}
+
   // 价格：找页面上¥符号后跟的数字，过滤掉<1和>9999，取最小合理值
-  // 排除运费相关文字
   const bodyText = document.body.innerText;
   const pricePattern = /(?<![克千百万\d])[\¥￥]\s*(\d+(?:\.\d{1,2})?)(?!\s*(?:\/克|\/kg|元\/|起批|起订|运费|包邮|每克))/g;
   const prices = [];
-  let m;
-  while ((m = pricePattern.exec(bodyText)) !== null) {
-    const n = parseFloat(m[1]);
+  let mm;
+  while ((mm = pricePattern.exec(bodyText)) !== null) {
+    const n = parseFloat(mm[1]);
     if (n >= 1 && n <= 9999) prices.push(n);
   }
-  // 1688通常：最高频出现的价格 或 第一个出现的>=5的价格
   if (prices.length > 0) {
-    // 找>=1且出现最多次的
     const freq = {};
     prices.forEach(p => { freq[p] = (freq[p] || 0) + 1; });
-    // 取出现>=2次的最小价格
     const repeated = prices.filter(p => freq[p] >= 2);
     if (repeated.length > 0) {
       data.price = Math.min(...repeated);
     } else {
-      // 取第一个>=1的价格
       data.price = prices[0];
     }
   }
@@ -72,7 +101,6 @@ setTimeout(scanProductData, 3000);
 // 监听来自popup的消息
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.type === "GET_PRODUCT_DATA") {
-    // 重新扫描最新状态
     scanProductData();
     sendResponse(window.__crosslyData || {});
   }
