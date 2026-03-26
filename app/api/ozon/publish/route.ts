@@ -58,12 +58,16 @@ export async function POST(req: NextRequest) {
       offer_id: product.offerId || `crossly_${Date.now()}`, // 卖家自定义SKU
       
       // 价格库存
-      price: String(product.sellPrice || 999),      // 售价（卢布）
+      price: String(product.price || product.sellPrice || 999),      // 售价（卢布）
       old_price: String(product.oldPrice || 0),     // 原价（可选）
       vat: "0",                                      // 税率0%（中国卖家）
       
-      // 类目（需要用Ozon类目ID）
-      category_id: product.categoryId || 17028973,  // 默认：玩具类
+      // 类目 + 类型（v3 API 必填，两个字段缺一不可）
+      // description_category_id: 新版类目ID（叶子节点）
+      // type_id: 商品类型ID（配合类目使用，0 会报错）
+      // 17028973 = 玩具/毛绒玩具类目，93726 = 毛绒玩具类型
+      description_category_id: product.categoryId || 17028973,
+      type_id: product.typeId || 93726,
       
       // 图片（Ozon要求公网可访问的HTTPS URL）
       images: (product.images || []).slice(0, 15),  // 最多15张主图
