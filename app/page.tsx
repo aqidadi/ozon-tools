@@ -36,35 +36,36 @@ function useRateBar() {
   return rates;
 }
 
-// ── 实时汇率挂件 ──────────────────────────────────────
+// ── 金钱呼吸状态栏 ──────────────────────────────────────
 function RateBar() {
   const [rates, setRates] = useState<Record<string,number>>({});
-  const [time, setTime] = useState("");
   useEffect(() => {
     fetch("/api/rates").then(r=>r.json()).then(d=>{
       if (d.rates) setRates(d.rates);
     }).catch(()=>{});
-    const tick = () => setTime(new Date().toLocaleTimeString("zh-CN",{hour:"2-digit",minute:"2-digit"}));
-    tick();
-    const t = setInterval(tick, 60000);
-    return () => clearInterval(t);
   }, []);
-  const pairs = [
-    { code: "RUB", symbol: "₽", label: "卢布" },
-    { code: "USD", symbol: "$", label: "美元" },
-    { code: "THB", symbol: "฿", label: "泰铢" },
-  ];
+
   if (!rates.RUB) return null;
+
+  const rubPerCny = 1 / rates.RUB; // 1元人民币能换多少卢布
+  const cnyPer1000Rub = (1000 * rates.RUB).toFixed(1); // 1000卢布值多少人民币
+  const isGood = rubPerCny > 12; // 汇率好不好
+
   return (
-    <div className="flex items-center gap-3">
-      {pairs.map(p => (
-        <div key={p.code} className="flex items-center gap-1 bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-1">
-          <span className="text-xs text-gray-400">{p.label}</span>
-          <span className="text-xs font-semibold text-gray-800">{p.symbol}{rates[p.code] ? (1/rates[p.code]).toFixed(4) : "--"}</span>
-          <span className="text-[10px] text-gray-300">¥</span>
-        </div>
-      ))}
-      {time && <span className="text-[11px] text-gray-300">{time}更新</span>}
+    <div className="flex items-center gap-2 flex-wrap">
+      {/* 主汇率 */}
+      <div className={`flex items-center gap-1.5 rounded-lg px-3 py-1 text-xs font-medium ${isGood ? "bg-green-50 border border-green-200 text-green-700" : "bg-gray-50 border border-gray-200 text-gray-600"}`}>
+        <span>💰</span>
+        <span>1000卢布 ≈ <strong>{cnyPer1000Rub}元</strong></span>
+        <span className={`text-[10px] ${isGood ? "text-green-500" : "text-gray-400"}`}>
+          {isGood ? "↑ 回款正肥，快上架！" : "汇率稳定"}
+        </span>
+      </div>
+      {/* 运费估算 */}
+      <div className="flex items-center gap-1 bg-blue-50 border border-blue-100 rounded-lg px-3 py-1 text-xs text-blue-600">
+        <span>✈️</span>
+        <span>金华→莫斯科 RETS约<strong>14.5元/500g</strong></span>
+      </div>
     </div>
   );
 }
@@ -563,18 +564,29 @@ function LandingPage({ onStart }: { onStart: () => void }) {
         <div className="absolute inset-0 opacity-20"
           style={{ backgroundImage: "radial-gradient(circle at 30% 50%, #6366f1 0%, transparent 60%), radial-gradient(circle at 70% 30%, #a855f7 0%, transparent 50%)" }} />
         <div className="relative z-10">
-          <p className="text-white/50 text-xs font-semibold tracking-widest uppercase mb-4">我们的愿景</p>
-          <p className="text-white text-xl font-bold leading-relaxed mb-3">
-            "让跨境不再神秘"
-          </p>
-          <p className="text-white/60 text-sm leading-loose max-w-lg mx-auto">
-            全球有数百万普通人想要做跨境，但被繁琐的流程、高昂的工具费用挡在门外。<br />
-            Crossly 要做的，就是把这扇门彻底打开。<br /><br />
-            <span className="text-white/80 font-medium">
-              从今天起，你只需要一部手机，一个1688账号，<br />
-              就能把中国商品卖到俄罗斯、东南亚、全世界。
+          <p className="text-white/50 text-xs font-semibold tracking-widest uppercase mb-4">Crossly 的宗旨</p>
+          <p className="text-white text-2xl font-black leading-tight mb-4">
+            在 Crossly，跨境电商不再神秘。<br />
+            <span style={{ background: "linear-gradient(90deg, #a78bfa, #60a5fa)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+              我们免费教、手把手带。
             </span>
           </p>
+          <p className="text-white/70 text-sm leading-loose max-w-lg mx-auto mb-5">
+            让每一个普通人都能 0 门槛赚到卢布。<br />
+            我们的宗旨：让跨境像做微商一样简单。
+          </p>
+          <div className="grid grid-cols-3 gap-3 max-w-md mx-auto">
+            {[
+              { emoji: "📚", text: "永远免费教学" },
+              { emoji: "🚫", text: "不卖课不割韭菜" },
+              { emoji: "🤝", text: "手把手带新手" },
+            ].map(i => (
+              <div key={i.text} className="bg-white/10 rounded-2xl py-3 border border-white/10">
+                <div className="text-xl mb-1">{i.emoji}</div>
+                <div className="text-white/80 text-xs font-medium">{i.text}</div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 

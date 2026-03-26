@@ -14,12 +14,12 @@ const PLATFORMS = [
     textColor: "text-green-700",
     searchUrl: (kw: string) => `https://www.yiwugo.com/product_list/i_0_0.html?keyword=${encodeURIComponent(kw)}`,
     tag: "义乌市场",
-    tips: ["价格单位多样（元/公斤、元/个）", "可以联系商家询价", "起订量从1件到100件不等"],
+    tips: ["🌟 优先选「1件起批」的店家，减少资金风险", "💬 可以直接联系掌柜砍价，义乌人很好说话", "📦 在义乌发货可直接送北苑仓库，省心省力"],
   },
   {
     id: "1688",
     name: "1688",
-    desc: "阿里巴巴国内批发平台，工厂直供",
+    desc: "工厂直供，图片最全，适合做Ozon主力货源",
     icon: "🏭",
     color: "from-orange-500 to-red-500",
     bgColor: "bg-orange-50",
@@ -27,7 +27,7 @@ const PLATFORMS = [
     textColor: "text-orange-700",
     searchUrl: (kw: string) => `https://s.1688.com/selloffer/offer_search.htm?keywords=${encodeURIComponent(kw)}&n=y&spm=a2638t.b_80816621.0.0`,
     tag: "工厂直供",
-    tips: ["用Chrome插件导入商品（服务端被封）", "工厂货起订量通常较高", "图片和规格最完整"],
+    tips: ["🔌 用Crossly插件在商品页一键导入，30秒搞定", "📸 工厂图片最全最清晰，直接发Ozon不用P图", "✅ 找月销1000+的款，有市场验证才安全"],
   },
   {
     id: "taobao",
@@ -40,12 +40,12 @@ const PLATFORMS = [
     textColor: "text-yellow-700",
     searchUrl: (kw: string) => `https://s.taobao.com/search?q=${encodeURIComponent(kw)}&tab=all`,
     tag: "小批量",
-    tips: ["适合测款，起订量低", "价格含零售成本", "速度快，有现货"],
+    tips: ["🧪 先买1-3件测款，跑通了再批量备货", "💰 价格通常比1688高一点，但可以1件起拍", "⚡ 发货快，当天下单当天发"],
   },
   {
     id: "pinduoduo",
     name: "拼多多",
-    desc: "价格最低，适合找极致低价货源",
+    desc: "全网最低价，省钱神器，适合找价格底线",
     icon: "💰",
     color: "from-red-500 to-pink-500",
     bgColor: "bg-red-50",
@@ -53,13 +53,13 @@ const PLATFORMS = [
     textColor: "text-red-700",
     searchUrl: (kw: string) => `https://mobile.pinduoduo.com/search_result.html?search_key=${encodeURIComponent(kw)}`,
     tag: "最低价",
-    tips: ["价格比1688/淘宝便宜10-30%", "部分商品质量参差不齐", "适合找价格基准"],
+    tips: ["💸 价格比其他平台低10-30%，先比价再下单", "🔍 找到心仪款后去1688找同款工厂货，质量更稳", "⚠️ 质量参差不齐，建议小批量先试卖"],
   },
 ];
 
 const POPULAR_SEARCHES = [
-  "手机壳", "蓝牙耳机", "毛绒玩具", "草帽", "首饰", "运动手环",
-  "LED灯", "充电宝", "保温杯", "瑜伽垫", "宠物玩具", "丝巾",
+  "猫咪抱枕", "拉布布公仔", "氛围小夜灯", "毛绒玩具", "硅胶手机壳", "运动手环",
+  "网红发夹", "保温杯", "宠物玩具", "卡通钥匙扣", "香薰蜡烛", "儿童发饰",
 ];
 
 interface Props {
@@ -86,8 +86,8 @@ export function YiwugoSearch({ onImport }: Props) {
           <ShoppingBag size={16} className="text-white" />
         </div>
         <div>
-          <p className="text-sm font-bold text-gray-800">货源搜索</p>
-          <p className="text-xs text-gray-500">义乌购 · 1688 · 淘宝 · 拼多多，一键跳转</p>
+          <p className="text-sm font-bold text-gray-800">输入想卖的宝贝，AI帮你搬到俄罗斯卖卢布 💰</p>
+          <p className="text-xs text-gray-400">全网爆款一键收割 · 义乌购 · 1688 · 淘宝 · 拼多多</p>
         </div>
       </div>
 
@@ -124,7 +124,7 @@ export function YiwugoSearch({ onImport }: Props) {
               value={keyword}
               onChange={e => setKeyword(e.target.value)}
               onKeyDown={e => e.key === "Enter" && openSearch()}
-              placeholder={`在 ${platform.name} 搜索商品...`}
+              placeholder={`输入想卖的宝贝，比如"猫咪抱枕"...`}
               className="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-300 bg-gray-50"
             />
           </div>
@@ -136,22 +136,27 @@ export function YiwugoSearch({ onImport }: Props) {
           </button>
         </div>
 
-        {/* 热门关键词 */}
-        <div className="flex flex-wrap gap-1.5">
-          {POPULAR_SEARCHES.map(kw => (
-            <button key={kw}
-              onClick={() => setKeyword(kw)}
-              className="text-xs px-2.5 py-1 rounded-full bg-gray-100 text-gray-600 hover:bg-green-100 hover:text-green-700 transition-all">
-              {kw}
-            </button>
-          ))}
+        {/* 全网爆款一键收割 */}
+        <div>
+          <p className="text-xs text-gray-400 mb-1.5">🔥 当前俄罗斯爆卖款：</p>
+          <div className="flex flex-wrap gap-1.5">
+            {POPULAR_SEARCHES.map(kw => (
+              <button key={kw}
+                onClick={() => setKeyword(kw)}
+                className="text-xs px-2.5 py-1 rounded-full bg-gray-100 text-gray-600 hover:bg-green-100 hover:text-green-700 transition-all">
+                {kw}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* 平台提示 */}
         <div className={`${platform.bgColor} border ${platform.borderColor} rounded-xl p-3`}>
           <div className="flex items-center gap-1.5 mb-1.5">
             <Lightbulb size={12} className={platform.textColor} />
-            <p className={`text-xs font-semibold ${platform.textColor}`}>{platform.name} 使用提示</p>
+            <p className={`text-xs font-semibold ${platform.textColor}`}>
+              {platform.id === "yiwugo" ? "🏅 宝妈避坑提示" : platform.id === "1688" ? "✅ 高手用法" : "💡 小贴士"}
+            </p>
           </div>
           <ul className="space-y-0.5">
             {platform.tips.map((tip, i) => (

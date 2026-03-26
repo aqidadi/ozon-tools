@@ -117,10 +117,12 @@ export function UrlImportBox({ onImport, onBatchImport }: Props & { onBatchImpor
   return (
     <div className="bg-white rounded-xl border border-gray-200 mb-5 overflow-hidden">
       {/* Header */}
-      <div className="flex items-center gap-2 px-4 pt-4 pb-3">
+      <div className="flex items-center gap-2 px-4 pt-4 pb-2">
         <Link2 size={15} className="text-blue-500" />
-        <span className="text-sm font-medium text-gray-700">粘贴1688商品链接直接导入</span>
-        <span className="text-xs text-gray-400">无需安装插件</span>
+        <div>
+          <span className="text-sm font-bold text-gray-800">像发朋友圈一样简单 🚀</span>
+          <p className="text-xs text-gray-400 mt-0.5">复制1688链接贴这里，AI俄化+改价+上架，我们全包！无需PS，无需俄语，30秒搞定一件跨境爆款</p>
+        </div>
         <div className="ml-auto flex items-center gap-1">
           <button
             onClick={() => { setBatchMode(false); setBatchResults([]); }}

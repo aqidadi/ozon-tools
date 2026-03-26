@@ -682,9 +682,9 @@ export function GuidePage() {
       <div>
         <div className="flex items-center gap-2 mb-1">
           <BookOpen className="text-indigo-600" size={20} />
-          <h2 className="text-lg font-bold text-gray-900">跨境电商完全免费指南</h2>
+          <h2 className="text-lg font-bold text-gray-900">📖 给宝妈的0成本跨境创业白皮书</h2>
         </div>
-        <p className="text-sm text-gray-400">覆盖 Ozon / 亚马逊 / TikTok Shop / Shopee，从0到第一单，全程免费教学</p>
+        <p className="text-sm text-gray-400">不卖课 · 不收智商税 · 覆盖Ozon/亚马逊/TikTok全平台，手把手带你从0到第一单</p>
       </div>
 
       <div className="space-y-3">
