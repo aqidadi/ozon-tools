@@ -82,8 +82,8 @@ const DEFAULT_SETTINGS: Settings = {
 type Tab = "landing" | "products" | "ozon" | "hot" | "picker" | "guide" | "tools" | "mintools" | "clock" | "monitor" | "analytics" | "settings" | "batch";
 
 const NAV_ITEMS = [
-  { id: "guide",     label: "🔥 新手指南", icon: BookOpen,     color: "red", badge: "免费教学" },
-  { id: "landing",   label: "关于我们", icon: Globe,        color: "blue" },
+  { id: "landing",   label: "首页",     icon: Globe,        color: "blue" },
+  { id: "guide",     label: "🔥 新手指南", icon: BookOpen,  color: "red", badge: "免费教学" },
   { id: "hot",       label: "爆品榜单", icon: Flame,        color: "red" },
   { id: "batch",     label: "批量导入", icon: DatabaseZap,  color: "purple" },
   { id: "products",  label: "选品列表", icon: Package,      color: "blue" },
@@ -119,7 +119,7 @@ export default function Home() {
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const [showAddModal, setShowAddModal] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<Tab>("guide");
+  const [tab, setTab] = useState<Tab>("landing");
   const [translatingAll, setTranslatingAll] = useState(false);
   const [targetLang, setTargetLang] = useState("ru");
 
@@ -521,40 +521,67 @@ function LandingPage({ onStart }: { onStart: () => void }) {
   const { user } = useAuth();
 
   return (
-    <div className="max-w-2xl mx-auto space-y-10 py-4">
+    <div className="max-w-2xl mx-auto space-y-8 py-4">
 
-      {/* 主口号 Hero */}
-      <div className="text-center pt-6">
-        <div className="inline-flex items-center gap-2 bg-indigo-50 text-indigo-600 text-xs font-semibold px-4 py-1.5 rounded-full mb-6 border border-indigo-100">
-          🚀 Crossly · 跨境工具箱
-        </div>
+      {/* ── 主 Hero：核心3句话钉死在这里 ── */}
+      <div className="relative rounded-3xl overflow-hidden text-center"
+        style={{ background: "linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)" }}>
 
-        <h1 className="text-5xl font-black text-gray-900 leading-tight tracking-tight mb-4">
-          让跨境像
-          <span style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-            微商
-          </span>
-          一样简单
-        </h1>
+        {/* 背景光晕 */}
+        <div className="absolute inset-0 opacity-30"
+          style={{ backgroundImage: "radial-gradient(circle at 30% 40%, #6366f1 0%, transparent 55%), radial-gradient(circle at 75% 20%, #a855f7 0%, transparent 45%)" }} />
 
-        <p className="text-lg text-gray-500 leading-relaxed max-w-xl mx-auto mb-2">
-          我们不想赚你的钱，我们想改变一个行业。
-        </p>
-        <p className="text-base text-gray-400 leading-relaxed max-w-xl mx-auto mb-8">
-          让跨境不再神秘，让每一个普通人——宝妈、学生、上班族——
-          <br />都可以用手机轻松开始做跨境，月入几千，无需仓库，无需经验。
-        </p>
+        <div className="relative z-10 px-8 pt-10 pb-8">
+          {/* 徽章 */}
+          <div className="inline-flex items-center gap-2 bg-white/10 text-white/70 text-xs font-semibold px-4 py-1.5 rounded-full mb-6 border border-white/20">
+            🚀 Crossly · 让跨境像微商一样简单
+          </div>
 
-        <div className="flex items-center justify-center gap-3">
-          <button onClick={onStart}
-            className="px-8 py-3 rounded-2xl text-base font-bold text-white shadow-xl transition-all hover:scale-105 hover:shadow-2xl"
-            style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)" }}>
-            免费开始 →
-          </button>
-          <a href="https://crossly.cn" target="_blank"
-            className="px-6 py-3 rounded-2xl text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors">
-            了解更多
-          </a>
+          {/* 主口号 */}
+          <h1 className="text-4xl font-black text-white leading-tight mb-6">
+            让跨境像<span style={{ background: "linear-gradient(90deg, #a78bfa, #60a5fa)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>微商</span>一样简单
+          </h1>
+
+          {/* ── 3句话钉死区域 ── */}
+          <div className="space-y-3 mb-8 text-left max-w-sm mx-auto">
+            <div className="flex items-start gap-3 bg-white/10 rounded-2xl px-5 py-4 border border-white/10">
+              <span className="text-2xl flex-shrink-0">✨</span>
+              <div>
+                <p className="text-white font-bold text-sm mb-0.5">在 Crossly，我们不只提供工具，我们提供可能。</p>
+                <p className="text-white/50 text-xs">普通人也能轻松开启属于自己的跨境之路</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3 bg-white/10 rounded-2xl px-5 py-4 border border-white/10">
+              <span className="text-2xl flex-shrink-0">🚫</span>
+              <div>
+                <p className="text-white font-bold text-sm mb-0.5">零基础：无需俄语，无需 PS，AI 帮你搞定一切。</p>
+                <p className="text-white/50 text-xs">图片自动翻译，标题自动生成，小白也能上手</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3 bg-white/10 rounded-2xl px-5 py-4 border border-white/10">
+              <span className="text-2xl flex-shrink-0">📚</span>
+              <div>
+                <p className="text-white font-bold text-sm mb-0.5">零门槛：全网跨境干货免费学，我们帮你拆掉所有围墙。</p>
+                <p className="text-white/50 text-xs">不卖课，不收智商税，所有教程永久免费</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3 bg-white/10 rounded-2xl px-5 py-4 border border-white/10">
+              <span className="text-2xl flex-shrink-0">⚡</span>
+              <div>
+                <p className="text-white font-bold text-sm mb-0.5">全自动：像做微商一样简单，复制链接，剩下的交给我们。</p>
+                <p className="text-white/50 text-xs">30秒一件商品，自动发布到Ozon，坐等收卢布</p>
+              </div>
+            </div>
+          </div>
+
+          {/* CTA按钮 */}
+          <div className="flex items-center justify-center gap-3">
+            <button onClick={onStart}
+              className="px-8 py-3 rounded-2xl text-base font-bold text-white shadow-xl transition-all hover:scale-105"
+              style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)" }}>
+              {user ? "进入工作台 →" : "免费开始，不用注册 →"}
+            </button>
+          </div>
         </div>
       </div>
 
