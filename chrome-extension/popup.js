@@ -267,14 +267,28 @@ function extractProductData() {
         if (detailImages.length >= 40) break;
       }
 
-      // 规格参数
+      // 规格参数（支持多种结构）
       const specs = {};
       for (const row of document.querySelectorAll("table tr")) {
         const cells = row.querySelectorAll("td, th");
-        for (let i = 0; i + 1 < cells.length; i += 2) {
-          const k = cells[i].textContent.trim().replace(/：$/,"").slice(0, 20);
-          const v = cells[i+1].textContent.trim().slice(0, 100);
-          if (k && v && !specs[k]) specs[k] = v;
+        if (cells.length >= 2) {
+          // 标准两列格式
+          for (let i = 0; i + 1 < cells.length; i += 2) {
+            const k = cells[i].textContent.trim().replace(/：$/,"").slice(0, 20);
+            const v = cells[i+1].textContent.trim().slice(0, 100);
+            if (k && v && !specs[k]) specs[k] = v;
+          }
+        } else if (cells.length === 1) {
+          // 单td，key和value用tab或冒号分隔（1688常见）
+          const text = cells[0].textContent.trim();
+          const tabIdx = text.indexOf("\t");
+          const colonIdx = text.indexOf("：") !== -1 ? text.indexOf("：") : text.indexOf(":");
+          const splitIdx = tabIdx > 0 ? tabIdx : colonIdx;
+          if (splitIdx > 0) {
+            const k = text.slice(0, splitIdx).trim().replace(/：$/,"").slice(0, 20);
+            const v = text.slice(splitIdx+1).trim().slice(0, 100);
+            if (k && v && !specs[k]) specs[k] = v;
+          }
         }
       }
       if (Object.keys(specs).length === 0) {
