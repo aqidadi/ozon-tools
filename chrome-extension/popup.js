@@ -910,26 +910,45 @@ async function setTab(tab, settings, tabId, condition) {
       }});
       await new Promise(r => setTimeout(r, 2000));
 
-      // 第三步：用 allFrames:true 抓图片（穿透iframe）
+      // 第三步：用 allFrames:true + 多选择器 抓主图（Gemini方案）
       let grabbedImages = [];
       try {
         const imgResults = await chrome.scripting.executeScript({
           target: { tabId, allFrames: true },
           func: () => {
-            const imgs = document.querySelectorAll("img.preview-img, img.ant-image-img");
-            if (imgs.length === 0) return [];
-            return Array.from(imgs).map(img => {
-              const src = img.src || img.getAttribute("data-src") || "";
-              return src.replace(/_\d+x\d+[^.]*\.(jpg|jpeg|png|webp)$/i, ".$1");
-            }).filter(s => s.startsWith("http") && /\.(jpg|jpeg|png|webp)/i.test(s));
+            const selectors = [
+              "img.preview-img",
+              "img.active-preview-img",
+              ".tab-content-container img",
+              ".vertical-img-list img",
+              ".nav-tabs img",
+              "[class*='gallery'] img",
+              "[class*='thumb'] img",
+              "[class*='swiper'] img",
+            ];
+            let allImgs = [];
+            selectors.forEach(sel => {
+              allImgs = allImgs.concat(Array.from(document.querySelectorAll(sel)));
+            });
+            if (allImgs.length === 0) return [];
+            const results = allImgs.map(img => {
+              let rawUrl = img.getAttribute("data-lazy-src") || img.getAttribute("data-src") || img.getAttribute("src") || "";
+              if (!rawUrl || rawUrl.includes("blank.gif") || rawUrl.includes("spaceball")) return null;
+              if (rawUrl.startsWith("//")) rawUrl = "https:" + rawUrl;
+              // 去掉缩略图后缀，还原高清图
+              rawUrl = rawUrl.replace(/_\d+x\d+[^.]*\.(jpg|jpeg|png|webp)/i, ".$1");
+              if (!/\.(jpg|jpeg|png|webp)/i.test(rawUrl)) return null;
+              return rawUrl;
+            }).filter(Boolean);
+            // 去重，过滤掉非图片域名
+            return [...new Set(results)].filter(url =>
+              url.includes("alicdn.com") || url.includes("aliyuncs.com") || url.includes("1688.com")
+            );
           }
         });
-        const seen = new Set();
-        for (const r of imgResults) {
-          for (const src of (r.result || [])) {
-            if (src && !seen.has(src)) { seen.add(src); grabbedImages.push(src); }
-          }
-        }
+        // 扁平化合并所有frame结果并去重
+        const allCaptured = imgResults.flatMap(r => r.result || []).filter(Boolean);
+        grabbedImages = [...new Set(allCaptured)];
       } catch(e) {}
 
       // 第四步：抓其他数据（标题、价格、规格）
