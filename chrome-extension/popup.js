@@ -1037,21 +1037,20 @@ async function setTab(tab, settings, tabId, condition) {
               }
             }
 
-            // 终极提纯：只保留 cbu01.alicdn.com/img/ibank/ 路径的真实商品图
-            const BLACKLIST = ['logo','setting','icon','loading','placeholder','avatar','canvas','check','banner','helpIcon','platform','alphashop','spaceball','blank','\.gif'];
-            function purify(urlSet) {
-              return [...new Set([...urlSet])]
-                .map(u => u.replace(/[_.](\d+x\d+)[^"'\s]*/gi, "").replace(/_(sum|compress|q\d+)[^"'\s]*/gi, ""))
-                .filter(u => {
-                  if (!u || u.length < 50) return false;
-                  if (BLACKLIST.some(kw => u.toLowerCase().includes(kw))) return false;
-                  // 只保留 cbu01.alicdn.com/img/ibank/ 路径（1688商品图唯一特征）
-                  return u.includes("cbu01.alicdn.com") && u.includes("/img/");
-                });
-            }
+            // 终极黑白名单过滤
+            const filterImages = (urls) => {
+              const blackList = ['logo','setting','icon','loading','placeholder','avatar','check','gear','banner','alphashop','platform','helpIcon','spaceball','blank'];
+              return [...new Set(urls)].filter(url => {
+                const lower = url.toLowerCase();
+                const isGarbage = blackList.some(key => lower.includes(key));
+                const isProductImg = url.includes("ibank") || url.includes("cbu01.alicdn.com/img/");
+                const isThumbnail = /_\d+x\d+/.test(url) && !url.includes("800x800");
+                return !isGarbage && isProductImg && !isThumbnail;
+              });
+            };
 
-            const finalMain = purify(mainImgs).slice(0, 10);
-            const finalDetail = purify(detailImgs)
+            const finalMain = filterImages([...mainImgs]).slice(0, 10);
+            const finalDetail = filterImages([...detailImgs])
               .filter(u => !finalMain.includes(u))
               .slice(0, 15);
 
