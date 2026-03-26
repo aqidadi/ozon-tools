@@ -532,18 +532,69 @@ export function GuidePage() {
   const [openSection, setOpenSection] = useState<string | null>(null);
 
   return (
-    <div className="max-w-3xl mx-auto">
-      <div className="mb-6">
-        <div className="flex items-center gap-2 mb-1">
-          <BookOpen className="text-indigo-600" size={20} />
-          <h2 className="text-lg font-bold text-gray-900">跨境电商完全指南</h2>
+    <div className="max-w-3xl mx-auto space-y-6">
+
+      {/* 置顶：0基础新手卡 */}
+      <div className="rounded-3xl overflow-hidden"
+        style={{ background: "linear-gradient(135deg, #1e2d5a 0%, #2d1b69 60%, #0f172a 100%)" }}>
+        <div className="p-6">
+          <div className="inline-flex items-center gap-2 bg-white/10 text-white/80 text-xs font-semibold px-3 py-1 rounded-full mb-4 border border-white/20">
+            🎯 完全免费 · 0门槛入门
+          </div>
+          <h2 className="text-2xl font-black text-white mb-2">
+            跨境不难，真的。
+          </h2>
+          <p className="text-white/60 text-sm mb-5 leading-relaxed">
+            很多人觉得跨境很复杂、很神秘，其实核心只有3件事。<br />
+            我们手把手教你，不卖课，不收费，看完就会。
+          </p>
+
+          {/* 3步 */}
+          <div className="space-y-3">
+            {[
+              { n: "1", title: "在1688找到一个卖得好的商品", detail: "看月销量>1000，价格<30元，体积小重量轻（省运费）", color: "#6366f1" },
+              { n: "2", title: "用Crossly一键导入，自动翻译定价", detail: "插件抓图、AI翻译俄文、系统自动算卢布售价，30秒搞定", color: "#8b5cf6" },
+              { n: "3", title: "点发布，等收钱", detail: "商品自动上架Ozon，货代收货发货，你只需要在1688下单", color: "#a855f7" },
+            ].map(s => (
+              <div key={s.n} className="flex items-start gap-3 bg-white/5 rounded-2xl p-4">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-white text-sm font-black"
+                  style={{ background: s.color }}>
+                  {s.n}
+                </div>
+                <div>
+                  <p className="text-white font-semibold text-sm">{s.title}</p>
+                  <p className="text-white/50 text-xs mt-0.5 leading-relaxed">{s.detail}</p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
-        <p className="text-sm text-gray-500">覆盖 Ozon / 亚马逊 / TikTok Shop / Shopee / Lazada 全平台，从选品到运营系统学习</p>
-        <div className="flex flex-wrap gap-2 mt-2">
-          {["🛒 Ozon", "📦 亚马逊", "🎵 TikTok Shop", "🌟 Shopee", "🛍️ Lazada", "⚡ 速卖通"].map(p => (
-            <span key={p} className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{p}</span>
+
+        {/* 底部快速导航 */}
+        <div className="border-t border-white/10 px-6 py-4 flex flex-wrap gap-2">
+          <span className="text-white/40 text-xs self-center mr-2">快速跳转：</span>
+          {[
+            { label: "📦 我要做Ozon", id: "ozon-start" },
+            { label: "🔍 怎么选品", id: "select" },
+            { label: "✈️ 物流怎么做", id: "logistics" },
+            { label: "💰 怎么定价", id: "pricing" },
+          ].map(link => (
+            <button key={link.id}
+              onClick={() => setOpenGuide(link.id)}
+              className="text-xs bg-white/10 hover:bg-white/20 text-white/80 px-3 py-1.5 rounded-full transition-colors border border-white/10">
+              {link.label}
+            </button>
           ))}
         </div>
+      </div>
+
+      {/* 页面标题 */}
+      <div>
+        <div className="flex items-center gap-2 mb-1">
+          <BookOpen className="text-indigo-600" size={20} />
+          <h2 className="text-lg font-bold text-gray-900">跨境电商完全免费指南</h2>
+        </div>
+        <p className="text-sm text-gray-400">覆盖 Ozon / 亚马逊 / TikTok Shop / Shopee，从0到第一单，全程免费教学</p>
       </div>
 
       <div className="space-y-3">

@@ -81,17 +81,17 @@ const DEFAULT_SETTINGS: Settings = {
 type Tab = "landing" | "products" | "ozon" | "hot" | "picker" | "guide" | "tools" | "mintools" | "clock" | "monitor" | "analytics" | "settings" | "batch";
 
 const NAV_ITEMS = [
-  { id: "landing",   label: "首页",     icon: Globe,        color: "blue" },
-  { id: "settings",  label: "参数设置", icon: Settings2,    color: "gray" },
-  { id: "batch",     label: "批量导入", icon: DatabaseZap,  color: "purple", badge: "新" },
+  { id: "guide",     label: "新手指南", icon: BookOpen,     color: "indigo", badge: "免费" },
+  { id: "landing",   label: "关于我们", icon: Globe,        color: "blue" },
+  { id: "hot",       label: "爆品榜单", icon: Flame,        color: "red" },
+  { id: "batch",     label: "批量导入", icon: DatabaseZap,  color: "purple" },
   { id: "products",  label: "选品列表", icon: Package,      color: "blue" },
   { id: "ozon",      label: "Ozon刊登", icon: Zap,          color: "orange", badge: "核心" },
-  { id: "hot",       label: "爆品榜单", icon: Flame,        color: "red" },
   { id: "picker",    label: "选品参考", icon: TrendingUp,   color: "orange" },
-  { id: "guide",     label: "新手指南", icon: BookOpen,     color: "indigo" },
   { id: "tools",     label: "工具导航", icon: Zap,          color: "green" },
   { id: "mintools",  label: "实用工具", icon: Wrench,       color: "teal" },
   { id: "clock",     label: "世界时间", icon: Clock,        color: "cyan" },
+  { id: "settings",  label: "参数设置", icon: Settings2,    color: "gray" },
   { id: "monitor",   label: "价格监控", icon: Bell,         color: "yellow", badge: "预约内测" },
   { id: "analytics", label: "竞品分析", icon: BarChart2,    color: "pink",   badge: "预约内测" },
 ] as { id: Tab; label: string; icon: React.ElementType; color: string; badge?: string }[];
@@ -118,7 +118,7 @@ export default function Home() {
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const [showAddModal, setShowAddModal] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<Tab>("landing");
+  const [tab, setTab] = useState<Tab>("guide");
   const [translatingAll, setTranslatingAll] = useState(false);
   const [targetLang, setTargetLang] = useState("ru");
 
