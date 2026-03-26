@@ -339,11 +339,8 @@ function extractProductData() {
       resolve({ error: e.message });
     }
     };
-    if (typeof requestIdleCallback !== "undefined") {
-      requestIdleCallback(doExtract, { timeout: 2000 });
-    } else {
-      setTimeout(doExtract, 500);
-    }
+    // 直接执行，调用前已通过滚动等待确保渲染完成
+    doExtract();
   });
 }
 
@@ -381,20 +378,20 @@ async function batchImportFromUrls(urls, siteUrl, weight, onProgress) {
       }}).catch(()=>{});
       await new Promise(r => setTimeout(r, 800));
 
-      // 第二步：分段滚动触发懒加载
+      // 第二步：分段滚动触发懒加载（10步，每步400ms）
       await chrome.scripting.executeScript({ target: { tabId: tab.id }, func: () => {
         return new Promise(resolve => {
           const total = document.body.scrollHeight;
-          const steps = 8;
+          const steps = 10;
           let i = 0;
           const timer = setInterval(() => {
             window.scrollTo(0, (total / steps) * i);
             i++;
             if (i > steps) { clearInterval(timer); window.scrollTo(0, 0); resolve(); }
-          }, 300);
+          }, 400);
         });
       }}).catch(()=>{});
-      await new Promise(r => setTimeout(r, 1000));
+      await new Promise(r => setTimeout(r, 2500)); // 等图片渲染完
 
       // 第三步：提取数据
       const res = await chrome.scripting.executeScript({
