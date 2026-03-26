@@ -930,41 +930,38 @@ async function setTab(tab, settings, tabId, condition) {
       }});
       await new Promise(r => setTimeout(r, 1500)); // 等详情图异步加载
 
-      // 第三步：全域模糊匹配 + 硬核过滤
+      // 第三步：全域正则暴力搜索 ibank 图片
       let grabbedImages = [];
       let grabbedDetailImages = [];
       try {
         const imgResults = await chrome.scripting.executeScript({
           target: { tabId, allFrames: true },
           func: () => {
-            let allFound = [];
+            let rawSet = new Set();
 
-            // 1. 模糊匹配所有疑似详情和主图容器
-            const selectors = ['[id*="desc"]','[class*="detail"]','.tab-content-container','.nav-tabs','[class*="gallery"]','[class*="preview"]'];
-            selectors.forEach(sel => {
-              document.querySelectorAll(sel).forEach(container => {
-                container.querySelectorAll("img").forEach(img => {
-                  const url = img.getAttribute("data-lazyload-src") || img.getAttribute("data-src") || img.getAttribute("src") || "";
-                  if (url) allFound.push(url);
-                });
-              });
+            // 1. 全页HTML正则暴力抠ibank链接
+            const htmlString = document.documentElement.outerHTML;
+            const regex = /https?:\/\/cbu01\.alicdn\.com\/img\/ibank\/[0-9a-zA-Z/_.-]+\.jpg/g;
+            (htmlString.match(regex) || []).forEach(m => rawSet.add(m));
+
+            // 2. 扫所有img标签
+            document.querySelectorAll("img").forEach(img => {
+              for (const attr of ["data-lazyload-src","data-lazy-src","data-src","original","src"]) {
+                const val = img.getAttribute(attr);
+                if (val && val.includes("cbu01.alicdn.com")) { rawSet.add(val); break; }
+              }
             });
 
-            // 2. 兜底：全页正则扫 ibank 路径
-            if (allFound.length < 5) {
-              const regex = /https?:\/\/cbu01\.alicdn\.com\/img\/ibank\/[0-9a-zA-Z/_-]+\.jpg/g;
-              const matches = document.documentElement.innerHTML.match(regex) || [];
-              allFound = allFound.concat(matches);
-            }
-
-            // 3. 提纯：黑名单 + 白名单 + 高清化
-            const cleanUrls = [...new Set(allFound)].filter(url => {
-              const isGarbage = /logo|setting|gear|icon|check|avatar|loading/i.test(url);
-              const isProduct = url.includes("ibank") || url.includes("cbu01.alicdn.com");
-              return !isGarbage && isProduct;
-            }).map(url => url.replace(/_\d+x\d+.*\.jpg$/, ""));
-
-            return cleanUrls;
+            // 3. 高清化 + 黑名单过滤
+            return [...new Set(
+              Array.from(rawSet).map(url => {
+                if (url.startsWith("//")) url = "https:" + url;
+                return url.replace(/(_\d+x\d+.*\.jpg$)|(\.\d+x\d+.*\.jpg$)/, "");
+              }).filter(url => {
+                const isGarbage = /logo|setting|icon|gear|check|loading|avatar/i.test(url);
+                return !isGarbage && url.includes("ibank");
+              })
+            )];
           }
         });
 
