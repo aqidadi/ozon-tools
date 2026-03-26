@@ -951,30 +951,23 @@ async function setTab(tab, settings, tabId, condition) {
       try {
         const imgResults = await chrome.scripting.executeScript({
           target: { tabId, allFrames: true },
-          func: async () => {
+          func: () => {
             try {
-              window.scrollBy(0, 500);
-              await new Promise(r => setTimeout(r, 1000));
-              const html = document.documentElement.innerHTML;
-              const regex = /https?:\/\/cbu01\.alicdn\.com\/img\/ibank\/[0-9a-zA-Z!/_.-]+(?=\.jpg)/g;
-              const matches = html.match(regex) || [];
-              const highResUrls = [...new Set(matches)].map(u => u + ".jpg");
-              return highResUrls.filter(u => !/logo|setting|gear|icon|check|avatar|loading|blank/i.test(u));
+              return Array.from(document.querySelectorAll("img"))
+                .map(img => img.getAttribute("data-lazyload-src") || img.src)
+                .filter(src => src && src.includes("cbu01.alicdn.com"));
             } catch(e) { return []; }
           }
         });
 
         // 串行清洗：1.砍参数/webp 2.只留ibank 3.去重
         let rawDirtyUrls = imgResults.flatMap(r => r.result || []).filter(Boolean);
-        // 温和修剪：只切带下划线或点的尺寸标记，不伤ID筋骨
-        const finalHighRes = rawDirtyUrls.map(u =>
-          u.replace(/(_\d+x\d+\.jpg$)|(\.\d+x\d+\.jpg$)/i, "")
+        const finalOutput = [...new Set(
+          rawDirtyUrls.map(url => url.replace(/(_\d+x\d+)/gi, ""))
+        )].filter(url =>
+          url.includes("cbu01.alicdn.com/img/ibank/") &&
+          !/logo|setting|gear|icon|check|avatar|loading|blank|spaceball/i.test(url)
         );
-        const finalOutput = [...new Set(finalHighRes)].filter(url => {
-          const isIbank = url.includes("cbu01.alicdn.com/img/ibank/");
-          const isGarbage = /logo|setting|gear|icon|check|avatar|loading|blank|spaceball/i.test(url);
-          return isIbank && !isGarbage;
-        });
         grabbedImages = finalOutput.slice(0, 10);
         grabbedDetailImages = finalOutput.slice(10, 25);
             } catch(e) {}
