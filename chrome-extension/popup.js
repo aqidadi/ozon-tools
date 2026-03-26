@@ -169,14 +169,33 @@ function extractProductData() {
       }
       if (!title) title = document.title.replace(/[-_|].*?(1688|阿里).*$/, "").trim();
 
-      // 价格 - 优先拦截数据，否则从页面文本提取（取¥符号后的数字，范围1-9999）
-      let price = intercepted.price || 0;
+      // 价格 - 四重优先级，取最准确的值
+      let price = 0;
+      // 1. og meta（最稳）
+      const metaP = document.querySelector("meta[property='og:product:price:amount']")?.content;
+      if (metaP) price = parseFloat(metaP);
+      // 2. 专用price选择器
       if (!price) {
-        // 直接扫描页面文本找¥价格，取最小的合理值（1-9999，最多2位小数）
+        const priceSelectors = [".price-text", ".price-number", ".price-num", "[class*='price-common'] [class*='value']", "[class*='unit-price']"];
+        for (const sel of priceSelectors) {
+          const els = document.querySelectorAll(sel);
+          if (!els.length) continue;
+          const nums = Array.from(els).map(el => parseFloat(el.innerText.replace(/[^\d.]/g,""))).filter(n => n >= 1 && n <= 9999);
+          if (nums.length) { price = Math.min(...nums); break; }
+        }
+      }
+      // 3. 全文¥扫描，取>=1且出现最多的价格（排除运费等噪音）
+      if (!price) {
         const allText = document.body.innerText;
         const matches = [...allText.matchAll(/[¥￥]\s*(\d+(?:\.\d{1,2})?)/g)];
-        const nums = matches.map(m => parseFloat(m[1])).filter(n => n >= 1 && n <= 9999);
-        if (nums.length) price = Math.min(...nums);
+        const nums = matches.map(m => parseFloat(m[1])).filter(n => n >= 1 && n <= 9999 && !isNaN(n));
+        if (nums.length) {
+          // 取出现>=2次的最小值；否则取第一个>=1的
+          const freq = {};
+          nums.forEach(n => freq[n] = (freq[n]||0)+1);
+          const repeated = nums.filter(n => freq[n] >= 2);
+          price = repeated.length ? Math.min(...repeated) : nums[0];
+        }
       }
 
       // 主图 - 优先拦截数据
@@ -1018,18 +1037,26 @@ async function setTab(tab, settings, tabId, condition) {
               }
             }
 
-            // 提纯：去重 + 过滤小图 + 高清化
-            function purify(urlSet) {
+            // 提纯：去重 + 高清化 + 只保留商品大图路径
+            function purify(urlSet, isDetail) {
               return [...new Set([...urlSet])]
-                .filter(u => !isTinyIcon(u) && isAliImg(u))
                 .map(u => {
-                  // 最终高清化：把所有尺寸后缀统一去掉
-                  return u.replace(/_(sum|compress|\d+x\d+)[^"'\s]*/gi, "");
+                  // 彻底去掉所有尺寸后缀
+                  u = u.replace(/[_.](\d+x\d+)[^"'\s]*/gi, "");
+                  u = u.replace(/_(sum|compress|q\d+)[^"'\s]*/gi, "");
+                  return u;
+                })
+                .filter(u => {
+                  if (!u || u.length < 40) return false;
+                  if (/60x60|32x32|50x50|lazyload|blank|spaceball|icon|logo/i.test(u)) return false;
+                  // 详情图只保留ibank路径（最准确的商品大图特征）
+                  if (isDetail) return u.includes("cbu01.alicdn.com") || u.includes("img/ibank");
+                  return isAliImg(u);
                 });
             }
 
-            const finalMain = purify(mainImgs).slice(0, 12);
-            const finalDetail = purify(detailImgs).slice(0, 40);
+            const finalMain = purify(mainImgs, false).slice(0, 12);
+            const finalDetail = purify(detailImgs, true).slice(0, 15); // 只取前15张
 
             return {
               main: finalMain,
