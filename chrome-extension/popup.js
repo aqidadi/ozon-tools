@@ -966,19 +966,15 @@ async function setTab(tab, settings, tabId, condition) {
 
         // 串行清洗：1.砍参数/webp 2.只留ibank 3.去重
         let rawDirtyUrls = imgResults.flatMap(r => r.result || []).filter(Boolean);
-        const superPurify = (urls) => {
-          const normalized = urls.map(u => {
-            let clean = u.split("?")[0].replace(/\.webp$/, "");
-            return clean.replace(/(_\d+x\d+.*\.jpg$)|(\.\d+x\d+.*\.jpg$)/i, "");
-          });
-          const uniqueList = [...new Set(normalized)];
-          return uniqueList.filter(url => {
-            const isIbank = url.includes("cbu01.alicdn.com/img/ibank/");
-            const isGarbage = /logo|setting|gear|icon|check|avatar|loading|blank|spaceball/i.test(url);
-            return isIbank && !isGarbage;
-          });
-        };
-        const finalOutput = superPurify(rawDirtyUrls);
+        // 温和修剪：只切带下划线或点的尺寸标记，不伤ID筋骨
+        const finalHighRes = rawDirtyUrls.map(u =>
+          u.replace(/(_\d+x\d+\.jpg$)|(\.\d+x\d+\.jpg$)/i, "")
+        );
+        const finalOutput = [...new Set(finalHighRes)].filter(url => {
+          const isIbank = url.includes("cbu01.alicdn.com/img/ibank/");
+          const isGarbage = /logo|setting|gear|icon|check|avatar|loading|blank|spaceball/i.test(url);
+          return isIbank && !isGarbage;
+        });
         grabbedImages = finalOutput.slice(0, 10);
         grabbedDetailImages = finalOutput.slice(10, 25);
             } catch(e) {}
