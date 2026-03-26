@@ -663,29 +663,46 @@ function LandingPage({ onStart }: { onStart: () => void }) {
         </div>
       </div>
 
-      {/* 定价 */}
-      <div className="bg-white border border-gray-100 rounded-2xl p-6">
-        <h2 className="text-center text-lg font-bold text-gray-900 mb-1">价格良心，小白友好</h2>
-        <p className="text-center text-xs text-gray-400 mb-5">免费额度100个商品，够你跑通第一单</p>
-        <div className="grid grid-cols-3 gap-3 mb-5">
-          {[
-            { label: "月度会员", price: "¥9.9", sub: "一顿早餐的价格" },
-            { label: "季度会员", price: "¥19.9", sub: "最受欢迎 🔥", hot: true },
-            { label: "年度会员", price: "¥69", sub: "平均¥5.75/月" },
-          ].map(p => (
-            <div key={p.label} className={`border-2 rounded-xl p-4 text-center relative ${p.hot ? "border-indigo-400 bg-indigo-50" : "border-gray-100"}`}>
-              {p.hot && <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-indigo-600 text-white text-[10px] font-bold px-3 py-0.5 rounded-full">推荐</div>}
-              <p className="text-xs text-gray-500 mb-1">{p.label}</p>
-              <p className={`text-2xl font-black ${p.hot ? "text-indigo-600" : "text-gray-900"}`}>{p.price}</p>
-              <p className="text-[10px] text-gray-400 mt-1">{p.sub}</p>
-            </div>
-          ))}
+      {/* 为我充电 */}
+      <div className="rounded-3xl overflow-hidden border border-pink-100"
+        style={{ background: "linear-gradient(135deg, #fdf2f8 0%, #faf5ff 100%)" }}>
+        <div className="px-6 pt-6 pb-4 text-center">
+          <div className="text-3xl mb-3">🔋</div>
+          <h2 className="text-lg font-black text-gray-900 mb-1">给 Crossly 充个电？</h2>
+          <p className="text-sm text-gray-500 leading-relaxed max-w-sm mx-auto mb-1">
+            Crossly 的所有功能永远对新手免费开放。<br />
+            但服务器、AI翻译、图片处理都需要成本。
+          </p>
+          <p className="text-sm font-medium text-pink-600 mb-5">
+            如果 Crossly 帮到了你，请支持我们活下去 ❤️
+          </p>
+
+          <div className="grid grid-cols-3 gap-3 mb-5">
+            {[
+              { label: "喝杯奶茶", price: "¥9.9", sub: "够我们跑1天服务器", emoji: "🧋" },
+              { label: "一顿午饭", price: "¥19.9", sub: "最多人选择 🙏", hot: true, emoji: "🍜" },
+              { label: "一年支持", price: "¥69", sub: "你是我们最强后盾", emoji: "💪" },
+            ].map(p => (
+              <div key={p.label} className={`border-2 rounded-2xl p-4 text-center relative ${p.hot ? "border-pink-400 bg-white shadow-md" : "border-pink-100 bg-white/60"}`}>
+                {p.hot && <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-pink-500 text-white text-[10px] font-bold px-3 py-0.5 rounded-full">感谢最多</div>}
+                <div className="text-xl mb-1">{p.emoji}</div>
+                <p className="text-[11px] text-gray-500 mb-1">{p.label}</p>
+                <p className={`text-2xl font-black ${p.hot ? "text-pink-500" : "text-gray-800"}`}>{p.price}</p>
+                <p className="text-[10px] text-gray-400 mt-1">{p.sub}</p>
+              </div>
+            ))}
+          </div>
+
+          <button onClick={onStart}
+            className="w-full py-3 rounded-2xl text-sm font-bold text-white shadow-lg transition-all hover:scale-[1.02] mb-3"
+            style={{ background: "linear-gradient(135deg, #ec4899, #8b5cf6)" }}>
+            {user ? "进入工作台，先免费用用 →" : "先免费用，赚到钱再支持我们 →"}
+          </button>
+
+          <p className="text-[11px] text-gray-400 leading-relaxed">
+            不充电也完全可以 · 免费额度100个商品 · 够你跑通第一单
+          </p>
         </div>
-        <button onClick={onStart}
-          className="w-full py-3 rounded-2xl text-sm font-bold text-white shadow-lg transition-all hover:scale-[1.02]"
-          style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)" }}>
-          {user ? "进入工作台 →" : "免费注册，立即体验 →"}
-        </button>
       </div>
 
       {/* 底部宣言 */}
