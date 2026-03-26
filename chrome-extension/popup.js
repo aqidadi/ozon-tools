@@ -921,12 +921,21 @@ async function setTab(tab, settings, tabId, condition) {
             function cleanUrl(url) {
               if (!url || url.includes("blank.gif") || url.includes("spaceball")) return null;
               if (url.startsWith("//")) url = "https:" + url;
-              url = url.replace(/_\d+x\d+[^.]*\.(jpg|jpeg|png|webp)/i, ".$1");
+              // 去掉所有缩略图后缀，还原高清图
+              // 匹配 _50x50.jpg / _220x220.jpg / _60x60xz.jpg 等各种格式
+              url = url.replace(/_\d+x\d+[^"'\s]*\.(jpg|jpeg|png|webp)/gi, ".$1");
+              url = url.replace(/_\d+x\d+/gi, ""); // 去掉残留的 _NxN
               if (!/\.(jpg|jpeg|png|webp)/i.test(url)) return null;
               return url;
             }
             function isAliImg(url) {
               return url.includes("alicdn.com") || url.includes("aliyuncs.com") || url.includes("1688.com");
+            }
+            function isTinyIcon(url) {
+              // 过滤掉图标/logo小图
+              return /_\d{1,2}x\d{1,2}\./.test(url) || 
+                     /\/icon|\/logo|favicon|\.gif/i.test(url) ||
+                     url.length < 40;
             }
 
             // 主图选择器
@@ -1009,9 +1018,22 @@ async function setTab(tab, settings, tabId, condition) {
               }
             }
 
+            // 提纯：去重 + 过滤小图 + 高清化
+            function purify(urlSet) {
+              return [...new Set([...urlSet])]
+                .filter(u => !isTinyIcon(u) && isAliImg(u))
+                .map(u => {
+                  // 最终高清化：把所有尺寸后缀统一去掉
+                  return u.replace(/_(sum|compress|\d+x\d+)[^"'\s]*/gi, "");
+                });
+            }
+
+            const finalMain = purify(mainImgs).slice(0, 12);
+            const finalDetail = purify(detailImgs).slice(0, 40);
+
             return {
-              main: [...mainImgs].slice(0, 15),
-              detail: [...detailImgs].slice(0, 40),
+              main: finalMain,
+              detail: finalDetail,
             };
           }
         });
