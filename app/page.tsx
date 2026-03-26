@@ -80,6 +80,7 @@ type Tab = "landing" | "products" | "ozon" | "hot" | "picker" | "guide" | "tools
 
 const NAV_ITEMS = [
   { id: "landing",   label: "首页",     icon: Globe,      color: "blue" },
+  { id: "settings",  label: "参数设置", icon: Settings2,  color: "gray" },
   { id: "products",  label: "选品列表", icon: Package,    color: "blue" },
   { id: "ozon",      label: "Ozon刊登", icon: Zap,        color: "orange", badge: "核心" },
   { id: "hot",       label: "爆品榜单", icon: Flame,      color: "red" },
@@ -90,7 +91,6 @@ const NAV_ITEMS = [
   { id: "clock",     label: "世界时间", icon: Clock,      color: "cyan" },
   { id: "monitor",   label: "价格监控", icon: Bell,       color: "yellow", badge: "预约内测" },
   { id: "analytics", label: "竞品分析", icon: BarChart2,  color: "pink",   badge: "预约内测" },
-  { id: "settings",  label: "参数设置", icon: Settings2,  color: "gray" },
 ] as { id: Tab; label: string; icon: React.ElementType; color: string; badge?: string }[];
 
 // 深色侧边栏下，所有激活态统一用白色高亮
