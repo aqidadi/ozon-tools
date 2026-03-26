@@ -3,6 +3,7 @@
 import React, { useState, useCallback, useEffect, useRef } from "react";
 import { ProductCard } from "@/components/ProductCard";
 import { SettingsPanel } from "@/components/SettingsPanel";
+import { OzonPublishPage } from "@/components/OzonPublishPage";
 import { AddProductModal } from "@/components/AddProductModal";
 import { PickerPage } from "@/components/PickerPage";
 import { GuidePage } from "@/components/GuidePage";
@@ -75,11 +76,12 @@ const DEFAULT_SETTINGS: Settings = {
   packagingCost: 2,
 };
 
-type Tab = "landing" | "products" | "hot" | "picker" | "guide" | "tools" | "mintools" | "clock" | "monitor" | "analytics" | "settings";
+type Tab = "landing" | "products" | "ozon" | "hot" | "picker" | "guide" | "tools" | "mintools" | "clock" | "monitor" | "analytics" | "settings";
 
 const NAV_ITEMS = [
   { id: "landing",   label: "首页",     icon: Globe,      color: "blue" },
   { id: "products",  label: "选品列表", icon: Package,    color: "blue" },
+  { id: "ozon",      label: "Ozon刊登", icon: Zap,        color: "orange", badge: "核心" },
   { id: "hot",       label: "爆品榜单", icon: Flame,      color: "red" },
   { id: "picker",    label: "选品参考", icon: TrendingUp, color: "orange" },
   { id: "guide",     label: "新手指南", icon: BookOpen,   color: "indigo" },
@@ -345,6 +347,7 @@ export default function Home() {
           {tab === "tools" && <ToolsPage />}
           {tab === "mintools" && <MiniToolsPage />}
           {tab === "clock" && <ClockPage />}
+          {tab === "ozon" && <OzonPublishPage products={products} settings={settings} />}
           {tab === "settings" && <SettingsPanel settings={settings} onChange={setSettings} />}
           {tab === "monitor" && (
             <ComingSoon title="价格监控" icon="🔔" desc="自动监控竞品价格变动，价格下跌时及时提醒，帮你抓住调价时机。" color="yellow" />
