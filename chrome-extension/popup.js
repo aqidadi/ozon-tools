@@ -1174,25 +1174,24 @@ async function setTab(tab, settings, tabId, condition) {
               return [...new Set(finalUrls)];
             }
 
-            // 1688抓取（默认）：扫全页HTML，覆盖所有阿里系图片域名
+            // 1688抓取（默认）：只抓 ibank 路径的商品图，这是1688商品图专属CDN路径
             const rawText = document.documentElement.outerHTML;
-            // 覆盖 cbu01.alicdn / img.alicdn / gw.alicdn / img.1688 / sc.alicdn 等
-            const regex = /https?:\/\/(?:cbu01|img|gw|sc|p)\.(?:alicdn|1688)\.com\/(?:img\/ibank|imgextra|i\d|kf|fban|bao|cms)\/[^"'\s>?#]{10,}\.(?:jpg|jpeg|png|webp)/gi;
-            const matches = rawText.match(regex) || [];
-            // 同时扫 img 标签的 data-src 属性（懒加载）
-            const dataSrcMatches = [...rawText.matchAll(/data-src=["'](https?:\/\/[^"']+\.(?:jpg|jpeg|png|webp))/gi)].map(m => m[1]);
-            return [...new Set([...matches, ...dataSrcMatches])].map(url => url.split("?")[0]);
+            // ibank 路径是1688商品图专属，不会出现logo/吉祥物等杂图
+            const ibankRegex = /https?:\/\/cbu01\.alicdn\.com\/img\/ibank\/[^"'\s>?#]{10,}\.(?:jpg|jpeg|png)/gi;
+            const ibankMatches = rawText.match(ibankRegex) || [];
+            // 清理尺寸参数，换成原图
+            const cleaned = [...new Set(ibankMatches)].map(url => 
+              url.split("?")[0].replace(/(_\d+x\d+|_\d+x\d+xz)(?=\.(jpg|jpeg|png))/i, "")
+            );
+            console.log("Crossly ibank图片:", cleaned.length, "张");
+            return cleaned;
           }
         });
 
-        // 串行清洗：只保留阿里系图片，去重
+        // ibank 图片直接用，前10张主图，后续详情图
         const allRaw = imgResults.flatMap(r => r.result || []).filter(Boolean);
-        const finalUnique = [...new Set(allRaw)].filter(u =>
-          /alicdn\.com|aliyuncs\.com|1688\.com|yiwugou\.com|yiwugo\.com/i.test(u) &&
-          !/logo|icon|avatar|taobao|tmall|jd\.com|pinduoduo|xiaohongshu|tiktok|douyin|weixin|wechat/i.test(u) &&
-          u.length > 30
-        );
-        console.log("Crossly frames结果:", imgResults.map((r,i) => `frame${i}:${(r.result||[]).length}张`).join(", "), "→合并去重后:", finalUnique.length, "张");
+        const finalUnique = [...new Set(allRaw)];
+        console.log("Crossly 合并去重:", finalUnique.length, "张ibank图");
         grabbedImages = finalUnique.slice(0, 10);
         grabbedDetailImages = finalUnique.slice(10, 25);
             } catch(e) {}

@@ -13,6 +13,7 @@ const DEFAULT: Settings = {
   platformCode: "RUB",
   exchangeRate: 12.5,
   shippingRatePerGram: 0.025,
+  shippingPerItem: 0,
   platformFeeRate: 0.15,
   packagingCost: 2,
 };
@@ -111,9 +112,18 @@ export function SettingsPanel({ settings, onChange }: Props) {
 
   const fields = [
     {
+      key: "shippingPerItem" as keyof Settings,
+      label: "头程运费",
+      desc: "每件商品的头程物流成本（元/件），留0则按克数计算",
+      suffix: "元/件",
+      step: 1,
+      min: 0,
+      display: local.shippingPerItem || 0,
+    },
+    {
       key: "shippingRatePerGram" as keyof Settings,
-      label: "运费单价",
-      desc: "每克重量的运费成本",
+      label: "运费单价（备用）",
+      desc: "头程运费为0时按重量计算：元/克",
       suffix: "元/克",
       step: 0.001,
       min: 0,

@@ -72,6 +72,7 @@ const DEFAULT_SETTINGS: Settings = {
   platformCode: "RUB",
   exchangeRate: 12.5,
   shippingRatePerGram: 0.025,
+  shippingPerItem: 0,
   platformFeeRate: 0.15,
   packagingCost: 2,
 };

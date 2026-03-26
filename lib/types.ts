@@ -23,7 +23,8 @@ export const PLATFORMS: PlatformConfig[] = [
 export interface Settings {
   platformCode: string;       // 当前平台货币代码（默认 "RUB"）
   exchangeRate: number;       // 汇率：1元 = X目标货币
-  shippingRatePerGram: number; // 运费：元/克
+  shippingRatePerGram: number; // 运费：元/克（旧字段，兼容保留）
+  shippingPerItem: number;    // 头程运费：元/件（优先使用）
   platformFeeRate: number;    // 平台佣金比例（0.15 = 15%）
   packagingCost: number;      // 包装费（元）
 }
@@ -110,7 +111,9 @@ export function calcCost(product: Product, settings: Settings): CostBreakdown {
   const currencySymbol = platform.symbol;
 
   const purchasePrice = product.price;
-  const shippingCost = product.weight * settings.shippingRatePerGram;
+  const shippingCost = settings.shippingPerItem > 0
+    ? settings.shippingPerItem
+    : product.weight * settings.shippingRatePerGram;
   const packagingCost = settings.packagingCost;
 
   const sellPriceLocal = getSellPrice(product, settings.platformCode);
