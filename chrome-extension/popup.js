@@ -646,6 +646,12 @@ function renderProduct(product, settings) {
       📤 发送到选品工具
     </button>
 
+    <button class="btn" id="calcProfitBtn" style="margin-top:6px;background:#f0fdf4;color:#16a34a;border:1px solid #86efac;">
+      💰 计算利润建议
+    </button>
+
+    <div id="profitAdvice" style="display:none;margin-top:8px;padding:10px;background:#f0fdf4;border:1px solid #86efac;border-radius:8px;font-size:12px;"></div>
+
     ${!detailCount ? `
       <div style="margin-top:8px;padding:8px;background:#fffbeb;border:1px solid #fde68a;border-radius:6px;font-size:11px;color:#92400e;">
         ⚠️ 详情图未抓到。请向下滚动页面让图片加载后，再点击插件重新识别。
@@ -661,6 +667,52 @@ function renderProduct(product, settings) {
   `;
 
   document.getElementById("sendBtn").addEventListener("click", handleSend);
+
+  document.getElementById("calcProfitBtn").addEventListener("click", () => {
+    const price = product.price || 0;
+    const weight = parseFloat(document.getElementById("weightInput")?.value || settings.weight || 400);
+    const sellPrice = parseFloat(document.getElementById("sellPriceInput")?.value || 0);
+    const currency = document.getElementById("currencySelect")?.value || "RUB";
+
+    // 估算成本
+    const shipping = weight / 1000 * 25; // 约25元/公斤
+    const packaging = 2;
+    const commission = currency === "RUB" ? 0.15 : 0.10; // Ozon约15%佣金
+    const totalCost = price + shipping + packaging;
+
+    // 汇率参考（粗略）
+    const rates = { RUB: 13.5, USD: 7.2, THB: 0.2, VND: 0.00029, IDR: 0.00045, MYR: 1.6, AED: 1.96, BRL: 1.4 };
+    const rate = rates[currency] || 1;
+
+    // 保本价（含佣金）
+    const breakEvenLocal = (totalCost / rate) / (1 - commission);
+    const breakEvenStr = breakEvenLocal.toFixed(0);
+
+    // 建议售价（保本价 * 1.3，留30%利润）
+    const suggestPrice = (breakEvenLocal * 1.3).toFixed(0);
+    const profitRate = sellPrice > 0 ? (((sellPrice * (1-commission) * rate) - totalCost) / totalCost * 100).toFixed(1) : null;
+
+    const symbol = { RUB: "₽", USD: "$", THB: "฿", VND: "₫", IDR: "Rp", MYR: "RM", AED: "د.إ", BRL: "R$" };
+    const sym = symbol[currency] || currency;
+
+    const adviceEl = document.getElementById("profitAdvice");
+    adviceEl.style.display = "block";
+    adviceEl.innerHTML = `
+      <div style="font-weight:600;color:#15803d;margin-bottom:6px;">💰 利润分析</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:11px;">
+        <div>📦 进价：<strong>¥${price.toFixed(2)}</strong></div>
+        <div>🚚 运费估算：<strong>¥${shipping.toFixed(2)}</strong></div>
+        <div>📦 包材：<strong>¥${packaging}</strong></div>
+        <div>💸 总成本：<strong>¥${totalCost.toFixed(2)}</strong></div>
+      </div>
+      <div style="margin-top:8px;padding:8px;background:#dcfce7;border-radius:6px;">
+        <div>🎯 <strong>保本售价：${sym}${breakEvenStr}</strong>（含${(commission*100).toFixed(0)}%佣金）</div>
+        <div>✅ <strong>建议售价：${sym}${suggestPrice}</strong>（30%利润空间）</div>
+        ${profitRate ? `<div style="color:${parseFloat(profitRate)>0?'#15803d':'#dc2626'}">📊 你填的售价利润率：<strong>${profitRate}%</strong></div>` : ""}
+      </div>
+      <div style="margin-top:6px;font-size:10px;color:#6b7280;">汇率参考：1${sym}≈¥${(1/rate).toFixed(4)}（仅供参考，请以实时汇率为准）</div>
+    `;
+  });
 }
 
 function renderManualInput(settings, pageUrl) {
