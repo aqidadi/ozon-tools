@@ -649,6 +649,10 @@ function renderProduct(product, settings) {
       📤 发送到选品工具
     </button>
 
+    <button class="btn" id="ozonPublishBtn" style="margin-top:6px;background:#005bff;color:#fff;border:none;">
+      🚀 一键发布到 Ozon
+    </button>
+
     <button class="btn" id="calcProfitBtn" style="margin-top:6px;background:#f0fdf4;color:#16a34a;border:1px solid #86efac;">
       💰 计算利润建议
     </button>
@@ -670,6 +674,54 @@ function renderProduct(product, settings) {
   `;
 
   document.getElementById("sendBtn").addEventListener("click", handleSend);
+
+  document.getElementById("ozonPublishBtn").addEventListener("click", async () => {
+    const btn = document.getElementById("ozonPublishBtn");
+    btn.innerHTML = "⏳ 发布中...";
+    btn.disabled = true;
+    try {
+      const weight = parseFloat(document.getElementById("weightInput")?.value || 400);
+      const sellPrice = parseFloat(document.getElementById("sellPriceInput")?.value || 999);
+      const siteUrl = settings.siteUrl || "https://www.crossly.cn";
+
+      // 从规格里提取颜色/材质/高度
+      const specs = product.specs || {};
+      const color = specs["颜色"] || specs["色"] || specs["颜色分类"] || "";
+      const material = specs["材质"] || specs["面料"] || specs["材料"] || "";
+      const heightMatch = (product.title || "").match(/(\d+)\s*cm|(\d+)\s*см|(\d+)\s*厘米/i);
+      const height = heightMatch ? parseInt(heightMatch[1]||heightMatch[2]||heightMatch[3]) : 30;
+
+      const resp = await fetch(`${siteUrl}/api/ozon/publish`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          product: {
+            title: product.title,
+            price: sellPrice,
+            weight,
+            images: product.images || [],
+            detailImages: product.detailImages || [],
+            description: product.title,
+            color, material, height,
+            offerId: "crossly_" + Date.now(),
+          }
+        })
+      });
+      const data = await resp.json();
+      if (data.success) {
+        btn.innerHTML = "✅ 已发布！task:" + data.taskId;
+        btn.style.background = "#16a34a";
+      } else {
+        btn.innerHTML = "❌ " + (data.error || "发布失败");
+        btn.style.background = "#dc2626";
+        btn.disabled = false;
+      }
+    } catch(e) {
+      btn.innerHTML = "❌ 网络错误";
+      btn.style.background = "#dc2626";
+      btn.disabled = false;
+    }
+  });
 
   document.getElementById("calcProfitBtn").addEventListener("click", () => {
     const price = product.price || 0;
