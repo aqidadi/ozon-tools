@@ -953,18 +953,28 @@ async function setTab(tab, settings, tabId, condition) {
           target: { tabId, allFrames: true },
           func: () => {
             try {
-              let images = [];
+              let allFound = [];
+
+              // A. 扫DOM里所有img
               document.querySelectorAll("img").forEach(img => {
-                let url = img.getAttribute("data-lazyload-src") ||
-                          img.getAttribute("data-lazy-src") ||
-                          img.getAttribute("src") || "";
-                if (!url || !url.includes("cbu01.alicdn.com")) return;
-                if (url.startsWith("//")) url = "https:" + url;
-                const clean = url.replace(/(_\d+x\d+.*\.jpg$)|(\.\d+x\d+.*\.jpg$)/, "");
-                if (/logo|setting|icon|gear|check|loading|avatar/i.test(clean)) return;
-                images.push(clean);
+                const url = img.getAttribute("data-lazyload-src") ||
+                            img.getAttribute("data-lazy-src") ||
+                            img.getAttribute("src") || "";
+                if (url) allFound.push(url);
               });
-              return [...new Set(images)];
+
+              // B. 暴力解析textarea（1688详情图常藏在.visual-engine-data里）
+              document.querySelectorAll("textarea").forEach(t => {
+                const raw = t.value || t.textContent || "";
+                const matches = raw.match(/https?:\/\/cbu01\.alicdn\.com\/img\/ibank\/[0-9a-zA-Z/_.-]+\.jpg/g);
+                if (matches) allFound.push(...matches);
+              });
+
+              // C. 清洗去重
+              return [...new Set(allFound)]
+                .filter(url => url.includes("cbu01.alicdn.com") && !/logo|icon|gear|check|setting|avatar|loading/i.test(url))
+                .map(url => (url.startsWith("//") ? "https:" + url : url)
+                  .replace(/(_\d+x\d+.*\.jpg$)|(\.\d+x\d+.*\.jpg$)/, ""));
             } catch(e) { return []; }
           }
         });
