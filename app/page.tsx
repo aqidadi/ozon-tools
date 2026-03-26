@@ -59,16 +59,16 @@ const AD_SLOTS_C = [
 function RateBar() {
   const [i] = useState(() => Math.floor(Math.random() * 4));
   return (
-    <div className="flex items-center gap-1.5 flex-wrap">
-      <div className="flex items-center gap-1 bg-yellow-50 border border-yellow-200 rounded-lg px-2.5 py-1 text-[11px] text-yellow-700 font-medium cursor-pointer hover:bg-yellow-100 transition-colors whitespace-nowrap"
+    <div className="grid grid-cols-3 border-b border-gray-100 text-[11px] font-medium divide-x divide-gray-100">
+      <div className="flex items-center justify-center gap-1 bg-yellow-50 px-3 py-1.5 text-yellow-700 cursor-pointer hover:bg-yellow-100 transition-colors whitespace-nowrap overflow-hidden"
         title="联系我们投广告：aqiliaobi@163.com">
         📣 {AD_SLOTS_A[i]}
       </div>
-      <div className="flex items-center gap-1 bg-blue-50 border border-blue-200 rounded-lg px-2.5 py-1 text-[11px] text-blue-600 font-medium cursor-pointer hover:bg-blue-100 transition-colors whitespace-nowrap"
+      <div className="flex items-center justify-center gap-1 bg-blue-50 px-3 py-1.5 text-blue-600 cursor-pointer hover:bg-blue-100 transition-colors whitespace-nowrap overflow-hidden"
         title="联系我们投广告：aqiliaobi@163.com">
         {AD_SLOTS_B[i]}
       </div>
-      <div className="flex items-center gap-1 bg-purple-50 border border-purple-200 rounded-lg px-2.5 py-1 text-[11px] text-purple-600 font-medium cursor-pointer hover:bg-purple-100 transition-colors whitespace-nowrap"
+      <div className="flex items-center justify-center gap-1 bg-purple-50 px-3 py-1.5 text-purple-600 cursor-pointer hover:bg-purple-100 transition-colors whitespace-nowrap overflow-hidden"
         title="联系我们投广告：aqiliaobi@163.com">
         {AD_SLOTS_C[i]}
       </div>
@@ -354,7 +354,7 @@ export default function Home() {
             )}
           </div>
           {/* 实时汇率挂件 */}
-          <RateBar />
+          
           {tab === "products" && products.length > 0 && (
             <div className="flex items-center gap-2">
               <select
@@ -377,6 +377,9 @@ export default function Home() {
             </div>
           )}
         </header>
+
+        {/* 广告条 - 全宽3格并排 */}
+        <RateBar />
 
         {/* Page content */}
         <main className="p-6">
