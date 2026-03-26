@@ -959,20 +959,17 @@ async function setTab(tab, settings, tabId, condition) {
 
             // 义乌购抓取
             if (host.includes("yiwugo.com")) {
-              const detailContainer = document.querySelector(".pro-detail-content") ||
-                                      document.getElementById("productDesc") ||
-                                      document.body;
-              const imgs = Array.from(detailContainer.querySelectorAll("img"));
-              let result = [];
-              imgs.forEach(img => {
-                let url = img.getAttribute("data-lazyload-src") || img.src;
-                if (url && url.includes("img.yiwugo.com")) {
-                  let cleanUrl = url.split("?")[0].replace(/(_\d+x\d+.*)/i, "");
-                  if (!cleanUrl.startsWith("http")) cleanUrl = "https:" + cleanUrl;
-                  result.push(cleanUrl);
+              const container = document.getElementById("productDesc");
+              if (!container) return [];
+              const imgs = Array.from(container.querySelectorAll("img"));
+              const finalUrls = imgs.map(img => {
+                const src = img.src;
+                if (src && src.includes("img.yiwugo.com")) {
+                  return src.split("?")[0].replace(/(_\d+x\d+)/, "");
                 }
-              });
-              return [...new Set(result)];
+                return null;
+              }).filter(Boolean);
+              return [...new Set(finalUrls)];
             }
 
             // 1688抓取（默认）
