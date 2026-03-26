@@ -614,337 +614,489 @@ const COLOR_MAP: Record<string, { bg: string; border: string; icon: string; badg
   indigo: { bg: "bg-indigo-50", border: "border-indigo-200", icon: "text-indigo-600", badge: "bg-indigo-100 text-indigo-700" },
 };
 
+
+// ── 手把手教程数据 ─────────────────────────────────────────────
+const CHAPTERS = [
+  {
+    id: "ozon-register",
+    emoji: "📱",
+    title: "第一步：注册Ozon卖家账号",
+    badge: "必看·最重要",
+    badgeColor: "bg-red-500",
+    desc: "从零开始，手机就能完成，约3-7天审核",
+    steps: [
+      {
+        title: "准备材料（提前搞定，省得卡住）",
+        tip: "⏱️ 准备时间：1-2天",
+        items: [
+          { icon: "🏢", text: "营业执照", detail: "个体工商户就够！去当地政务大厅或用「一网通办」APP申请，约3-5个工作日，费用免费（部分地区）或极低" },
+          { icon: "🪪", text: "法人身份证", detail: "正反面拍清楚，光线好，四角完整不截断，不反光" },
+          { icon: "🏦", text: "银行卡", detail: "绑定营业执照的对公账户最好；个人储蓄卡也行，但部分功能受限" },
+          { icon: "📱", text: "手机号", detail: "用能正常收短信的号码，Ozon会发验证码" },
+          { icon: "📧", text: "邮箱", detail: "推荐Gmail或QQ邮箱，用于接收审核结果和订单通知" },
+        ],
+      },
+      {
+        title: "开始注册（网页版，手机电脑都行）",
+        tip: "🌐 访问：seller.ozon.ru",
+        items: [
+          { icon: "1️⃣", text: "打开 seller.ozon.ru", detail: "⚠️ 注意：国内直接访问可能需要科学上网。推荐用手机开热点+全局模式，或者用电脑挂VPN" },
+          { icon: "2️⃣", text: "点右上角「Зарегистрироваться」（注册）", detail: "俄语别怕！浏览器右键翻译成中文就行，Chrome自带翻译" },
+          { icon: "3️⃣", text: "选择「Китайский продавец」（中国卖家）", detail: "专门为中国卖家开的通道，流程比普通注册简单" },
+          { icon: "4️⃣", text: "填写公司信息", detail: "公司名填营业执照上的名称，地址填注册地址，法人填身份证上的名字（拼音）" },
+          { icon: "5️⃣", text: "上传证件照片", detail: "用手机拍照上传最方便，注意：证件四边都要在画面里，不能被遮挡，不能有阴影" },
+          { icon: "6️⃣", text: "等待审核邮件", detail: "通常1-3个工作日，有时会要求补充材料，按邮件提示操作就行" },
+        ],
+      },
+      {
+        title: "审核通过后（3步完成开店）",
+        tip: "✅ 审核通过后收到邮件通知",
+        items: [
+          { icon: "📝", text: "签署电子合同", detail: "在卖家后台签，不用打印，点击确认就行" },
+          { icon: "💰", text: "交保证金", detail: "约¥1000-3000（视品类），玩具类通常¥1500，这是可退的押金" },
+          { icon: "🎉", text: "店铺开通！开始上传商品", detail: "用Crossly插件一键导入，比手动填写快10倍" },
+        ],
+      },
+      {
+        title: "新手常见卡点（别踩坑）",
+        tip: "❗ 这些问题99%的新手都遇到过",
+        items: [
+          { icon: "🔴", text: "网站打不开怎么办？", detail: "seller.ozon.ru 需要科学上网。推荐：手机用Shadowrocket全局模式；电脑用Clash配置全局代理。不会的话搜「Ozon卖家后台打不开」有教程" },
+          { icon: "🔴", text: "验证码收不到？", detail: "① 检查手机号是否国际格式（+86开头）；② 换QQ邮箱试试；③ 检查垃圾邮件箱；④ 等5分钟再试，Ozon发件有延迟" },
+          { icon: "🔴", text: "营业执照被拒怎么办？", detail: "常见原因：①照片模糊→重拍；②执照过期→先续期；③信息不匹配→确认填的公司名和执照完全一致" },
+          { icon: "🔴", text: "个体户还是公司？", detail: "强烈推荐个体工商户！注册简单、费用低、税收优惠，完全够用。去「国家企业信用信息公示系统」可以查个体户状态" },
+        ],
+      },
+    ],
+  },
+  {
+    id: "find-products",
+    emoji: "🔍",
+    title: "第二步：怎么找到爆卖的商品",
+    badge: "选品是核心",
+    badgeColor: "bg-orange-500",
+    desc: "选对了事半功倍，选错了白忙活",
+    steps: [
+      {
+        title: "黄金选品5条标准（背下来！）",
+        tip: "✅ 5条都符合，基本稳了",
+        items: [
+          { icon: "💵", text: "1688拿货价 < 30元", detail: "控制成本，利润空间才大。超过50元的商品，运费+佣金一算就没利润了" },
+          { icon: "⚖️", text: "重量 < 500克", detail: "运费按重量算，500克以内头程运费约14-25元，超过1公斤可能亏本" },
+          { icon: "📊", text: "1688月销量 > 1000件", detail: "说明这个款有市场验证，不是自己觉得好看就买。去1688商品页看「成交量」" },
+          { icon: "🚫", text: "不液体、不易碎、不带电池", detail: "液体=海关查；易碎=路上碎；锂电池=航空禁运。这三类新手别碰，麻烦多" },
+          { icon: "🌊", text: "目标平台竞争对手 < 100个", detail: "去Ozon搜这个商品，看「товаров」数量。越少越好，说明是蓝海，你进去有机会" },
+        ],
+      },
+      {
+        title: "在哪里找爆款（3个免费方法）",
+        tip: "💡 不花钱就能找到好货",
+        items: [
+          { icon: "🔥", text: "方法1：看Ozon畅销榜", detail: "去ozon.ru搜索你感兴趣的品类，按「по популярности」（销量）排序，排名前20的就是爆款。记下商品名，去1688搜同款" },
+          { icon: "📱", text: "方法2：刷抖音/小红书", detail: "搜「Ozon爆款」「俄罗斯热卖」，博主测评的商品就是验证过的爆款。直接抄作业，不用动脑" },
+          { icon: "🛒", text: "方法3：用Crossly爆品榜", detail: "我们每天更新精选爆品，点「爆品榜单」标签，看到喜欢的直接点「我要卖这个」一键导入，连1688都帮你找好了" },
+        ],
+      },
+      {
+        title: "2024最容易卖的品类",
+        tip: "🏆 经过验证，新手首选",
+        items: [
+          { icon: "🧸", text: "毛绒玩具 / 抱枕", detail: "俄罗斯人特别爱！尤其是动漫角色、猫咪造型。拿货价5-25元，Ozon能卖200-800卢布（约16-64元），利润超高" },
+          { icon: "💄", text: "美妆小工具", detail: "睫毛夹、卷发棒、美容仪，女性消费力强。注意：口红等有色产品海关可能查，工具类最安全" },
+          { icon: "🏠", text: "家居收纳小物", detail: "硅胶收纳盒、挂钩、防滑垫，客单价低但走量大，复购率高" },
+          { icon: "🎮", text: "手机配件", detail: "数据线、手机支架、保护壳，永远有需求。注意别做苹果品牌联名款，有侵权风险" },
+          { icon: "🎁", text: "节日礼品", detail: "俄罗斯妇女节（3月8日）超级大节，提前1个月开始备货，销量能翻5-10倍" },
+        ],
+      },
+      {
+        title: "一定要避开的坑（血泪教训）",
+        tip: "⚠️ 前人踩过的，你别再踩",
+        items: [
+          { icon: "❌", text: "别做服装鞋帽（尺码地狱）", detail: "俄罗斯尺码标准不同，退货率极高。新手搞这个10单里可能退8单，别碰" },
+          { icon: "❌", text: "别做名牌山寨（侵权封号）", detail: "印着Nike、Supreme的货，Ozon查到直接封店，保证金也不退。不值得" },
+          { icon: "❌", text: "别一次备太多货", detail: "新品先发5-10件测试，卖完再补。很多人第一次就备了200件，滞销了哭都来不及" },
+          { icon: "❌", text: "别看到便宜就买", detail: "1688价格越低质量越差，质量差→差评多→搜索降权→彻底卖不动。宁愿贵2元，要质量稳定的" },
+        ],
+      },
+    ],
+  },
+  {
+    id: "use-crossly",
+    emoji: "⚡",
+    title: "第三步：用Crossly一键上架（全自动）",
+    badge: "核心功能",
+    badgeColor: "bg-purple-500",
+    desc: "30秒完成一件商品，AI全自动处理",
+    steps: [
+      {
+        title: "安装Crossly插件（2分钟搞定）",
+        tip: "🔌 只支持Chrome浏览器",
+        items: [
+          { icon: "1️⃣", text: "下载插件压缩包", detail: "在Crossly网站首页点「下载插件」，得到一个.zip文件" },
+          { icon: "2️⃣", text: "解压到任意文件夹", detail: "右键zip文件→解压到当前位置，记住解压后的文件夹在哪" },
+          { icon: "3️⃣", text: "Chrome打开扩展管理", detail: "浏览器地址栏输入 chrome://extensions/ 回车" },
+          { icon: "4️⃣", text: "开启「开发者模式」", detail: "右上角有个开关，打开它（变蓝就对了）" },
+          { icon: "5️⃣", text: "加载插件文件夹", detail: "点「加载已解压的扩展程序」，选择刚才解压的文件夹，不是选zip文件！" },
+          { icon: "6️⃣", text: "右上角出现Crossly图标 = 成功", detail: "如果看不到图标，点浏览器右上角拼图图标，把Crossly固定到工具栏" },
+        ],
+      },
+      {
+        title: "在1688抓取商品（超简单）",
+        tip: "📦 在1688商品详情页操作",
+        items: [
+          { icon: "🔍", text: "打开任意1688商品页面", detail: "比如搜「毛绒玩具猫咪」，点进一个商品" },
+          { icon: "🖱️", text: "点击右上角Crossly图标", detail: "插件弹出面板，自动开始识别页面商品信息" },
+          { icon: "📸", text: "等待图片加载完成", detail: "滚动页面到底部，让所有图片都加载出来，插件才能抓全" },
+          { icon: "✅", text: "点「导入商品」", detail: "标题、图片、规格、价格全部自动抓取，同步到Crossly后台" },
+          { icon: "✏️", text: "填写你的拿货价", detail: "在Crossly商品卡片里填「1688拿货价」，系统自动计算卢布售价" },
+        ],
+      },
+      {
+        title: "AI自动翻译+定价（不用你动手）",
+        tip: "🤖 AI帮你搞定外语",
+        items: [
+          { icon: "🈯", text: "标题自动翻译成外语", detail: "点「发布到Ozon」，AI自动把中文标题翻译成俄语标题，包含关键词优化，不是直接机翻" },
+          { icon: "📝", text: "描述自动生成", detail: "AI根据商品类目生成俄语商品描述，符合Ozon算法偏好，新手完全不用写" },
+          { icon: "💰", text: "价格自动换算", detail: "你填人民币成本，系统按实时汇率+运费+佣金算出卢布建议售价，不会亏本" },
+          { icon: "🖼️", text: "图片自动上传", detail: "系统把1688图片缓存到服务器，绕过1688防盗链，确保Ozon能正常显示" },
+        ],
+      },
+      {
+        title: "一键发布到Ozon",
+        tip: "🚀 点一下，30秒上架",
+        items: [
+          { icon: "🔑", text: "先填入Ozon API密钥", detail: "去Ozon后台「设置→API密钥」复制，粘贴到Crossly「参数设置」里保存一次就够" },
+          { icon: "📋", text: "在商品卡片点「发布到Ozon」", detail: "系统自动提交商品信息，等待约30秒" },
+          { icon: "🎯", text: "看到「发布成功」提示", detail: "商品已进入Ozon审核，通常2-24小时出现在搜索结果里" },
+          { icon: "🔍", text: "去Ozon后台确认", detail: "登录seller.ozon.ru，点「товары」→「все товары」，找到你的商品，状态是「активный」就上架成功了" },
+        ],
+      },
+    ],
+  },
+  {
+    id: "logistics",
+    emoji: "✈️",
+    title: "第四步：物流怎么做（保姆级）",
+    badge: "不懂物流会亏钱",
+    badgeColor: "bg-blue-500",
+    desc: "搞清楚物流，才能真正赚钱",
+    steps: [
+      {
+        title: "新手唯一推荐：RETS快线",
+        tip: "✅ 选这个，别纠结",
+        items: [
+          { icon: "⏱️", text: "时效：5-10个工作日到俄罗斯", detail: "比普通邮政快很多，客户等得住，差评少" },
+          { icon: "💰", text: "费用：约25-50元/件（500g以内）", detail: "具体价格联系你选的货代，大概这个范围" },
+          { icon: "📦", text: "怎么操作：货代上门取货", detail: "在1688下单，收货地址填货代仓库地址，货代帮你贴Ozon标签再发货，你全程不用动" },
+          { icon: "🏷️", text: "Ozon后台怎么设置", detail: "卖家后台→仓库→配送方案→选「RETS跨境快线」，备货时间设5天，退货设「销毁」" },
+        ],
+      },
+      {
+        title: "怎么找货代（义乌最方便）",
+        tip: "🏭 在义乌发货最便宜",
+        items: [
+          { icon: "📱", text: "搜「义乌Ozon货代」", detail: "微信搜、抖音搜都行，有很多义乌当地货代做Ozon业务，加微信询价" },
+          { icon: "📋", text: "问货代要「Ozon贴标服务」", detail: "靠谱的货代会帮你：收货→查验→贴Ozon条形码→打包→发货，全套服务" },
+          { icon: "📍", text: "下单地址用货代仓库地址", detail: "在1688下单时，收货人填货代公司名+你的客户编号，地址填货代给你的仓库地址" },
+          { icon: "💬", text: "新手建议先发5件测试", detail: "第一次合作先发少量，确认货代靠谱、时效准确，再批量发货" },
+        ],
+      },
+      {
+        title: "关税和清关（不用担心）",
+        tip: "🛃 Ozon跨境卖家不用管关税",
+        items: [
+          { icon: "✅", text: "Ozon跨境模式下，买家自己付税", detail: "你走的是「跨境直发」模式，俄罗斯买家支付商品关税，和你无关" },
+          { icon: "📦", text: "商品申报金额按实际价值填", detail: "不要虚报低价，被查到会被扣货，得不偿失" },
+          { icon: "🚫", text: "禁运物品别碰", detail: "刀具、液体化妆品（>100ml）、食品、锂电池独立包装，都可能被扣，新手避开" },
+        ],
+      },
+      {
+        title: "收款流程（钱怎么到手）",
+        tip: "💰 钱的路径：卢布→人民币",
+        items: [
+          { icon: "🏦", text: "Ozon结算周期：每2周一次", detail: "订单完成后进入结算周期，大约14天后钱打到你的Ozon账户余额" },
+          { icon: "💱", text: "卢布提现到国内银行", detail: "通过Ozon合作的结汇服务商（如连连支付、万里汇），把卢布换成人民币，打到你国内银行卡" },
+          { icon: "⏰", text: "提现时间：约3-7个工作日", detail: "建议凑满1000元再提，手续费按比例收，金额越大越划算" },
+          { icon: "📊", text: "实时查看收入", detail: "Ozon后台「Финансы」→「Начисления」可以看到每笔收入明细" },
+        ],
+      },
+    ],
+  },
+  {
+    id: "pricing",
+    emoji: "💰",
+    title: "第五步：怎么定价不亏钱",
+    badge: "定价决定生死",
+    badgeColor: "bg-green-500",
+    desc: "价格定错了，卖越多亏越多",
+    steps: [
+      {
+        title: "保本价公式（必须背会）",
+        tip: "📐 这个公式救过无数新手",
+        items: [
+          { icon: "📝", text: "公式：保本价(卢布) = (拿货价+头程运费+包材) ÷ (1-佣金率) × 汇率", detail: "例：拿货¥17 + 运费¥25 + 包材¥2 = ¥44。÷(1-15%)=¥52。×13汇率 = ₽676。建议售价定₽800以上（约¥62），利润约¥10" },
+          { icon: "💡", text: "Crossly自动帮你算", detail: "在商品卡片填入「拿货价」和「头程运费」，系统自动算出保本价和建议售价，不用你手算" },
+          { icon: "📊", text: "佣金率按15%算（保守）", detail: "Ozon玩具类佣金约12-15%，按最高的算，不会亏" },
+          { icon: "💱", text: "汇率按12-13算", detail: "实时汇率有波动，偏低估算，留缓冲空间" },
+        ],
+      },
+      {
+        title: "定价策略（怎么定才有竞争力）",
+        tip: "🎯 定价是门艺术",
+        items: [
+          { icon: "🔍", text: "先看竞争对手价格", detail: "去Ozon搜同款商品，看排名前5的价格区间，定在中位数偏低10%，既有竞争力又有利润" },
+          { icon: "🆕", text: "新品期定低10%吸引第一批买家", detail: "新上架的商品没有评价，买家不信任。暂时定低一点，换来前10个评价，然后慢慢提价" },
+          { icon: "📈", text: "有了评价后提价", detail: "积累10个以上好评后，价格可以提高10-20%，买家会信任有评价的商品，销量不会明显下降" },
+          { icon: "🎪", text: "节日活动要参加", detail: "Ozon妇女节（3月）、黑色星期五（11月）活动期间可以临时打折，活动结束恢复原价，这段时间销量暴增" },
+        ],
+      },
+      {
+        title: "利润计算实例（毛绒玩具）",
+        tip: "🧸 用真实数字告诉你能赚多少",
+        items: [
+          { icon: "💵", text: "1688拿货价：¥17.5/个", detail: "选一款猫咪抱枕，月销5000件，质量稳定，价格17.5元" },
+          { icon: "✈️", text: "头程运费（RETS）：¥25/个", detail: "重量约300g，RETS快线约25元一件" },
+          { icon: "📦", text: "包材费：¥2/个", detail: "气泡袋+纸箱分摊，约2元" },
+          { icon: "💰", text: "总成本：¥44.5/个", detail: "17.5+25+2=44.5元" },
+          { icon: "🏷️", text: "Ozon售价定：₽899（约¥69）", detail: "竞争对手卖₽700-1200，定₽899有竞争力" },
+          { icon: "📊", text: "Ozon扣佣金15%：₽135 = ¥10.4", detail: "平台收你15%佣金" },
+          { icon: "✅", text: "每件利润：¥69-¥44.5-¥10.4 = ¥14.1", detail: "每件赚约14元，卖100件=赚1410元。月销100件不难！" },
+        ],
+      },
+    ],
+  },
+  {
+    id: "first-order",
+    emoji: "🎉",
+    title: "第六步：来了第一个订单怎么办",
+    badge: "别慌，看这里",
+    badgeColor: "bg-pink-500",
+    desc: "第一单最紧张，但其实很简单",
+    steps: [
+      {
+        title: "收到订单通知（会发邮件）",
+        tip: "📧 订单来了Ozon会发邮件通知",
+        items: [
+          { icon: "📱", text: "邮件里有订单详情", detail: "包括：商品名、数量、买家地址（俄文，不用看懂）、发货截止时间" },
+          { icon: "⏰", text: "注意发货截止时间！", detail: "Ozon规定你必须在X天内把货交给货代，超时会扣分，影响店铺权重" },
+          { icon: "📲", text: "在Ozon后台确认订单", detail: "seller.ozon.ru → Заказы（订单），点击订单查看详情" },
+        ],
+      },
+      {
+        title: "马上去1688补货下单",
+        tip: "🛒 订单来了才去下单（无库存模式）",
+        items: [
+          { icon: "🖥️", text: "去1688找之前的供应商", detail: "直接拍商品，填货代的仓库地址，备注「Crossly发货，请包好」" },
+          { icon: "📞", text: "联系货代告知发货计划", detail: "微信告诉货代：「我有1件XXX商品要到你仓库，Ozon订单，请帮我贴标处理」" },
+          { icon: "⚡", text: "1688下单后通知货代追踪单号", detail: "下单后把1688快递单号发给货代，他们收到货后帮你处理" },
+        ],
+      },
+      {
+        title: "货代操作（你不用管）",
+        tip: "🏭 交给货代就行",
+        items: [
+          { icon: "✅", text: "货代收到货→验货→贴Ozon标签", detail: "靠谱货代会拍照给你确认，确保货没问题" },
+          { icon: "✈️", text: "货代打包发货→给你国际快递单号", detail: "单号发给你，可以在RETS官网查轨迹" },
+          { icon: "📋", text: "在Ozon后台填写快递单号", detail: "seller.ozon.ru→订单→填入「Трек-номер」（追踪号），完成！" },
+        ],
+      },
+      {
+        title: "买家收货后（最后一步）",
+        tip: "⭐ 争取好评是重点",
+        items: [
+          { icon: "📊", text: "14天确认收货，Ozon结款给你", detail: "买家收货后14天，如果没申请退款，Ozon自动把钱算到你账户" },
+          { icon: "💬", text: "怎么要好评？", detail: "暂时Ozon不支持直接催评，但可以在商品图片里放一张小卡片（用Crossly图片俄化功能），俄文写「请给我们好评！謝謝」" },
+          { icon: "🔄", text: "有了第一单经验，后面都一样", detail: "第一单是最难的，做完一次就熟了。100单和1单流程完全一样，就是量变" },
+        ],
+      },
+    ],
+  },
+  {
+    id: "faq-detail",
+    emoji: "🙋",
+    title: "高频问题大全（随时查）",
+    badge: "99%人都问过",
+    badgeColor: "bg-gray-600",
+    desc: "遇到问题先来这里找答案",
+    steps: [
+      {
+        title: "关于注册和账号",
+        tip: "🔐 账号问题最让人焦虑",
+        items: [
+          { icon: "❓", text: "没有营业执照能不能做？", detail: "不行。Ozon要求卖家有合法主体。但个体工商户很容易办，很多地方网上就能申请，别怕麻烦" },
+          { icon: "❓", text: "一个人能开几个Ozon账号？", detail: "一个营业执照只能开一个。用家人的营业执照可以再开一个，但风险自担" },
+          { icon: "❓", text: "账号审核了10天还没过怎么办？", detail: "发邮件给support@ozon.ru，说明审核时间，要求加速审核。或者找Ozon官方服务商帮忙" },
+        ],
+      },
+      {
+        title: "关于商品上架",
+        tip: "📦 上架遇到的问题",
+        items: [
+          { icon: "❓", text: "商品审核不通过怎么办？", detail: "看拒绝原因：①图片问题→换白底图；②标题问题→按Ozon要求格式改；③类目问题→选更准确的类目" },
+          { icon: "❓", text: "图片必须白底吗？", detail: "主图强烈建议白底，成功率高很多。副图可以是场景图。Crossly有「白底处理」功能（开发中）" },
+          { icon: "❓", text: "上架了但搜不到？", detail: "新品需要1-3天被索引。等1天再搜，或者直接访问商品链接看是否显示" },
+          { icon: "❓", text: "在Ozon上能卖哪些东西？", detail: "大部分商品都可以。禁止的：武器、毒品、仿牌、成人用品。其余的先试试，被拒再说" },
+        ],
+      },
+      {
+        title: "关于运费和物流",
+        tip: "✈️ 物流是最多问题的地方",
+        items: [
+          { icon: "❓", text: "头程运费到底多少？", detail: "RETS快线：约25-50元/500g以内。超重另算。具体找货代报价，不同货代价格不同" },
+          { icon: "❓", text: "货发丢了怎么办？", detail: "RETS有保险，联系货代索赔。一般7个工作日内处理。发货前拍好照片留证据" },
+          { icon: "❓", text: "买家申请退货怎么办？", detail: "设置了「销毁退货」的话，退货商品在俄罗斯当地销毁，不用运回来，省运费。在Ozon后台→退货设置里选" },
+          { icon: "❓", text: "能发到俄罗斯以外的国家吗？", detail: "Ozon目前主要是俄罗斯，Ozon Kazakhstan(哈萨克斯坦)正在扩展。其他国家要去其他平台（Shopee/Lazada/TikTok）" },
+        ],
+      },
+      {
+        title: "关于收款和税务",
+        tip: "💰 钱的问题最重要",
+        items: [
+          { icon: "❓", text: "收款手续费多少？", detail: "结汇服务商一般收1-2%的换汇手续费+约50元/次提现手续费。金额大的话按比例更划算" },
+          { icon: "❓", text: "需要报税吗？", detail: "需要！跨境电商收入属于个体工商户收入，应该申报。建议找专业财务处理，避免税务风险" },
+          { icon: "❓", text: "汇率什么时候换最合适？", detail: "没有完美时机。建议收到钱就换，别囤卢布，卢布波动大，囤着有风险" },
+        ],
+      },
+    ],
+  },
+];
+
 export function GuidePage() {
-  const [openGuide, setOpenGuide] = useState<string | null>("platforms");
-  const [openSection, setOpenSection] = useState<string | null>(null);
+  const [openId, setOpenId] = useState<string | null>("ozon-register");
+  const [openStepId, setOpenStepId] = useState<string | null>(null);
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
+    <div className="space-y-4">
 
-      {/* 置顶：0基础新手卡 */}
-      <div className="rounded-3xl overflow-hidden"
+      {/* 置顶：0基础新手卡（全幅） */}
+      <div className="-mx-6 -mt-6 relative overflow-hidden text-center"
         style={{ background: "linear-gradient(135deg, #1e2d5a 0%, #2d1b69 60%, #0f172a 100%)" }}>
-        <div className="p-6">
+        <div className="absolute inset-0 opacity-20"
+          style={{ backgroundImage: "radial-gradient(circle at 25% 50%, #6366f1 0%, transparent 60%), radial-gradient(circle at 75% 30%, #a855f7 0%, transparent 50%)" }} />
+        <div className="relative z-10 px-6 py-8 max-w-3xl mx-auto">
           <div className="inline-flex items-center gap-2 bg-white/10 text-white/80 text-xs font-semibold px-3 py-1 rounded-full mb-4 border border-white/20">
             🎯 完全免费 · 0门槛入门
           </div>
-          <h2 className="text-2xl font-black text-white mb-2">
-            跨境不难，真的。
-          </h2>
+          <h2 className="text-2xl font-black text-white mb-2">跨境不难，真的。</h2>
           <p className="text-white/60 text-sm mb-5 leading-relaxed">
             很多人觉得跨境很复杂、很神秘，其实核心只有3件事。<br />
             我们手把手教你，不卖课，不收费，看完就会。
           </p>
-
-          {/* 3步 */}
-          <div className="space-y-3">
+          <div className="grid grid-cols-3 gap-3 text-left mb-5">
             {[
-              { n: "1", title: "在1688找到一个卖得好的商品", detail: "看月销量>1000，价格<30元，体积小重量轻（省运费）", color: "#6366f1" },
-              { n: "2", title: "用Crossly一键导入，自动翻译定价", detail: "插件抓图、AI翻译外语标题、系统自动换算外币售价，30秒搞定", color: "#8b5cf6" },
-              { n: "3", title: "点发布，等收钱", detail: "商品自动上架Ozon，货代收货发货，你只需要在1688下单", color: "#a855f7" },
+              { n: "1", title: "在1688找一个卖得好的商品", detail: "月销>1000，价格<30元，重量<500g" },
+              { n: "2", title: "用Crossly一键导入，AI自动翻译定价", detail: "30秒搞定，无需外语无需PS" },
+              { n: "3", title: "点发布，等收钱", detail: "货代全程代办，你只管在1688下单" },
             ].map(s => (
-              <div key={s.n} className="flex items-start gap-3 bg-white/5 rounded-2xl p-4">
-                <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-white text-sm font-black"
-                  style={{ background: s.color }}>
+              <div key={s.n} className="flex items-start gap-2 bg-white/8 rounded-xl p-3 border border-white/10">
+                <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 text-white text-xs font-black bg-purple-500">
                   {s.n}
                 </div>
                 <div>
-                  <p className="text-white font-semibold text-sm">{s.title}</p>
-                  <p className="text-white/50 text-xs mt-0.5 leading-relaxed">{s.detail}</p>
+                  <p className="text-white font-semibold text-xs leading-snug">{s.title}</p>
+                  <p className="text-white/40 text-[10px] mt-0.5">{s.detail}</p>
                 </div>
               </div>
             ))}
           </div>
-        </div>
 
-        {/* 底部快速导航 */}
-        <div className="border-t border-white/10 px-6 py-4 flex flex-wrap gap-2">
-          <span className="text-white/40 text-xs self-center mr-2">快速跳转：</span>
-          {[
-            { label: "📦 我要做Ozon", id: "ozon-start" },
-            { label: "🔍 怎么选品", id: "select" },
-            { label: "✈️ 物流怎么做", id: "logistics" },
-            { label: "💰 怎么定价", id: "pricing" },
-          ].map(link => (
-            <button key={link.id}
-              onClick={() => setOpenGuide(link.id)}
-              className="text-xs bg-white/10 hover:bg-white/20 text-white/80 px-3 py-1.5 rounded-full transition-colors border border-white/10">
-              {link.label}
-            </button>
-          ))}
+          {/* 快速跳转 */}
+          <div className="flex flex-wrap justify-center gap-2">
+            <span className="text-white/30 text-xs self-center">跳转到：</span>
+            {CHAPTERS.map(c => (
+              <button key={c.id}
+                onClick={() => { setOpenId(c.id); setTimeout(() => document.getElementById(`chapter-${c.id}`)?.scrollIntoView({ behavior: "smooth", block: "start" }), 100); }}
+                className="text-xs bg-white/10 hover:bg-white/20 text-white/70 px-3 py-1.5 rounded-full transition-colors border border-white/10">
+                {c.emoji} {c.title.replace(/第.步：/, "").slice(0, 10)}...
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
       {/* FAQ 智能问答 */}
       <FAQBox />
 
-      {/* 页面标题 */}
+      {/* 章节目录 */}
       <div>
-        <div className="flex items-center gap-2 mb-1">
-          <BookOpen className="text-indigo-600" size={20} />
-          <h2 className="text-lg font-bold text-gray-900">📖 给宝妈的0成本跨境创业白皮书</h2>
-        </div>
-        <p className="text-sm text-gray-400">不卖课 · 不收智商税 · 覆盖Ozon/亚马逊/TikTok全平台，手把手带你从0到第一单</p>
-      </div>
+        <p className="text-xs text-gray-400 mb-3 font-medium">📖 给宝妈的0成本跨境创业白皮书 · 共{CHAPTERS.length}章 · 全程大白话</p>
+        <div className="space-y-3">
+          {CHAPTERS.map((chapter) => {
+            const isOpen = openId === chapter.id;
+            return (
+              <div key={chapter.id} id={`chapter-${chapter.id}`}
+                className={`border rounded-2xl overflow-hidden transition-all ${isOpen ? "border-indigo-200 shadow-md shadow-indigo-50" : "border-gray-100 hover:border-gray-200"}`}>
 
-      <div className="space-y-3">
-        {GUIDES.map((guide) => {
-          const colors = COLOR_MAP[guide.color];
-          const isOpen = openGuide === guide.id;
-
-          return (
-            <div key={guide.id} className={`border rounded-xl overflow-hidden ${isOpen ? colors.border : "border-gray-200"}`}>
-              <button
-                onClick={() => setOpenGuide(isOpen ? null : guide.id)}
-                className={`w-full flex items-center justify-between px-4 py-3.5 text-left transition-colors ${isOpen ? colors.bg : "bg-white hover:bg-gray-50"}`}
-              >
-                <div className="flex items-center gap-3">
-                  <span className={colors.icon}>{guide.icon}</span>
-                  <span className="font-semibold text-gray-900">{guide.title}</span>
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${colors.badge}`}>
-                    {guide.sections.length} 个模块
-                  </span>
-                </div>
-                {isOpen ? <ChevronDown size={16} className="text-gray-400" /> : <ChevronRight size={16} className="text-gray-400" />}
-              </button>
-
-              {isOpen && (
-                <div className="border-t border-gray-100 divide-y divide-gray-100">
-                  {guide.sections.map((section) => {
-                    const sectionKey = `${guide.id}-${section.title}`;
-                    const sectionOpen = openSection === sectionKey;
-                    return (
-                      <div key={section.title}>
-                        <button
-                          onClick={() => setOpenSection(sectionOpen ? null : sectionKey)}
-                          className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-50 transition-colors"
-                        >
-                          <span className="text-sm font-medium text-gray-800">{section.title}</span>
-                          {sectionOpen ? <ChevronDown size={14} className="text-gray-400" /> : <ChevronRight size={14} className="text-gray-400" />}
-                        </button>
-                        {sectionOpen && (
-                          <ul className="px-4 pb-4 space-y-2">
-                            {section.content.map((item, i) => (
-                              <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
-                                <span className="text-gray-300 mt-0.5 flex-shrink-0">•</span>
-                                <span>{item}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                      </div>
-                    );
-                  })}
-
-                  {guide.links.length > 0 && (
-                    <div className="px-4 py-3 flex flex-wrap gap-2 bg-gray-50">
-                      <span className="text-xs text-gray-400 self-center mr-1">相关链接：</span>
-                      {guide.links.map((link) => (
-                        <a
-                          key={link.url}
-                          href={link.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg ${colors.badge} hover:opacity-80 transition-opacity`}
-                        >
-                          <ExternalLink size={11} />
-                          {link.text}
-                        </a>
-                      ))}
+                {/* 章节标题 */}
+                <button onClick={() => setOpenId(isOpen ? null : chapter.id)}
+                  className={`w-full flex items-center gap-4 px-5 py-4 text-left transition-colors ${isOpen ? "bg-indigo-50" : "bg-white hover:bg-gray-50"}`}>
+                  <span className="text-2xl flex-shrink-0">{chapter.emoji}</span>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <h3 className="font-bold text-gray-900 text-sm">{chapter.title}</h3>
+                      <span className={`text-[10px] font-bold text-white px-2 py-0.5 rounded-full flex-shrink-0 ${chapter.badgeColor}`}>
+                        {chapter.badge}
+                      </span>
                     </div>
-                  )}
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
+                    <p className="text-xs text-gray-400">{chapter.desc}</p>
+                  </div>
+                  <ChevronDown size={16} className={`text-gray-400 flex-shrink-0 transition-transform ${isOpen ? "rotate-180" : ""}`} />
+                </button>
 
-      <div className="mt-8 bg-gradient-to-r from-indigo-50 to-blue-50 border border-indigo-100 rounded-xl p-5">
-        <p className="text-sm font-semibold text-indigo-800 mb-2">🚀 新手推荐路线（Ozon起步）</p>
-        <div className="flex flex-wrap gap-2 text-xs">
-          {["注册Ozon账号", "→ 1688找3-5款", "→ 用Crossly算利润", "→ RFBS直发上架", "→ 开搜索广告", "→ 积累评价", "→ 爆款备货扩平台"].map((s, i) => (
-            <span key={i} className="px-2 py-1 rounded-lg bg-white border border-indigo-100 text-indigo-700">{s}</span>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
+                {/* 章节内容 */}
+                {isOpen && (
+                  <div className="bg-white border-t border-gray-100 divide-y divide-gray-50">
+                    {chapter.steps.map((step, si) => {
+                      const stepKey = `${chapter.id}-${si}`;
+                      const isStepOpen = openStepId === stepKey;
+                      return (
+                        <div key={si}>
+                          <button onClick={() => setOpenStepId(isStepOpen ? null : stepKey)}
+                            className="w-full flex items-center gap-3 px-5 py-3 text-left hover:bg-gray-50 transition-colors">
+                            <div className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 text-xs font-black flex items-center justify-center flex-shrink-0">
+                              {si + 1}
+                            </div>
+                            <div className="flex-1">
+                              <p className="text-sm font-semibold text-gray-800">{step.title}</p>
+                              <p className="text-xs text-gray-400 mt-0.5">{step.tip}</p>
+                            </div>
+                            <ChevronRight size={14} className={`text-gray-300 flex-shrink-0 transition-transform ${isStepOpen ? "rotate-90" : ""}`} />
+                          </button>
 
-// ── 工具导航 ──────────────────────────────────────────────────
-const TOOL_CATEGORIES = [
-  {
-    id: "learn",
-    emoji: "📚",
-    title: "学习平台",
-    color: "blue",
-    tools: [
-      { name: "AMZ123", desc: "东南亚卖家导航，整合卖家常用网站工具", url: "https://www.amz123.com" },
-      { name: "雨果网", desc: "跨境综合资讯平台，集热门跨境平台资讯", url: "https://www.cifnews.com" },
-      { name: "Shopee大学", desc: "Shopee官方学习平台，指引新手运营", url: "https://sellercenter.shopee.cn" },
-      { name: "Lazada大学", desc: "Lazada官方学习平台，免费运营课程", url: "https://university.lazada.com" },
-      { name: "得果果课堂", desc: "东南亚跨境电商学习平台，很多卖家在用", url: "https://www.deiguoguo.com" },
-    ],
-  },
-  {
-    id: "translate",
-    emoji: "🌐",
-    title: "语言翻译",
-    color: "green",
-    tools: [
-      { name: "DeepL", desc: "翻译效果最自然，目前最佳付费翻译软件", url: "https://www.deepl.com", stars: 5 },
-      { name: "微软翻译", desc: "支持多国语言文字/图片/截图翻译", url: "https://www.bing.com/translator", stars: 3 },
-      { name: "有道翻译", desc: "基于搜索引擎，全文翻译、网页翻译", url: "https://fanyi.youdao.com", stars: 3 },
-      { name: "沉浸式翻译", desc: "网页翻译插件，原译文对照，支持PDF/视频字幕", url: "https://immersivetranslate.com", stars: 5 },
-      { name: "Google翻译", desc: "跨境卖家常用，在线翻译28门语言", url: "https://translate.google.com", stars: 4 },
-    ],
-  },
-  {
-    id: "data",
-    emoji: "📊",
-    title: "数据分析",
-    color: "purple",
-    tools: [
-      { name: "知虾", desc: "Shopee/Lazada东南亚电商数据平台，监控竞店查关键词", url: "https://www.zhi-xia.com", stars: 4 },
-      { name: "卖家精灵", desc: "亚马逊选品、市场分析、关键词优化、产品监控", url: "https://www.sellersprite.com", stars: 5 },
-      { name: "PPSPY", desc: "Shopify店铺分析，快速了解竞争对手畅销产品", url: "https://ppspy.com", stars: 3 },
-      { name: "Similarweb", desc: "网站流量分析，查排名、流量来源、社交属性", url: "https://www.similarweb.com", stars: 4 },
-      { name: "EchoTik", desc: "TikTok Shop数据工具，看周销/月销/店铺排名/KOL", url: "https://echotik.live", stars: 3 },
-      { name: "Tichoo", desc: "全球视频电商数据分析平台", url: "https://www.tichoo.com", stars: 3 },
-    ],
-  },
-  {
-    id: "image",
-    emoji: "🎨",
-    title: "图库 & 做图",
-    color: "orange",
-    tools: [
-      { name: "创客贴", desc: "模板轻松设计产品海报、主图，可制作简单视频", url: "https://www.chuangkit.com", stars: 4 },
-      { name: "稿定设计", desc: "在线做不同场景尺寸的产品图", url: "https://www.gaoding.com", stars: 4 },
-      { name: "Removebg", desc: "一键抠图，虚化或替换背景", url: "https://www.remove.bg", stars: 4 },
-      { name: "waifu2x", desc: "商品图模糊？无损放大及降噪处理", url: "http://waifu2x.udp.jp", stars: 5 },
-      { name: "Pixabay", desc: "百万张免费图片素材，CC0协议可商用，支持中文搜索", url: "https://pixabay.com", stars: 4 },
-      { name: "Pexels", desc: "高质量免费图片，CC0许可，风格简约素材丰富", url: "https://www.pexels.com", stars: 4 },
-      { name: "Fotor懒设计", desc: "超2亿张免费图片，在线图片制作", url: "https://www.fotor.com/cn", stars: 4 },
-    ],
-  },
-  {
-    id: "erp",
-    emoji: "⚙️",
-    title: "ERP & 运营工具",
-    color: "red",
-    tools: [
-      { name: "妙手ERP", desc: "Shopee/Lazada主流ERP，提供链接采集/全店采集/插件采集", url: "https://www.miaoshousoft.com", stars: 4 },
-      { name: "店小秘", desc: "用户超10万，产品刊登/打单发货/数据采集/店铺搬家", url: "https://www.dianxiaomi.com", stars: 5 },
-      { name: "芒果店长", desc: "网页版ERP，注册登录即可用，登量百度搜索芒果店长", url: "https://www.mangoerp.com", stars: 3 },
-      { name: "通途Ton", desc: "采购/订单/发货/仓库/售后一站式智能自动化管理", url: "https://www.tongtool.com", stars: 3 },
-      { name: "萌店长ERP", desc: "Shopee/Lazada上货ERP工具，限时免费", url: "https://www.mengdianz.com", stars: 3 },
-    ],
-  },
-  {
-    id: "file",
-    emoji: "🔧",
-    title: "效率工具",
-    color: "gray",
-    tools: [
-      { name: "Filemail", desc: "大文件传输，直接发到email通过链接下载，跨境传输方便", url: "https://www.filemail.com" },
-      { name: "AwesomeScreenshot", desc: "强大截图软件，截取整个页面，可做标注", url: "https://www.awesomescreenshot.com" },
-      { name: "Linktree", desc: "多链接合成平台，中间页工具", url: "https://linktr.ee" },
-      { name: "Bitly", desc: "短链生成平台", url: "https://bitly.com" },
-      { name: "Namecheap", desc: "域名注册服务商，价格便宜", url: "https://www.namecheap.com" },
-    ],
-  },
-  {
-    id: "customs",
-    emoji: "🚢",
-    title: "海关数据",
-    color: "indigo",
-    tools: [
-      { name: "ImportGenius", desc: "全球进出口数据查询平台", url: "https://www.importgenius.com" },
-      { name: "ImportYeti", desc: "美国进口提单数据查询，免费", url: "https://www.importyeti.com" },
-      { name: "Panjiva", desc: "全球贸易智能分析工具", url: "https://panjiva.com" },
-      { name: "TradeAtlas", desc: "进出口商搜索引擎", url: "https://www.tradeatlas.com" },
-      { name: "Trade Map", desc: "国际贸易地图，ITC出品免费", url: "https://www.trademap.org" },
-      { name: "WITS", desc: "世界银行贸易数据库", url: "https://wits.worldbank.org" },
-      { name: "UN Comtrade", desc: "联合国商品贸易统计数据库", url: "https://comtradeplus.un.org" },
-    ],
-  },
-];
-
-const colorMap: Record<string, string> = {
-  blue: "bg-blue-50 border-blue-100 text-blue-700",
-  green: "bg-green-50 border-green-100 text-green-700",
-  purple: "bg-purple-50 border-purple-100 text-purple-700",
-  orange: "bg-orange-50 border-orange-100 text-orange-700",
-  red: "bg-red-50 border-red-100 text-red-700",
-  gray: "bg-gray-50 border-gray-200 text-gray-700",
-  indigo: "bg-indigo-50 border-indigo-100 text-indigo-700",
-  teal: "bg-teal-50 border-teal-100 text-teal-700",
-  cyan: "bg-cyan-50 border-cyan-100 text-cyan-700",
-  pink: "bg-pink-50 border-pink-100 text-pink-700",
-  yellow: "bg-yellow-50 border-yellow-100 text-yellow-700",
-  rose: "bg-rose-50 border-rose-100 text-rose-700",
-};
-
-export function ToolsPage() {
-  const [openId, setOpenId] = useState<string | null>("learn");
-
-  return (
-    <div className="space-y-3">
-      <div className="flex items-center gap-2 mb-4">
-        <span className="text-xl">🧰</span>
-        <div>
-          <h2 className="text-base font-bold text-gray-800">实用工具导航</h2>
-          <p className="text-xs text-gray-400">跨境电商必备工具整理，点击直达</p>
+                          {isStepOpen && (
+                            <div className="px-5 pb-4 space-y-3 bg-gray-50/50">
+                              {step.items.map((item, ii) => (
+                                <div key={ii} className="flex items-start gap-3 bg-white rounded-xl p-3 border border-gray-100 shadow-sm">
+                                  <span className="text-lg flex-shrink-0 mt-0.5">{item.icon}</span>
+                                  <div>
+                                    <p className="text-sm font-semibold text-gray-800 mb-1">{item.text}</p>
+                                    <p className="text-xs text-gray-500 leading-relaxed">{item.detail}</p>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
 
-      {TOOL_CATEGORIES.map(cat => {
-        const isOpen = openId === cat.id;
-        const colorCls = colorMap[cat.color] || colorMap.gray;
-        return (
-          <div key={cat.id} className="border border-gray-100 rounded-xl overflow-hidden">
-            <button
-              onClick={() => setOpenId(isOpen ? null : cat.id)}
-              className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors"
-            >
-              <div className="flex items-center gap-2">
-                <span className="text-lg">{cat.emoji}</span>
-                <span className="text-sm font-semibold text-gray-800">{cat.title}</span>
-                <span className="text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-full">{cat.tools.length}个工具</span>
-              </div>
-              <ChevronDown size={14} className={`text-gray-400 transition-transform ${isOpen ? "rotate-180" : ""}`} />
-            </button>
+      {/* 底部鼓励 */}
+      <div className="text-center py-6 border-t border-gray-100">
+        <p className="text-2xl mb-2">🎉</p>
+        <p className="text-sm font-bold text-gray-800 mb-1">你已经比99%的人更了解跨境了</p>
+        <p className="text-xs text-gray-400 leading-relaxed">
+          知道不等于会做，迈出第一步才是关键。<br />
+          注册Ozon，上传第一件商品，Crossly全程陪着你。
+        </p>
+      </div>
 
-            {isOpen && (
-              <div className="px-4 pb-3 space-y-2">
-                {cat.tools.map(tool => (
-                  <a
-                    key={tool.name}
-                    href={tool.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={`flex items-start justify-between p-2.5 rounded-lg border ${colorCls} hover:opacity-80 transition-opacity`}
-                  >
-                    <div className="flex-1">
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-xs font-semibold">{tool.name}</span>
-                        {(tool as { stars?: number }).stars && (
-                          <span className="text-yellow-400 text-[10px]">{"★".repeat((tool as { stars?: number }).stars!)}</span>
-                        )}
-                      </div>
-                      <p className="text-[11px] opacity-75 mt-0.5 leading-tight">{tool.desc}</p>
-                    </div>
-                    <ExternalLink size={11} className="flex-shrink-0 mt-0.5 ml-2 opacity-50" />
-                  </a>
-                ))}
-              </div>
-            )}
-          </div>
-        );
-      })}
-      <AdBanner slot="guide-tools" size="banner" />
     </div>
   );
 }
