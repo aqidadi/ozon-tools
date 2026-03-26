@@ -994,8 +994,11 @@ async function setTab(tab, settings, tabId, condition) {
         const allRawUrls = imgResults.flatMap(r => r.result || []).filter(Boolean);
         const cleanList = allRawUrls.map(url => {
           let u = url.split("?")[0];
-          u = u.replace(/\.webp$/, "");
-          return u.replace(/(_\d+x\d+.*\.jpg$)|(\.\d+x\d+.*\.jpg$)/, "");
+          u = u.replace(/\.webp$/i, "");          // 去 .webp
+          u = u.replace(/_\.webp$/i, "");          // 去 _.webp
+          u = u.replace(/(_\d+x\d+.*\.jpg$)|(\.\d+x\d+.*\.jpg$)/i, ""); // 去缩略图
+          u = u.replace(/\.jpg_.*$/i, ".jpg");     // 处理 .jpg_.webp 变体
+          return u;
         });
         const productOnly = cleanList.filter(url => {
           const isProduct = url.includes("cbu01.alicdn.com/img/ibank/");
