@@ -979,6 +979,36 @@ async function setTab(tab, settings, tabId, condition) {
               if (detailImgs.size >= 3) break;
             }
 
+            // textarea 逃生舱（1688把详情HTML藏在textarea里）
+            const textareas = document.querySelectorAll("textarea.visual-engine-data, .desc-lazyload-container textarea, textarea[class*='desc'], textarea[class*='detail']");
+            textareas.forEach(ta => {
+              const raw = ta.value || ta.textContent || "";
+              const matched = raw.match(/https?:\/\/[^"'\s<>]+\.(?:jpg|jpeg|png|webp)/gi) || [];
+              matched.forEach(u => {
+                const url = cleanUrl(u);
+                if (url && !mainImgs.has(url)) detailImgs.add(url);
+              });
+            });
+
+            // 最后手段：全页HTML正则暴力扫描（只取cbu01详情图域名，过滤主图域名）
+            if (detailImgs.size < 3) {
+              const pageHtml = document.documentElement.innerHTML;
+              // 专扫ibank路径（1688详情图特征路径）
+              const ibankUrls = pageHtml.match(/https?:\/\/cbu01\.alicdn\.com\/img\/ibank\/[^"'\s<>]+/g) || [];
+              ibankUrls.forEach(u => {
+                const url = cleanUrl(u);
+                if (url && !mainImgs.has(url)) detailImgs.add(url);
+              });
+              // 也扫其他alicdn详情图
+              if (detailImgs.size < 3) {
+                const allAliImgs = pageHtml.match(/https?:\/\/[^"'\s<>]+\.alicdn\.com\/[^"'\s<>]+\.(?:jpg|jpeg|png|webp)/gi) || [];
+                allAliImgs.forEach(u => {
+                  const url = cleanUrl(u);
+                  if (url && !mainImgs.has(url) && url.length > 40) detailImgs.add(url);
+                });
+              }
+            }
+
             return {
               main: [...mainImgs].slice(0, 15),
               detail: [...detailImgs].slice(0, 40),
