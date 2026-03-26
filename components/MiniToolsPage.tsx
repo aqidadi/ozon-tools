@@ -435,6 +435,8 @@ const TOOLS = [
   { id: "holiday", emoji: "📅", title: "节日日历", desc: "欧美/俄罗斯重要节日", tag: "内置", component: <HolidayCalendar /> },
   { id: "ai", emoji: "🤖", title: "AI文案生成", desc: "DeepSeek驱动，真实生成", tag: "独家", component: <AIPrompts /> },
   { id: "fba", emoji: "📦", title: "FBA费用估算", desc: "亚马逊美国站快速测算", tag: "内置", component: <FBACalc /> },
+  { id: "bulk", emoji: "🔗", title: "批量链接采集", desc: "粘贴1688链接批量导入", tag: "新功能", component: <BulkImport /> },
+  { id: "imgru", emoji: "🖼️", title: "图片俄化", desc: "一键加俄文+适配Ozon尺寸", tag: "新功能", component: <ImageRussify /> },
 ];
 
 const TAG_COLORS: Record<string,string> = {
@@ -442,7 +444,271 @@ const TAG_COLORS: Record<string,string> = {
   "内置": "bg-indigo-100 text-indigo-700",
   "免费": "bg-gray-100 text-gray-600",
   "独家": "bg-purple-100 text-purple-700",
+  "新功能": "bg-orange-100 text-orange-700",
 };
+
+// ─── 批量链接采集器 ─────────────────────────────────────
+function BulkImport() {
+  const [urls, setUrls] = useState("");
+  const [status, setStatus] = useState<{url:string, state:"waiting"|"ok"|"fail", msg?:string}[]>([]);
+  const [running, setRunning] = useState(false);
+
+  const parseUrls = (text: string) => {
+    return text.split(/[\n,，\s]+/)
+      .map(s => s.trim())
+      .filter(s => s.includes("1688.com") || s.includes("yiwugo.com"));
+  };
+
+  const handleImport = async () => {
+    const list = parseUrls(urls);
+    if (!list.length) return;
+    setStatus(list.map(url => ({ url, state: "waiting" })));
+    setRunning(true);
+
+    for (let i = 0; i < list.length; i++) {
+      const url = list[i];
+      setStatus(prev => prev.map((s,j) => j===i ? {...s, state:"waiting", msg:"解析中..."} : s));
+      try {
+        // 从1688链接提取offer_id
+        const offerMatch = url.match(/offer\/(\d+)/) || url.match(/offerId=(\d+)/) || url.match(/offer_id=(\d+)/);
+        if (!offerMatch) {
+          setStatus(prev => prev.map((s,j) => j===i ? {...s, state:"fail", msg:"链接格式不对"} : s));
+          continue;
+        }
+        const offerId = offerMatch[1];
+        // 调用后端解析（会失败，但这里做降级提示）
+        const res = await fetch(`/api/scrape1688?offerId=${offerId}`);
+        const data = await res.json();
+        if (data.title) {
+          setStatus(prev => prev.map((s,j) => j===i ? {...s, state:"ok", msg:`✅ ${data.title.slice(0,20)}...`} : s));
+        } else {
+          setStatus(prev => prev.map((s,j) => j===i ? {...s, state:"fail", msg:"⚠️ 需通过插件抓取（服务器IP被1688限制）"} : s));
+        }
+      } catch {
+        setStatus(prev => prev.map((s,j) => j===i ? {...s, state:"fail", msg:"网络错误"} : s));
+      }
+      await new Promise(r => setTimeout(r, 500));
+    }
+    setRunning(false);
+  };
+
+  const urlList = parseUrls(urls);
+
+  return (
+    <div className="space-y-3">
+      <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-700">
+        💡 <strong>使用说明：</strong>粘贴1688/义乌购商品链接（每行一个），点击采集。由于1688限制，建议配合Chrome插件使用效果更好。
+      </div>
+      <textarea
+        value={urls}
+        onChange={e => setUrls(e.target.value)}
+        rows={5}
+        placeholder={"粘贴1688商品链接，每行一个：\nhttps://detail.1688.com/offer/123456.html\nhttps://detail.1688.com/offer/789012.html"}
+        className="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs font-mono resize-none focus:outline-none focus:ring-2 focus:ring-orange-300"
+      />
+      <div className="flex items-center gap-2">
+        <button
+          onClick={handleImport}
+          disabled={running || !urlList.length}
+          className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white disabled:opacity-50 transition-all"
+          style={{background:"linear-gradient(135deg,#f97316,#ea580c)"}}
+        >
+          {running ? "采集中..." : `🔗 开始采集 ${urlList.length > 0 ? `(${urlList.length}条)` : ""}`}
+        </button>
+        {status.length > 0 && (
+          <button onClick={() => {setStatus([]); setUrls("");}} className="px-3 py-2.5 rounded-xl text-xs border border-gray-200 text-gray-500 hover:bg-gray-50">清空</button>
+        )}
+      </div>
+      {status.length > 0 && (
+        <div className="space-y-1 max-h-48 overflow-y-auto">
+          {status.map((s, i) => (
+            <div key={i} className={`flex items-start gap-2 p-2 rounded-lg text-xs ${s.state==="ok"?"bg-green-50":s.state==="fail"?"bg-red-50":"bg-gray-50"}`}>
+              <span className="flex-shrink-0">{s.state==="ok"?"✅":s.state==="fail"?"❌":"⏳"}</span>
+              <div className="min-w-0">
+                <div className="truncate text-gray-500 font-mono">{s.url.slice(0,40)}...</div>
+                {s.msg && <div className={s.state==="ok"?"text-green-700":"text-red-500"}>{s.msg}</div>}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+      <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 text-xs text-blue-600">
+        🔌 <strong>更高效的方式：</strong>安装Crossly插件后，在1688商品页直接点"发送到选品工具"，无需复制链接。
+      </div>
+    </div>
+  );
+}
+
+// ─── 图片俄化工具 ─────────────────────────────────────
+function ImageRussify() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [imgUrl, setImgUrl] = useState("");
+  const [ruText, setRuText] = useState("");
+  const [fontSize, setFontSize] = useState(48);
+  const [position, setPosition] = useState<"top"|"bottom"|"center">("bottom");
+  const [bgOpacity, setBgOpacity] = useState(0.6);
+  const [textColor, setTextColor] = useState("#ffffff");
+  const [bgColor, setBgColor] = useState("#000000");
+  const [size, setSize] = useState<"1000"|"900"|"800">("1000");
+  const [loading, setLoading] = useState(false);
+  const [preview, setPreview] = useState("");
+
+  const generate = async () => {
+    if (!imgUrl && !preview) return;
+    setLoading(true);
+
+    const canvas = canvasRef.current!;
+    const sz = parseInt(size);
+    canvas.width = sz;
+    canvas.height = sz;
+    const ctx = canvas.getContext("2d")!;
+
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      // 居中裁切填满画布
+      const scale = Math.max(sz / img.width, sz / img.height);
+      const sw = img.width * scale, sh = img.height * scale;
+      ctx.drawImage(img, (sz-sw)/2, (sz-sh)/2, sw, sh);
+
+      if (ruText.trim()) {
+        const fs = fontSize;
+        ctx.font = `bold ${fs}px Arial, sans-serif`;
+
+        // 计算文字换行
+        const maxW = sz - 40;
+        const words = ruText.split(" ");
+        const lines: string[] = [];
+        let line = "";
+        for (const word of words) {
+          const test = line ? line + " " + word : word;
+          if (ctx.measureText(test).width > maxW && line) {
+            lines.push(line); line = word;
+          } else { line = test; }
+        }
+        if (line) lines.push(line);
+
+        const lineH = fs * 1.3;
+        const totalH = lines.length * lineH + 24;
+
+        let yStart = 0;
+        if (position === "bottom") yStart = sz - totalH - 10;
+        else if (position === "top") yStart = 10;
+        else yStart = (sz - totalH) / 2;
+
+        // 半透明背景条
+        const hex2rgb = (h: string) => {
+          const r = parseInt(h.slice(1,3),16), g = parseInt(h.slice(3,5),16), b = parseInt(h.slice(5,7),16);
+          return `${r},${g},${b}`;
+        };
+        ctx.fillStyle = `rgba(${hex2rgb(bgColor)},${bgOpacity})`;
+        ctx.fillRect(0, yStart, sz, totalH);
+
+        // 文字
+        ctx.fillStyle = textColor;
+        ctx.textAlign = "center";
+        lines.forEach((l, i) => {
+          ctx.fillText(l, sz/2, yStart + 18 + (i+0.8) * lineH);
+        });
+      }
+
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.92);
+      setPreview(dataUrl);
+      setLoading(false);
+    };
+    img.onerror = () => {
+      setLoading(false);
+      alert("图片加载失败，请确认URL可访问（1688图片需通过代理）");
+    };
+    img.src = imgUrl ? `/api/imgproxy?url=${encodeURIComponent(imgUrl)}` : preview;
+  };
+
+  const download = () => {
+    const a = document.createElement("a");
+    a.href = preview;
+    a.download = `ozon_${size}x${size}_ru.jpg`;
+    a.click();
+  };
+
+  return (
+    <div className="space-y-3">
+      <div>
+        <label className="text-xs font-medium text-gray-600 mb-1 block">图片URL（支持1688/阿里图片）</label>
+        <div className="flex gap-2">
+          <input value={imgUrl} onChange={e=>setImgUrl(e.target.value)}
+            placeholder="https://cbu01.alicdn.com/..."
+            className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-purple-300" />
+        </div>
+      </div>
+
+      <div>
+        <label className="text-xs font-medium text-gray-600 mb-1 block">俄文文字（留空则只调整尺寸）</label>
+        <textarea value={ruText} onChange={e=>setRuText(e.target.value)} rows={2}
+          placeholder="例：Мягкая игрушка Панда 30см"
+          className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-purple-300" />
+      </div>
+
+      <div className="grid grid-cols-3 gap-2 text-xs">
+        <div>
+          <label className="text-gray-500 mb-1 block">输出尺寸</label>
+          <select value={size} onChange={e=>setSize(e.target.value as "1000"|"900"|"800")}
+            className="w-full border border-gray-200 rounded-lg px-2 py-1.5 bg-white text-xs">
+            <option value="1000">1000×1000（主图）</option>
+            <option value="900">900×900（详情图）</option>
+            <option value="800">800×800</option>
+          </select>
+        </div>
+        <div>
+          <label className="text-gray-500 mb-1 block">文字位置</label>
+          <select value={position} onChange={e=>setPosition(e.target.value as "top"|"bottom"|"center")}
+            className="w-full border border-gray-200 rounded-lg px-2 py-1.5 bg-white text-xs">
+            <option value="bottom">底部</option>
+            <option value="top">顶部</option>
+            <option value="center">居中</option>
+          </select>
+        </div>
+        <div>
+          <label className="text-gray-500 mb-1 block">字体大小</label>
+          <input type="number" value={fontSize} onChange={e=>setFontSize(parseInt(e.target.value)||48)} min={20} max={120}
+            className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs" />
+        </div>
+        <div>
+          <label className="text-gray-500 mb-1 block">文字颜色</label>
+          <input type="color" value={textColor} onChange={e=>setTextColor(e.target.value)}
+            className="w-full h-8 border border-gray-200 rounded-lg cursor-pointer" />
+        </div>
+        <div>
+          <label className="text-gray-500 mb-1 block">背景色</label>
+          <input type="color" value={bgColor} onChange={e=>setBgColor(e.target.value)}
+            className="w-full h-8 border border-gray-200 rounded-lg cursor-pointer" />
+        </div>
+        <div>
+          <label className="text-gray-500 mb-1 block">背景透明度</label>
+          <input type="range" value={bgOpacity} onChange={e=>setBgOpacity(parseFloat(e.target.value))} min={0} max={1} step={0.1}
+            className="w-full mt-2" />
+        </div>
+      </div>
+
+      <button onClick={generate} disabled={loading || (!imgUrl && !preview)}
+        className="w-full py-2.5 rounded-xl text-sm font-semibold text-white disabled:opacity-50 transition-all"
+        style={{background:"linear-gradient(135deg,#8b5cf6,#6366f1)"}}>
+        {loading ? "生成中..." : "🎨 生成预览"}
+      </button>
+
+      {preview && (
+        <div className="space-y-2">
+          <img src={preview} alt="预览" className="w-full rounded-xl border border-gray-200 object-cover" style={{maxHeight:300}} />
+          <button onClick={download}
+            className="w-full py-2 rounded-xl text-sm font-semibold border-2 border-purple-500 text-purple-600 hover:bg-purple-50 transition-all">
+            ⬇️ 下载图片（{size}×{size} JPG）
+          </button>
+        </div>
+      )}
+
+      <canvas ref={canvasRef} style={{display:"none"}} />
+    </div>
+  );
+}
 
 export function MiniToolsPage() {
   const [active, setActive] = useState("currency");
