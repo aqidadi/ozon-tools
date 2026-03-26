@@ -908,31 +908,34 @@ async function setTab(tab, settings, tabId, condition) {
           }, 300);
         });
       }});
-      await new Promise(r => setTimeout(r, 3000)); // 等content script扫描完
+      await new Promise(r => setTimeout(r, 2000));
 
-      // 第三步：通过sendMessage向content script请求数据（避免executeScript上下文隔离问题）
-      const product = await new Promise((resolve) => {
-        chrome.tabs.sendMessage(tabId, { type: "GET_PRODUCT_DATA" }, (response) => {
-          if (chrome.runtime.lastError || !response) {
-            // sendMessage失败，降级用executeScript
-            chrome.scripting.executeScript({ target: { tabId }, func: extractProductData })
-              .then(res => resolve(res?.[0]?.result))
-              .catch(() => resolve(null));
-          } else {
-            // 把content script数据和DOM数据合并
-            chrome.scripting.executeScript({ target: { tabId }, func: extractProductData })
-              .then(res => {
-                const domData = res?.[0]?.result || {};
-                // content script的图片和价格优先
-                if (response.images && response.images.length > 0) domData.images = response.images;
-                if (response.price && response.price > 0) domData.price = response.price;
-                if (response.title && !domData.title) domData.title = response.title;
-                resolve(domData);
-              })
-              .catch(() => resolve(response));
+      // 第三步：用 allFrames:true 抓图片（穿透iframe）
+      let grabbedImages = [];
+      try {
+        const imgResults = await chrome.scripting.executeScript({
+          target: { tabId, allFrames: true },
+          func: () => {
+            const imgs = document.querySelectorAll("img.preview-img, img.ant-image-img");
+            if (imgs.length === 0) return [];
+            return Array.from(imgs).map(img => {
+              const src = img.src || img.getAttribute("data-src") || "";
+              return src.replace(/_\d+x\d+[^.]*\.(jpg|jpeg|png|webp)$/i, ".$1");
+            }).filter(s => s.startsWith("http") && /\.(jpg|jpeg|png|webp)/i.test(s));
           }
         });
-      });
+        const seen = new Set();
+        for (const r of imgResults) {
+          for (const src of (r.result || [])) {
+            if (src && !seen.has(src)) { seen.add(src); grabbedImages.push(src); }
+          }
+        }
+      } catch(e) {}
+
+      // 第四步：抓其他数据（标题、价格、规格）
+      const res = await chrome.scripting.executeScript({ target: { tabId }, func: extractProductData });
+      const product = res?.[0]?.result;
+      if (product && grabbedImages.length > 0) product.images = grabbedImages;
 
       if (product && product.title) {
         currentProduct = product;
