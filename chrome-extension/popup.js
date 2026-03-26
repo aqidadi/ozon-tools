@@ -990,18 +990,21 @@ async function setTab(tab, settings, tabId, condition) {
           }
         });
 
-        // 先规范化（去缩略图后缀）再去重，防止带后缀和不带后缀被当成两张
-        const normalize = url => (url.startsWith("//") ? "https:" + url : url)
-          .replace(/(_\d+x\d+.*\.jpg$)|(\.\d+x\d+.*\.jpg$)/i, "");
-        const allRaw = imgResults.flatMap(r => r.result || []).filter(Boolean);
-        const allUrls = [...new Set(allRaw.map(normalize))].filter(url => {
-          const isIbank = url.includes("cbu01.alicdn.com/img/ibank/");
-          const isGarbage = /logo|setting|gear|icon|check|avatar/i.test(url);
-          return isIbank && !isGarbage;
+        // 终极三步清洗：1.规范化 2.过滤 3.去重
+        const rawUrls = imgResults.flatMap(r => r.result || []).filter(Boolean);
+        const normalizedUrls = rawUrls.map(url => {
+          if (url.startsWith("//")) url = "https:" + url;
+          // 去掉所有尺寸后缀变体：_300x300.jpg / .300x300.jpg / _300x300.jpg_.webp
+          return url.replace(/[_.](\d+x\d+)[^?#]*/i, "").replace(/\?.*$/, "");
         });
-        grabbedDetailImages = allUrls.filter(u => u.includes("/img/ibank/")).slice(0, 20);
-        grabbedImages = allUrls.filter(u => !grabbedDetailImages.includes(u)).slice(0, 10);
-        if (grabbedImages.length === 0) { grabbedImages = allUrls.slice(0, 10); grabbedDetailImages = allUrls.slice(10, 25); }
+        const productUrls = normalizedUrls.filter(url =>
+          url.includes("cbu01.alicdn.com/img/ibank/") &&
+          !/logo|setting|gear|icon|check|avatar|loading/i.test(url)
+        );
+        const allUrls = [...new Set(productUrls)];
+        console.log("Crossly 提纯后图片数量:", allUrls.length);
+        grabbedDetailImages = allUrls.slice(0, 20);
+        grabbedImages = allUrls.slice(0, 10); // 主图取前10，详情图独立
             } catch(e) {}
 
       // 第四步：抓标题、价格、规格等
