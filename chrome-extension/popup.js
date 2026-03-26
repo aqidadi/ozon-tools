@@ -957,19 +957,19 @@ async function setTab(tab, settings, tabId, condition) {
           func: () => {
             const host = location.hostname;
 
-            // 义乌购抓取（#productDesc不存在，改用class/全页扫描）
+            // 义乌购抓取（容器是.product-detail-page，图片域名是yiwugou.com）
             if (host.includes("yiwugo.com")) {
-              // 按优先级尝试各容器
-              const detailBox = document.querySelector(".detail-desc, .product-desc, .pro-desc, .goods-desc, [class*=detail][class*=desc], [class*=product][class*=detail]") ||
-                                document.querySelector("#app");
-              const scope = detailBox || document.body;
+              // 只取详情长图区，跳过主图缩略图和评价图
+              // 优先找详情描述容器
+              const detailDesc = document.querySelector(".product-desc, .detail-desc, .goods-detail, [class*=proDesc], [class*=pro-desc], [class*=goodsDesc]");
+              const scope = detailDesc || document.querySelector(".product-detail-page") || document.body;
               const allImgs = Array.from(scope.querySelectorAll("img"));
-              console.log("Crossly yiwugo: 容器=", scope.id||scope.className, "img数量:", allImgs.length);
+              console.log("Crossly yiwugo: 容器=", scope.className||scope.id, "img数量:", allImgs.length);
               const finalUrls = allImgs
                 .map(i => i.getAttribute("data-lazyload-src") || i.getAttribute("data-src") || i.src || "")
-                .filter(src => src.includes("img.yiwugo.com") || src.includes("img1.yiwugo.com") || src.includes("img2.yiwugo.com"))
+                .filter(src => src && (src.includes("yiwugou.com") || src.includes("yiwugo.com")))
                 .map(src => src.split("?")[0].replace(/(_\d+x\d+)/, ""))
-                .filter(src => src.length > 30 && !/icon|logo|avatar/i.test(src));
+                .filter(src => src.length > 30 && !/icon|logo|avatar|huiyuan/i.test(src));
               return [...new Set(finalUrls)];
             }
 
