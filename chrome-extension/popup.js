@@ -930,6 +930,21 @@ async function setTab(tab, settings, tabId, condition) {
       }});
       await new Promise(r => setTimeout(r, 1500)); // 等详情图异步加载
 
+      // 第二步补充：对所有iframe也执行滚动，触发iframe内部懒加载
+      await chrome.scripting.executeScript({ target: { tabId, allFrames: true }, func: () => {
+        return new Promise(resolve => {
+          const total = document.body.scrollHeight || document.documentElement.scrollHeight;
+          if (total < 200) { resolve(); return; }
+          let i = 0, steps = 6;
+          const t = setInterval(() => {
+            window.scrollTo(0, (total / steps) * i);
+            i++;
+            if (i > steps) { clearInterval(t); resolve(); }
+          }, 200);
+        });
+      }});
+      await new Promise(r => setTimeout(r, 2000)); // 等iframe内图片加载完
+
       // 第三步：扫全部img标签，稳定版
       let grabbedImages = [];
       let grabbedDetailImages = [];
