@@ -857,6 +857,9 @@ async function init() {
 
   const is1688 = url.includes("1688.com");
   const is1688Product = is1688 && (url.includes("/offer/") || url.includes("detail.1688.com") || url.includes("offerId=") || url.includes("offer_id="));
+  const isYiwugo = url.includes("yiwugo.com");
+  const isYiwugoProduct = isYiwugo && (url.includes("/product/") || url.includes("/goods/") || url.includes("productId=") || url.match(/yiwugo\.com\/[^/]+\/\d+/));
+  const isSourceProduct = is1688Product || isYiwugoProduct;
   const isOzon = url.includes("ozon.ru");
 
   // 显示登录状态 + 当前页面URL提示
@@ -878,8 +881,8 @@ async function init() {
   document.getElementById("tabAccount").addEventListener("click", () => setTab("account", settings, tab.id, false));
 
   if (isOzon) { renderOzonPicker(tab.id, settings); return; }
-  if (is1688Product) { setTab("import", settings, tab.id, true); }
-  else { setTab("search", settings, tab.id, is1688); }
+  if (isSourceProduct) { setTab("import", settings, tab.id, true); }
+  else { setTab("search", settings, tab.id, is1688 || isYiwugo); }
 }
 
 async function setTab(tab, settings, tabId, condition) {

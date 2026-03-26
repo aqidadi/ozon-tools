@@ -1,13 +1,13 @@
 {
   "manifest_version": 3,
   "name": "Crossly - 跨境选品工具",
-  "version": "1.6.0",
+  "version": "1.6.2",
   "description": "在Ozon热销页抓取商品，自动去1688/义乌购找货源；在商品页一键导入到选品工具",
   "permissions": ["activeTab", "storage", "clipboardWrite", "scripting"],
   "host_permissions": [
-    "https://*.1688.com/*",
-    "https://*.ozon.ru/*",
-    "https://*.yiwugo.com/*",
+    "*://*.1688.com/*",
+    "*://*.ozon.ru/*",
+    "*://*.yiwugo.com/*",
     "https://localhost:3000/*",
     "https://*.vercel.app/*",
     "https://*.crossly.cn/*"
@@ -22,7 +22,7 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://*.1688.com/*", "https://*.ozon.ru/*", "https://*.yiwugo.com/*"],
+      "matches": ["*://*.1688.com/*", "*://*.ozon.ru/*", "*://*.yiwugo.com/*"],
       "js": ["content.js"],
       "run_at": "document_idle",
       "all_frames": true
