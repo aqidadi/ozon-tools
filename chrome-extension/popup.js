@@ -645,16 +645,41 @@ function renderProduct(product, settings) {
 
     <div class="divider"></div>
 
+    <!-- Ozon定价面板 -->
+    <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:12px;margin-bottom:8px;">
+      <div style="font-size:12px;font-weight:600;color:#1e40af;margin-bottom:8px;">📊 Ozon 定价设置</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:12px;">
+        <div>
+          <label style="color:#64748b;font-size:11px;">采购价（元）</label>
+          <input type="number" id="costInput" placeholder="自动填入" style="width:100%;border:1px solid #cbd5e1;border-radius:6px;padding:5px 8px;font-size:12px;" />
+        </div>
+        <div>
+          <label style="color:#64748b;font-size:11px;">头程运费（元/件）</label>
+          <input type="number" id="shippingInput" value="25" style="width:100%;border:1px solid #cbd5e1;border-radius:6px;padding:5px 8px;font-size:12px;" />
+        </div>
+        <div>
+          <label style="color:#64748b;font-size:11px;">Ozon佣金（%）</label>
+          <input type="number" id="commissionInput" value="15" min="0" max="50" style="width:100%;border:1px solid #cbd5e1;border-radius:6px;padding:5px 8px;font-size:12px;" />
+        </div>
+        <div>
+          <label style="color:#64748b;font-size:11px;">目标利润率（%）</label>
+          <input type="number" id="profitTargetInput" value="30" min="0" max="200" style="width:100%;border:1px solid #cbd5e1;border-radius:6px;padding:5px 8px;font-size:12px;" />
+        </div>
+      </div>
+      <div style="margin-top:8px;display:flex;align-items:center;gap:6px;">
+        <label style="color:#64748b;font-size:11px;white-space:nowrap;">汇率 ₽/¥</label>
+        <input type="number" id="rateInput" value="13" step="0.1" style="width:70px;border:1px solid #cbd5e1;border-radius:6px;padding:5px 8px;font-size:12px;" />
+        <button id="calcOzonPriceBtn" style="flex:1;background:#2563eb;color:#fff;border:none;border-radius:6px;padding:6px;font-size:12px;cursor:pointer;">⚡ 计算建议售价</button>
+      </div>
+      <div id="ozonPriceResult" style="display:none;margin-top:8px;padding:8px;background:#fff;border-radius:6px;font-size:12px;border:1px solid #93c5fd;"></div>
+    </div>
+
     <button class="btn btn-primary" id="sendBtn">
       📤 发送到选品工具
     </button>
 
     <button class="btn" id="ozonPublishBtn" style="margin-top:6px;background:#005bff;color:#fff;border:none;">
-      🚀 一键发布到 Ozon
-    </button>
-
-    <button class="btn" id="calcProfitBtn" style="margin-top:6px;background:#f0fdf4;color:#16a34a;border:1px solid #86efac;">
-      💰 计算利润建议
+      🚀 一键发布到 Ozon（含定价）
     </button>
 
     <div id="profitAdvice" style="display:none;margin-top:8px;padding:10px;background:#f0fdf4;border:1px solid #86efac;border-radius:8px;font-size:12px;"></div>
@@ -675,21 +700,87 @@ function renderProduct(product, settings) {
 
   document.getElementById("sendBtn").addEventListener("click", handleSend);
 
+  // 自动填入采购价
+  if (product.price) {
+    const costInput = document.getElementById("costInput");
+    if (costInput && !costInput.value) costInput.value = product.price.toFixed(2);
+  }
+
+  // 计算建议售价
+  document.getElementById("calcOzonPriceBtn").addEventListener("click", () => {
+    const cost = parseFloat(document.getElementById("costInput")?.value || product.price || 0);
+    const shipping = parseFloat(document.getElementById("shippingInput")?.value || 25);
+    const commission = parseFloat(document.getElementById("commissionInput")?.value || 15) / 100;
+    const profitTarget = parseFloat(document.getElementById("profitTargetInput")?.value || 30) / 100;
+    const rate = parseFloat(document.getElementById("rateInput")?.value || 13);
+    const weight = parseFloat(document.getElementById("weightInput")?.value || 400);
+
+    const packaging = 2;
+    const shippingTotal = (weight / 1000) * shipping; // 按重量算运费
+    const totalCostCny = cost + shippingTotal + packaging;
+    const totalCostRub = totalCostCny * rate;
+
+    // 建议售价 = 成本 / (1 - 佣金) / (1 - 利润率)
+    const suggestRub = Math.ceil(totalCostRub / (1 - commission) / (1 - profitTarget));
+    const oldPriceRub = Math.ceil(suggestRub * 1.2); // 划线价 = 建议价*1.2
+
+    // 保本价
+    const breakEvenRub = Math.ceil(totalCostRub / (1 - commission));
+
+    // 利润核算
+    const netRevenue = suggestRub * (1 - commission);
+    const profitRub = netRevenue - totalCostRub;
+    const profitCny = profitRub / rate;
+    const actualProfitRate = (profitRub / totalCostRub * 100).toFixed(1);
+
+    // 把建议售价填入旧的sellPriceInput
+    const sellInput = document.getElementById("sellPriceInput");
+    if (sellInput) sellInput.value = suggestRub;
+
+    const resultEl = document.getElementById("ozonPriceResult");
+    resultEl.style.display = "block";
+    resultEl.innerHTML = `
+      <div style="font-weight:600;color:#1e40af;margin-bottom:6px;">📊 定价方案</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;color:#374151;">
+        <div>🛒 采购价：<strong>¥${cost.toFixed(2)}</strong></div>
+        <div>🚚 运费：<strong>¥${shippingTotal.toFixed(2)}</strong></div>
+        <div>📦 包材：<strong>¥${packaging}</strong></div>
+        <div>💰 总成本：<strong>¥${totalCostCny.toFixed(2)}（₽${totalCostRub.toFixed(0)}）</strong></div>
+      </div>
+      <div style="margin-top:8px;padding:8px;background:#dbeafe;border-radius:6px;">
+        <div>🔴 Ozon保本价：<strong>₽${breakEvenRub}</strong></div>
+        <div style="margin-top:4px;">✅ <strong>建议售价：₽${suggestRub}</strong>（划线价₽${oldPriceRub}）</div>
+        <div style="margin-top:4px;color:#16a34a;">💵 预计每件利润：<strong>₽${profitRub.toFixed(0)}（¥${profitCny.toFixed(1)}）</strong> / 利润率 <strong>${actualProfitRate}%</strong></div>
+      </div>
+      <div style="margin-top:4px;font-size:10px;color:#6b7280;">汇率：1¥≈₽${rate} · 佣金${(commission*100).toFixed(0)}% · 利润目标${(profitTarget*100).toFixed(0)}%</div>
+    `;
+
+    // 存到全局供刊登使用
+    window._ozonPricing = { suggestRub, oldPriceRub, totalCostCny, profitCny };
+  });
+
   document.getElementById("ozonPublishBtn").addEventListener("click", async () => {
     const btn = document.getElementById("ozonPublishBtn");
     btn.innerHTML = "⏳ 发布中...";
     btn.disabled = true;
     try {
       const weight = parseFloat(document.getElementById("weightInput")?.value || 400);
-      const sellPrice = parseFloat(document.getElementById("sellPriceInput")?.value || 999);
+      const pricing = window._ozonPricing;
+      const sellPrice = pricing?.suggestRub || parseFloat(document.getElementById("sellPriceInput")?.value || 999);
+      const oldPrice = pricing?.oldPriceRub || Math.ceil(sellPrice * 1.2);
       const siteUrl = settings.siteUrl || "https://www.crossly.cn";
 
       // 从规格里提取颜色/材质/高度
       const specs = product.specs || {};
-      const color = specs["颜色"] || specs["色"] || specs["颜色分类"] || "";
-      const material = specs["材质"] || specs["面料"] || specs["材料"] || "";
+      const color = specs["颜色"] || specs["色"] || specs["颜色分类"] || specs["颜色/图案"] || "";
+      const material = specs["材质"] || specs["面料"] || specs["材料"] || specs["填充物"] || "";
       const heightMatch = (product.title || "").match(/(\d+)\s*cm|(\d+)\s*см|(\d+)\s*厘米/i);
-      const height = heightMatch ? parseInt(heightMatch[1]||heightMatch[2]||heightMatch[3]) : 30;
+      const height = heightMatch ? parseInt(heightMatch[1]||heightMatch[2]||heightMatch[3]) : null;
+
+      if (!pricing) {
+        const confirmGo = confirm(`未计算定价，将以 ₽${sellPrice} 发布。建议先点「⚡计算建议售价」再发布。\n\n继续吗？`);
+        if (!confirmGo) { btn.innerHTML = "🚀 一键发布到 Ozon（含定价）"; btn.disabled = false; return; }
+      }
 
       const resp = await fetch(`${siteUrl}/api/ozon/publish`, {
         method: "POST",
@@ -698,6 +789,7 @@ function renderProduct(product, settings) {
           product: {
             title: product.title,
             price: sellPrice,
+            oldPrice,
             weight,
             images: product.images || [],
             detailImages: product.detailImages || [],
@@ -709,7 +801,7 @@ function renderProduct(product, settings) {
       });
       const data = await resp.json();
       if (data.success) {
-        btn.innerHTML = "✅ 已发布！task:" + data.taskId;
+        btn.innerHTML = "✅ 已发布 ₽" + sellPrice + " · task:" + data.taskId;
         btn.style.background = "#16a34a";
       } else {
         btn.innerHTML = "❌ " + (data.error || "发布失败");
@@ -721,52 +813,6 @@ function renderProduct(product, settings) {
       btn.style.background = "#dc2626";
       btn.disabled = false;
     }
-  });
-
-  document.getElementById("calcProfitBtn").addEventListener("click", () => {
-    const price = product.price || 0;
-    const weight = parseFloat(document.getElementById("weightInput")?.value || settings.weight || 400);
-    const sellPrice = parseFloat(document.getElementById("sellPriceInput")?.value || 0);
-    const currency = document.getElementById("currencySelect")?.value || "RUB";
-
-    // 估算成本
-    const shipping = weight / 1000 * 25; // 约25元/公斤
-    const packaging = 2;
-    const commission = currency === "RUB" ? 0.15 : 0.10; // Ozon约15%佣金
-    const totalCost = price + shipping + packaging;
-
-    // 汇率参考（粗略）
-    const rates = { RUB: 13.5, USD: 7.2, THB: 0.2, VND: 0.00029, IDR: 0.00045, MYR: 1.6, AED: 1.96, BRL: 1.4 };
-    const rate = rates[currency] || 1;
-
-    // 保本价（含佣金）
-    const breakEvenLocal = (totalCost / rate) / (1 - commission);
-    const breakEvenStr = breakEvenLocal.toFixed(0);
-
-    // 建议售价（保本价 * 1.3，留30%利润）
-    const suggestPrice = (breakEvenLocal * 1.3).toFixed(0);
-    const profitRate = sellPrice > 0 ? (((sellPrice * (1-commission) * rate) - totalCost) / totalCost * 100).toFixed(1) : null;
-
-    const symbol = { RUB: "₽", USD: "$", THB: "฿", VND: "₫", IDR: "Rp", MYR: "RM", AED: "د.إ", BRL: "R$" };
-    const sym = symbol[currency] || currency;
-
-    const adviceEl = document.getElementById("profitAdvice");
-    adviceEl.style.display = "block";
-    adviceEl.innerHTML = `
-      <div style="font-weight:600;color:#15803d;margin-bottom:6px;">💰 利润分析</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:11px;">
-        <div>📦 进价：<strong>¥${price.toFixed(2)}</strong></div>
-        <div>🚚 运费估算：<strong>¥${shipping.toFixed(2)}</strong></div>
-        <div>📦 包材：<strong>¥${packaging}</strong></div>
-        <div>💸 总成本：<strong>¥${totalCost.toFixed(2)}</strong></div>
-      </div>
-      <div style="margin-top:8px;padding:8px;background:#dcfce7;border-radius:6px;">
-        <div>🎯 <strong>保本售价：${sym}${breakEvenStr}</strong>（含${(commission*100).toFixed(0)}%佣金）</div>
-        <div>✅ <strong>建议售价：${sym}${suggestPrice}</strong>（30%利润空间）</div>
-        ${profitRate ? `<div style="color:${parseFloat(profitRate)>0?'#15803d':'#dc2626'}">📊 你填的售价利润率：<strong>${profitRate}%</strong></div>` : ""}
-      </div>
-      <div style="margin-top:6px;font-size:10px;color:#6b7280;">汇率参考：1${sym}≈¥${(1/rate).toFixed(4)}（仅供参考，请以实时汇率为准）</div>
-    `;
   });
 }
 
