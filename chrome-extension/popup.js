@@ -952,6 +952,30 @@ async function setTab(tab, settings, tabId, condition) {
         const imgResults = await chrome.scripting.executeScript({
           target: { tabId, allFrames: true },
           func: () => {
+            const host = location.hostname;
+
+            // 义乌购抓取
+            if (host.includes("yiwugo.com")) {
+              const descContainer = document.getElementById("productDesc") || document.body;
+              const imgs = descContainer.querySelectorAll("img");
+              let yiwuResults = [];
+              imgs.forEach(img => {
+                let url = img.src;
+                if (url && (url.includes("img.yiwugo.com") || url.includes("img1.yiwugo.com") || url.includes("img2.yiwugo.com"))) {
+                  let cleanUrl = url.split("?")[0].replace(/(_\d+x\d+)/, "");
+                  yiwuResults.push(cleanUrl);
+                }
+              });
+              // 补扫全页（含主图缩略图列表）
+              document.querySelectorAll("img").forEach(img => {
+                if (img.src && img.src.includes("yiwugo.com") && !yiwuResults.includes(img.src.split("?")[0])) {
+                  yiwuResults.push(img.src.split("?")[0].replace(/(_\d+x\d+)/, ""));
+                }
+              });
+              return [...new Set(yiwuResults)].filter(u => u.length > 20);
+            }
+
+            // 1688抓取（默认）
             const rawText = document.documentElement.outerHTML;
             const regex = /https?:\/\/cbu01\.alicdn\.com\/img\/ibank\/[0-9a-zA-Z_!/-]+\.jpg/g;
             const matches = rawText.match(regex) || [];
@@ -963,8 +987,9 @@ async function setTab(tab, settings, tabId, condition) {
 
         // 串行清洗：1.砍参数/webp 2.只留ibank 3.去重
         const allRaw = imgResults.flatMap(r => r.result || []).filter(Boolean);
-        const finalUnique = [...new Set(allRaw)];
-        // 调试：popup console里显示各frame抓到多少张
+        const finalUnique = [...new Set(allRaw)].filter(u =>
+          u.includes("cbu01.alicdn.com/img/ibank/") || u.includes("yiwugo.com")
+        );
         console.log("Crossly frames结果:", imgResults.map((r,i) => `frame${i}:${(r.result||[]).length}张`).join(", "), "→合并去重后:", finalUnique.length, "张");
         grabbedImages = finalUnique.slice(0, 10);
         grabbedDetailImages = finalUnique.slice(10, 25);
