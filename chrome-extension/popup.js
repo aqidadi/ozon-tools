@@ -992,19 +992,17 @@ async function setTab(tab, settings, tabId, condition) {
 
         // 串行清洗：1.砍参数/webp 2.只留ibank 3.去重
         const allRawUrls = imgResults.flatMap(r => r.result || []).filter(Boolean);
-        const cleanList = allRawUrls.map(url => {
-          let u = url.split("?")[0];
-          u = u.replace(/\.webp$/i, "");          // 去 .webp
-          u = u.replace(/_\.webp$/i, "");          // 去 _.webp
-          u = u.replace(/(_\d+x\d+.*\.jpg$)|(\.\d+x\d+.*\.jpg$)/i, ""); // 去缩略图
-          u = u.replace(/\.jpg_.*$/i, ".jpg");     // 处理 .jpg_.webp 变体
+        const normalized = allRawUrls.map(url => {
+          let u = url.split("?")[0];                          // 1. 砍参数
+          u = u.replace(/\.jpg_.*$/i, ".jpg");               // 2. 砍 .jpg_.webp 变体（最关键）
+          u = u.replace(/\.webp$/i, "");                     // 3. 砍纯 .webp
+          u = u.replace(/(_\d+x\d+.*\.jpg$)|(\.\d+x\d+.*\.jpg$)/i, ""); // 4. 砍缩略图
           return u;
         });
-        const productOnly = cleanList.filter(url => {
-          const isProduct = url.includes("cbu01.alicdn.com/img/ibank/");
-          const isGarbage = /logo|setting|gear|icon|check|avatar/i.test(url);
-          return isProduct && !isGarbage;
-        });
+        const productOnly = normalized.filter(url =>
+          url.includes("cbu01.alicdn.com/img/ibank/") &&
+          !/logo|setting|gear|icon|check|avatar|blank|spaceball/i.test(url)
+        );
         const finalUnique = [...new Set(productOnly)];
         grabbedImages = finalUnique.slice(0, 10);
         grabbedDetailImages = finalUnique.slice(10, 25);

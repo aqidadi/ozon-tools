@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Crossly - 跨境选品工具",
-  "version": "1.4.3",
+  "version": "1.4.4",
   "description": "在Ozon热销页抓取商品，自动去1688找货源；在1688商品页一键导入到选品工具",
   "permissions": ["activeTab", "storage", "clipboardWrite", "scripting"],
   "host_permissions": [
