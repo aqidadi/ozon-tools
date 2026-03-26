@@ -517,198 +517,146 @@ function ComingSoonPage({ tab }: { tab: string }) {
 }
 
 function LandingPage({ onStart }: { onStart: () => void }) {
-  const [showUpgrade, setShowUpgrade] = useState(false);
   const { user } = useAuth();
 
   return (
-    <div className="max-w-3xl mx-auto space-y-8">
+    <div className="max-w-2xl mx-auto space-y-10 py-4">
 
-      {/* Hero */}
-      <div className="relative rounded-2xl overflow-hidden p-8 text-center"
-        style={{ background: "linear-gradient(135deg, #1e2d5a 0%, #2d1b69 60%, #0f172a 100%)" }}>
-        <div className="absolute inset-0 opacity-10"
-          style={{ backgroundImage: "radial-gradient(circle at 20% 50%, #6366f1 0%, transparent 50%), radial-gradient(circle at 80% 20%, #8b5cf6 0%, transparent 40%)" }} />
+      {/* 主口号 Hero */}
+      <div className="text-center pt-6">
+        <div className="inline-flex items-center gap-2 bg-indigo-50 text-indigo-600 text-xs font-semibold px-4 py-1.5 rounded-full mb-6 border border-indigo-100">
+          🚀 Crossly · 跨境工具箱
+        </div>
+
+        <h1 className="text-5xl font-black text-gray-900 leading-tight tracking-tight mb-4">
+          让跨境像
+          <span style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+            微商
+          </span>
+          一样简单
+        </h1>
+
+        <p className="text-lg text-gray-500 leading-relaxed max-w-xl mx-auto mb-2">
+          我们不想赚你的钱，我们想改变一个行业。
+        </p>
+        <p className="text-base text-gray-400 leading-relaxed max-w-xl mx-auto mb-8">
+          让跨境不再神秘，让每一个普通人——宝妈、学生、上班族——
+          <br />都可以用手机轻松开始做跨境，月入几千，无需仓库，无需经验。
+        </p>
+
+        <div className="flex items-center justify-center gap-3">
+          <button onClick={onStart}
+            className="px-8 py-3 rounded-2xl text-base font-bold text-white shadow-xl transition-all hover:scale-105 hover:shadow-2xl"
+            style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)" }}>
+            免费开始 →
+          </button>
+          <a href="https://crossly.cn" target="_blank"
+            className="px-6 py-3 rounded-2xl text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors">
+            了解更多
+          </a>
+        </div>
+      </div>
+
+      {/* 使命宣言 */}
+      <div className="relative rounded-3xl overflow-hidden p-8 text-center"
+        style={{ background: "linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)" }}>
+        <div className="absolute inset-0 opacity-20"
+          style={{ backgroundImage: "radial-gradient(circle at 30% 50%, #6366f1 0%, transparent 60%), radial-gradient(circle at 70% 30%, #a855f7 0%, transparent 50%)" }} />
         <div className="relative z-10">
-          <div className="inline-flex items-center gap-2 bg-white/10 text-white/80 text-xs font-medium px-3 py-1.5 rounded-full mb-4 border border-white/20">
-            🚀 专为跨境卖家打造 · 支持Ozon/Shopee/TikTok/亚马逊
-          </div>
-          <h1 className="text-3xl font-extrabold text-white mb-3">
-            1688 找货，一键导入<br />
-            <span style={{ background: "linear-gradient(90deg, #a78bfa, #60a5fa)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-              自动算利润，直接上架
-            </span>
-          </h1>
-          <p className="text-white/60 text-sm mb-6 max-w-md mx-auto">
-            Chrome插件在1688商品页一键抓取主图+详情图+规格，秒算多平台利润，支持8国语言翻译
+          <p className="text-white/50 text-xs font-semibold tracking-widest uppercase mb-4">我们的愿景</p>
+          <p className="text-white text-xl font-bold leading-relaxed mb-3">
+            "让跨境不再神秘"
           </p>
-          <div className="flex items-center justify-center gap-3">
-            <button onClick={onStart}
-              className="px-6 py-2.5 rounded-xl text-sm font-semibold text-white shadow-lg transition-all hover:scale-105"
-              style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)" }}>
-              免费开始使用 →
-            </button>
-            <a href="/api/plugin-download"
-              className="px-6 py-2.5 rounded-xl text-sm font-medium text-white/80 border border-white/20 hover:bg-white/10 transition-colors">
-              下载插件
-            </a>
-          </div>
+          <p className="text-white/60 text-sm leading-loose max-w-lg mx-auto">
+            全球有数百万普通人想要做跨境，但被繁琐的流程、高昂的工具费用挡在门外。<br />
+            Crossly 要做的，就是把这扇门彻底打开。<br /><br />
+            <span className="text-white/80 font-medium">
+              从今天起，你只需要一部手机，一个1688账号，<br />
+              就能把中国商品卖到俄罗斯、东南亚、全世界。
+            </span>
+          </p>
         </div>
       </div>
 
-      {/* 核心卖点 3列 */}
-      <div className="grid grid-cols-3 gap-3">
-        {[
-          { emoji: "🔌", title: "1688插件直抓", tag: "独家功能", tagColor: "bg-purple-100 text-purple-700",
-            desc: "Chrome插件在1688商品页运行，抓取主图/详情图/规格/月销量，竞品没有这个功能" },
-          { emoji: "💰", title: "多平台利润计算", tag: "一站搞定", tagColor: "bg-blue-100 text-blue-700",
-            desc: "Ozon/Shopee/TikTok/亚马逊10个平台，自动换算汇率，扣完运费佣金看净利润" },
-          { emoji: "🌍", title: "8国语言翻译", tag: "省时省力", tagColor: "bg-green-100 text-green-700",
-            desc: "俄/英/泰/越/印尼/马来/阿拉伯，一键批量翻译标题，不用再手动逐个翻" },
-        ].map(f => (
-          <div key={f.title} className="bg-white border border-gray-100 rounded-xl p-4 hover:shadow-md transition-shadow">
-            <div className="flex items-start justify-between mb-2">
-              <span className="text-2xl">{f.emoji}</span>
-              <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${f.tagColor}`}>{f.tag}</span>
+      {/* 4步流程 */}
+      <div>
+        <h2 className="text-center text-xl font-bold text-gray-900 mb-6">4步完成你的第一笔跨境订单</h2>
+        <div className="space-y-3">
+          {[
+            { step: "01", emoji: "🔍", title: "选款", desc: "在爆品榜单里点「我要卖这个」，系统自动帮你找1688货源", color: "from-blue-500 to-indigo-500" },
+            { step: "02", emoji: "📦", title: "一键导入", desc: "商品图片、价格、规格全自动抓取，AI翻译成俄文，30秒完成", color: "from-purple-500 to-pink-500" },
+            { step: "03", emoji: "💰", title: "智能定价", desc: "输入采购价，系统自动算出Ozon保本价和建议售价，绝不亏钱", color: "from-orange-500 to-red-500" },
+            { step: "04", emoji: "🚀", title: "一键上架", desc: "点发布，商品自动出现在Ozon，货代收货发货，全程不用你动手", color: "from-green-500 to-teal-500" },
+          ].map((s, i) => (
+            <div key={i} className="flex items-center gap-4 bg-white border border-gray-100 rounded-2xl p-4 hover:shadow-md transition-shadow">
+              <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${s.color} flex items-center justify-center flex-shrink-0`}>
+                <span className="text-xl">{s.emoji}</span>
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <span className="text-xs font-bold text-gray-300">STEP {s.step}</span>
+                  <h3 className="text-sm font-bold text-gray-900">{s.title}</h3>
+                </div>
+                <p className="text-xs text-gray-500 leading-relaxed">{s.desc}</p>
+              </div>
+              {i < 3 && <div className="text-gray-200 text-lg flex-shrink-0">›</div>}
             </div>
-            <h3 className="font-bold text-gray-900 text-sm mb-1">{f.title}</h3>
-            <p className="text-xs text-gray-500 leading-relaxed">{f.desc}</p>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
-      {/* 竞品对比表 */}
-      <div className="bg-white border border-gray-100 rounded-xl overflow-hidden">
-        <div className="px-5 py-4 border-b border-gray-50">
-          <h2 className="font-bold text-gray-900 text-sm">为什么选 Crossly？</h2>
-          <p className="text-xs text-gray-400 mt-0.5">和主流工具横向对比</p>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-xs">
-            <thead>
-              <tr className="bg-gray-50">
-                <th className="text-left px-5 py-3 text-gray-500 font-medium">功能</th>
-                <th className="px-4 py-3 text-center font-bold text-indigo-600">Crossly</th>
-                <th className="px-4 py-3 text-center text-gray-400 font-medium">卖家精灵</th>
-                <th className="px-4 py-3 text-center text-gray-400 font-medium">知虾</th>
-                <th className="px-4 py-3 text-center text-gray-400 font-medium">店小秘</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
-              {[
-                ["1688商品直接导入", true, false, false, false],
-                ["多平台利润计算", true, false, false, true],
-                ["8国语言翻译", true, false, false, false],
-                ["主图+详情图全抓", true, false, false, false],
-                ["价格（/月）", "¥9.9起", "¥299+", "¥199+", "¥99+"],
-              ].map((row, i) => (
-                <tr key={i} className="hover:bg-gray-50/50">
-                  <td className="px-5 py-3 text-gray-700 font-medium">{row[0]}</td>
-                  {[1,2,3,4].map(j => (
-                    <td key={j} className="px-4 py-3 text-center">
-                      {typeof row[j] === "boolean"
-                        ? row[j] ? <span className="text-green-500 font-bold">✓</span> : <span className="text-gray-300">✗</span>
-                        : <span className={j === 1 ? "font-bold text-indigo-600" : "text-gray-400"}>{row[j]}</span>}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {/* 目标用户 */}
+      <div>
+        <h2 className="text-center text-xl font-bold text-gray-900 mb-2">适合什么人？</h2>
+        <p className="text-center text-sm text-gray-400 mb-6">不需要经验，不需要仓库，不需要资金</p>
+        <div className="grid grid-cols-3 gap-3">
+          {[
+            { emoji: "👩‍👧", title: "宝妈", desc: "带娃间隙操作，一单收益够买奶粉" },
+            { emoji: "🎓", title: "大学生", desc: "零成本起步，练手跨境积累经验" },
+            { emoji: "💼", title: "上班族", desc: "下班后副业，不影响主业" },
+          ].map(u => (
+            <div key={u.title} className="bg-gradient-to-br from-gray-50 to-white border border-gray-100 rounded-2xl p-4 text-center hover:shadow-sm transition-shadow">
+              <div className="text-3xl mb-2">{u.emoji}</div>
+              <h3 className="font-bold text-gray-900 text-sm mb-1">{u.title}</h3>
+              <p className="text-xs text-gray-400 leading-relaxed">{u.desc}</p>
+            </div>
+          ))}
         </div>
       </div>
 
       {/* 定价 */}
-      <div className="bg-white border border-gray-100 rounded-xl p-5">
-        <h2 className="font-bold text-gray-900 text-sm mb-1 text-center">简单透明的定价</h2>
-        <p className="text-xs text-gray-400 text-center mb-4">免费可用100个商品，升级无限制</p>
-        <div className="grid grid-cols-3 gap-2">
+      <div className="bg-white border border-gray-100 rounded-2xl p-6">
+        <h2 className="text-center text-lg font-bold text-gray-900 mb-1">价格良心，小白友好</h2>
+        <p className="text-center text-xs text-gray-400 mb-5">免费额度100个商品，够你跑通第一单</p>
+        <div className="grid grid-cols-3 gap-3 mb-5">
           {[
-            { label: "月度", price: "¥9.9", sub: "推广价", color: "border-gray-200" },
-            { label: "季度", price: "¥19.9", sub: "3个月", color: "border-indigo-300 bg-indigo-50", hot: true },
-            { label: "年度", price: "¥69", sub: "365天", color: "border-gray-200" },
+            { label: "月度会员", price: "¥9.9", sub: "一顿早餐的价格" },
+            { label: "季度会员", price: "¥19.9", sub: "最受欢迎 🔥", hot: true },
+            { label: "年度会员", price: "¥69", sub: "平均¥5.75/月" },
           ].map(p => (
-            <div key={p.label} className={`border-2 rounded-xl p-3 text-center relative ${p.color}`}>
-              {p.hot && <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-indigo-600 text-white text-[9px] font-bold px-2 py-0.5 rounded-full">推荐</div>}
-              <p className="text-[10px] text-gray-500 font-medium">{p.label}</p>
-              <p className={`text-lg font-extrabold mt-1 ${p.hot ? "text-indigo-600" : "text-gray-900"}`}>{p.price}</p>
-              <p className="text-[10px] text-gray-400">{p.sub}</p>
+            <div key={p.label} className={`border-2 rounded-xl p-4 text-center relative ${p.hot ? "border-indigo-400 bg-indigo-50" : "border-gray-100"}`}>
+              {p.hot && <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-indigo-600 text-white text-[10px] font-bold px-3 py-0.5 rounded-full">推荐</div>}
+              <p className="text-xs text-gray-500 mb-1">{p.label}</p>
+              <p className={`text-2xl font-black ${p.hot ? "text-indigo-600" : "text-gray-900"}`}>{p.price}</p>
+              <p className="text-[10px] text-gray-400 mt-1">{p.sub}</p>
             </div>
           ))}
         </div>
-        <div className="mt-4 text-center">
-          <button onClick={onStart}
-            className="px-8 py-2.5 rounded-xl text-sm font-semibold text-white shadow-md transition-all hover:scale-105"
-            style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)" }}>
-            免费注册，立即体验 →
-          </button>
-        </div>
+        <button onClick={onStart}
+          className="w-full py-3 rounded-2xl text-sm font-bold text-white shadow-lg transition-all hover:scale-[1.02]"
+          style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)" }}>
+          {user ? "进入工作台 →" : "免费注册，立即体验 →"}
+        </button>
       </div>
 
-      {/* 用户真实评价 */}
-      <div className="bg-white border border-gray-100 rounded-xl p-5">
-        <h2 className="font-bold text-gray-900 text-sm mb-4 text-center">卖家真实反馈</h2>
-        <div className="grid grid-cols-3 gap-3">
-          {[
-            { name: "Ozon卖家·米米", avatar: "🧑‍💼", star: 5, tag: "Ozon俄罗斯站",
-              text: "以前算利润要打开好几个表格，现在插件一抓，卢布售价直接出来了，省了至少一半时间" },
-            { name: "跨境老玩家·阿强", avatar: "👨‍💻", star: 5, tag: "Shopee泰国站",
-              text: "详情图全抓功能太赞了！1688商品搬到Shopee，图片一张都不用手动下载" },
-            { name: "新手卖家·晓玲", avatar: "👩‍💼", star: 5, tag: "TikTok英国站",
-              text: "免费版100个商品已经够用了，等我账号起来再升级Pro，价格很良心" },
-          ].map(r => (
-            <div key={r.name} className="bg-gray-50 rounded-xl p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-xl">{r.avatar}</span>
-                <div>
-                  <p className="text-xs font-semibold text-gray-800">{r.name}</p>
-                  <p className="text-[10px] text-indigo-500">{r.tag}</p>
-                </div>
-                <div className="ml-auto text-yellow-400 text-xs">{"★".repeat(r.star)}</div>
-              </div>
-              <p className="text-xs text-gray-600 leading-relaxed">"{r.text}"</p>
-            </div>
-          ))}
-        </div>
+      {/* 底部宣言 */}
+      <div className="text-center pb-4">
+        <p className="text-xs text-gray-300 leading-loose">
+          Crossly 永远对新手友好 · 不卖课 · 不收智商税<br />
+          我们相信：每个普通人都值得拥有一门副业
+        </p>
       </div>
 
-      {/* 操作演示 */}
-      <div className="bg-white border border-gray-100 rounded-xl p-5">
-        <h2 className="font-bold text-gray-900 text-sm mb-1 text-center">30秒看懂怎么用</h2>
-        <p className="text-xs text-gray-400 text-center mb-4">从1688找货到导出Ozon模板，全流程演示</p>
-        <div className="bg-gray-900 rounded-xl aspect-video flex flex-col items-center justify-center gap-3 cursor-pointer hover:bg-gray-800 transition-colors group">
-          <div className="w-14 h-14 bg-white/10 rounded-full flex items-center justify-center group-hover:bg-white/20 transition-colors">
-            <span className="text-3xl">▶</span>
-          </div>
-          <p className="text-white/60 text-sm">演示视频即将发布</p>
-          <p className="text-white/30 text-xs">1688抓取 → 算利润 → 一键导出Ozon模板</p>
-        </div>
-      </div>
-
-      {/* 关于我们 & 备案 */}
-      <div className="bg-white border border-gray-100 rounded-xl p-5">
-        <div className="flex items-start gap-4">
-          <div className="flex-1">
-            <h2 className="font-bold text-gray-900 text-sm mb-1">关于 Crossly</h2>
-            <p className="text-xs text-gray-500 leading-relaxed mb-2">
-              Crossly 由 <strong>河南省柒号谷社文化传播有限公司</strong> 开发运营，专注为中国跨境电商卖家提供工具服务。
-              我们深耕Ozon/Shopee/TikTok等平台运营，所有功能均基于真实卖家需求打磨。
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {["正规备案企业", "数据安全加密", "7×24小时服务", "持续迭代更新"].map(t => (
-                <span key={t} className="text-[10px] bg-green-50 text-green-600 px-2 py-0.5 rounded-full border border-green-100">✓ {t}</span>
-              ))}
-            </div>
-          </div>
-          <div className="text-right text-[10px] text-gray-400 space-y-1 flex-shrink-0">
-            <p>📧 aqiliaobi@163.com</p>
-            <p>🌐 www.crossly.cn</p>
-            <p className="text-gray-300">豫ICP备XXXXXXXX号</p>
-          </div>
-        </div>
-      </div>
-
-      <AdBanner slot="landing-bottom" size="banner" />
     </div>
   );
 }
-
