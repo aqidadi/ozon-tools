@@ -951,30 +951,38 @@ async function setTab(tab, settings, tabId, condition) {
       try {
         const imgResults = await chrome.scripting.executeScript({
           target: { tabId, allFrames: true },
-          func: () => {
+          func: async () => {
             try {
-              let allFound = [];
+              // 微滚动唤醒懒加载
+              window.scrollBy(0, 500);
+              await new Promise(r => setTimeout(r, 1200));
 
-              // A. 扫DOM里所有img
+              let pool = new Set();
+
+              // A: 扫所有img标签
               document.querySelectorAll("img").forEach(img => {
-                const url = img.getAttribute("data-lazyload-src") ||
+                const src = img.getAttribute("data-lazyload-src") ||
                             img.getAttribute("data-lazy-src") ||
                             img.getAttribute("src") || "";
-                if (url) allFound.push(url);
+                if (src && src.includes("cbu01.alicdn.com")) pool.add(src);
               });
 
-              // B. 暴力解析textarea（1688详情图常藏在.visual-engine-data里）
+              // B: 暴力破解textarea（1688详情图逃生舱）
               document.querySelectorAll("textarea").forEach(t => {
                 const raw = t.value || t.textContent || "";
                 const matches = raw.match(/https?:\/\/cbu01\.alicdn\.com\/img\/ibank\/[0-9a-zA-Z/_.-]+\.jpg/g);
-                if (matches) allFound.push(...matches);
+                if (matches) matches.forEach(u => pool.add(u));
               });
 
-              // C. 清洗去重
-              return [...new Set(allFound)]
-                .filter(url => url.includes("cbu01.alicdn.com") && !/logo|icon|gear|check|setting|avatar|loading/i.test(url))
-                .map(url => (url.startsWith("//") ? "https:" + url : url)
-                  .replace(/(_\d+x\d+.*\.jpg$)|(\.\d+x\d+.*\.jpg$)/, ""));
+              // C: 全页HTML正则兜底
+              const html = document.documentElement.innerHTML;
+              const rawMatches = html.match(/https?:\/\/cbu01\.alicdn\.com\/img\/ibank\/[0-9a-zA-Z/_.-]+\.jpg/g);
+              if (rawMatches) rawMatches.forEach(u => pool.add(u));
+
+              // D: 提纯高清化
+              return [...pool]
+                .map(url => (url.startsWith("//") ? "https:" + url : url).replace(/_\d+x\d+.*\.jpg$/, ""))
+                .filter(url => !/logo|setting|icon|gear|check|avatar|loading|spaceball/i.test(url));
             } catch(e) { return []; }
           }
         });
