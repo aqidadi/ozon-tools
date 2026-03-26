@@ -140,7 +140,9 @@ export function OzonPublishPage({ products, settings }: Props) {
       if (data.success) {
         setStates(prev => ({ ...prev, [product.id]: { status: "ok", msg: `✅ 已发布 ₽${sell}`, taskId: data.taskId, price: sell } }));
       } else {
-        setStates(prev => ({ ...prev, [product.id]: { status: "fail", msg: "❌ " + (data.error || "失败") } }));
+        // 显示详细错误，方便诊断
+        const detail = data.detail?.message || data.detail?.error || JSON.stringify(data.detail || {}).slice(0, 120);
+        setStates(prev => ({ ...prev, [product.id]: { status: "fail", msg: "❌ " + (data.error || "失败") + (detail ? `：${detail}` : "") } }));
       }
     } catch {
       setStates(prev => ({ ...prev, [product.id]: { status: "fail", msg: "❌ 网络错误" } }));
