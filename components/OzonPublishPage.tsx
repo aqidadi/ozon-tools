@@ -179,56 +179,59 @@ export function OzonPublishPage({ products, settings }: Props) {
         )}
       </div>
 
-      {/* API配置卡 */}
-      <div className={`rounded-2xl border-2 p-5 ${apiOk === true ? "border-green-300 bg-green-50" : apiOk === false ? "border-red-300 bg-red-50" : "border-blue-200 bg-blue-50"}`}>
-        <div className="flex items-center gap-2 mb-3">
-          <Key size={16} className="text-blue-600" />
-          <span className="text-sm font-bold text-blue-800">Ozon API 连接</span>
-          {apiOk === true && <span className="ml-auto flex items-center gap-1 text-green-600 text-xs font-semibold"><CheckCircle size={14}/>已连接</span>}
-          {apiOk === false && <span className="ml-auto flex items-center gap-1 text-red-500 text-xs font-semibold"><XCircle size={14}/>连接失败</span>}
-        </div>
-        <div className="grid grid-cols-2 gap-3 mb-3">
-          <div>
-            <label className="text-xs text-gray-500 mb-1 block">Client-Id</label>
-            <input value={clientId} onChange={e => setClientId(e.target.value)}
-              placeholder="4301277"
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono bg-white focus:outline-none focus:ring-2 focus:ring-blue-400" />
+      {/* 顶部配置行：API + 定价参数并排 */}
+      <div className="grid grid-cols-2 gap-4">
+        {/* API配置卡 */}
+        <div className={`rounded-2xl border-2 p-4 ${apiOk === true ? "border-green-300 bg-green-50" : apiOk === false ? "border-red-300 bg-red-50" : "border-blue-200 bg-blue-50"}`}>
+          <div className="flex items-center gap-2 mb-3">
+            <Key size={15} className="text-blue-600" />
+            <span className="text-sm font-bold text-blue-800">Ozon API 连接</span>
+            {apiOk === true && <span className="ml-auto flex items-center gap-1 text-green-600 text-xs font-semibold"><CheckCircle size={13}/>已连接</span>}
+            {apiOk === false && <span className="ml-auto flex items-center gap-1 text-red-500 text-xs font-semibold"><XCircle size={13}/>连接失败</span>}
           </div>
-          <div>
-            <label className="text-xs text-gray-500 mb-1 block">Api-Key</label>
-            <input type="password" value={apiKey} onChange={e => setApiKey(e.target.value)}
-              placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono bg-white focus:outline-none focus:ring-2 focus:ring-blue-400" />
+          <div className="space-y-2 mb-3">
+            <div>
+              <label className="text-xs text-gray-500 mb-1 block">Client-Id</label>
+              <input value={clientId} onChange={e => setClientId(e.target.value)}
+                placeholder="4301277"
+                className="w-full border border-gray-200 rounded-lg px-3 py-1.5 text-sm font-mono bg-white focus:outline-none focus:ring-2 focus:ring-blue-400" />
+            </div>
+            <div>
+              <label className="text-xs text-gray-500 mb-1 block">Api-Key</label>
+              <input type="password" value={apiKey} onChange={e => setApiKey(e.target.value)}
+                placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                className="w-full border border-gray-200 rounded-lg px-3 py-1.5 text-sm font-mono bg-white focus:outline-none focus:ring-2 focus:ring-blue-400" />
+            </div>
           </div>
+          <button onClick={testApi} disabled={testing || !clientId || !apiKey}
+            className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors">
+            {testing ? <Loader2 size={13} className="animate-spin"/> : <RefreshCw size={13}/>}
+            {testing ? "测试中..." : "测试连接并保存"}
+          </button>
         </div>
-        <button onClick={testApi} disabled={testing || !clientId || !apiKey}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors">
-          {testing ? <Loader2 size={14} className="animate-spin"/> : <RefreshCw size={14}/>}
-          {testing ? "测试中..." : "测试连接并保存"}
-        </button>
-      </div>
 
-      {/* 定价参数 */}
-      <div className="bg-white rounded-2xl border border-gray-200 p-5">
-        <h3 className="text-sm font-bold text-gray-800 mb-3">📊 批量定价参数</h3>
-        <div className="grid grid-cols-3 gap-4 text-sm">
-          <div>
-            <label className="text-xs text-gray-500 mb-1 block">汇率 ¥→₽</label>
-            <input type="number" value={exchangeRate} onChange={e => setExchangeRate(parseFloat(e.target.value)||13)} step={0.1}
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-right font-mono focus:outline-none focus:ring-2 focus:ring-blue-400" />
+        {/* 定价参数卡 */}
+        <div className="bg-white rounded-2xl border border-gray-200 p-4">
+          <h3 className="text-sm font-bold text-gray-800 mb-3">📊 批量定价参数</h3>
+          <div className="space-y-2">
+            <div>
+              <label className="text-xs text-gray-500 mb-1 block">汇率 ¥→₽</label>
+              <input type="number" value={exchangeRate} onChange={e => setExchangeRate(parseFloat(e.target.value)||13)} step={0.1}
+                className="w-full border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-right font-mono focus:outline-none focus:ring-2 focus:ring-blue-400" />
+            </div>
+            <div>
+              <label className="text-xs text-gray-500 mb-1 block">Ozon佣金 %</label>
+              <input type="number" value={commission} onChange={e => setCommission(parseFloat(e.target.value)||15)} min={0} max={50}
+                className="w-full border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-right font-mono focus:outline-none focus:ring-2 focus:ring-blue-400" />
+            </div>
+            <div>
+              <label className="text-xs text-gray-500 mb-1 block">目标利润率 %</label>
+              <input type="number" value={profitTarget} onChange={e => setProfitTarget(parseFloat(e.target.value)||30)} min={0} max={200}
+                className="w-full border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-right font-mono focus:outline-none focus:ring-2 focus:ring-blue-400" />
+            </div>
           </div>
-          <div>
-            <label className="text-xs text-gray-500 mb-1 block">Ozon佣金 %</label>
-            <input type="number" value={commission} onChange={e => setCommission(parseFloat(e.target.value)||15)} min={0} max={50}
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-right font-mono focus:outline-none focus:ring-2 focus:ring-blue-400" />
-          </div>
-          <div>
-            <label className="text-xs text-gray-500 mb-1 block">目标利润率 %</label>
-            <input type="number" value={profitTarget} onChange={e => setProfitTarget(parseFloat(e.target.value)||30)} min={0} max={200}
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-right font-mono focus:outline-none focus:ring-2 focus:ring-blue-400" />
-          </div>
+          <p className="text-xs text-gray-400 mt-2">💡 已设置售价的商品直接用，不重新计算</p>
         </div>
-        <p className="text-xs text-gray-400 mt-2">💡 已在选品列表设置过售价的商品，直接用设置的价格，不重新计算</p>
       </div>
 
       {/* 商品列表 */}
