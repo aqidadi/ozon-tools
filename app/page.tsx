@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import { ProductCard } from "@/components/ProductCard";
 import { SettingsPanel } from "@/components/SettingsPanel";
 import { AddProductModal } from "@/components/AddProductModal";
@@ -144,6 +144,8 @@ export default function Home() {
     setTranslatingAll(false);
   }, [products, targetLang]);
 
+  const deletingIds = useRef<Set<string>>(new Set());
+
   const loadProducts = useCallback(async (isInitial = false) => {
     if (!accessToken) { setLoading(false); return; }
     try {
@@ -154,9 +156,11 @@ export default function Home() {
       const data = await res.json();
       if (data.products) {
         setProducts((prev) => {
-          if (isInitial || prev.length === 0) return data.products;
+          // 过滤掉正在删除中的商品
+          const filtered = data.products.filter((p: Product) => !deletingIds.current.has(p.id));
+          if (isInitial || prev.length === 0) return filtered;
           const prevIds = new Set(prev.map((p: Product) => p.id));
-          const newItems = data.products.filter((p: Product) => !prevIds.has(p.id));
+          const newItems = filtered.filter((p: Product) => !prevIds.has(p.id));
           return newItems.length > 0 ? [...newItems, ...prev] : prev;
         });
       }
@@ -171,7 +175,7 @@ export default function Home() {
     if (!authLoading) {
       loadProducts(true);
       if (accessToken) {
-        const timer = setInterval(() => loadProducts(false), 5000);
+        const timer = setInterval(() => loadProducts(false), 30000); // 30秒刷新一次，不要太频繁
         return () => clearInterval(timer);
       }
     }
@@ -191,13 +195,31 @@ export default function Home() {
   }, []);
 
   const handleDeleteProduct = useCallback(async (id: string) => {
+    deletingIds.current.add(id); // 加入删除锁，防止轮询把它拉回来
     setProducts((prev) => prev.filter((p) => p.id !== id));
     await fetch("/api/import", {
       method: "DELETE",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}) },
       body: JSON.stringify({ id }),
     });
-  }, []);
+    // 删除成功后从锁里移除
+    setTimeout(() => deletingIds.current.delete(id), 10000);
+  }, [accessToken]);
+
+  const handleDeleteAll = useCallback(async () => {
+    if (!confirm(`确定要删除全部 ${products.length} 个商品吗？`)) return;
+    const ids = products.map(p => p.id);
+    ids.forEach(id => deletingIds.current.add(id));
+    setProducts([]);
+    await Promise.all(ids.map(id =>
+      fetch("/api/import", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json", ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}) },
+        body: JSON.stringify({ id }),
+      })
+    ));
+    setTimeout(() => ids.forEach(id => deletingIds.current.delete(id)), 10000);
+  }, [products, accessToken]);
 
   const handleExport = () => {
     if (products.length === 0) { alert("请先添加商品"); return; }
@@ -369,6 +391,14 @@ export default function Home() {
                   <span className="text-gray-500">运费 <strong className="text-gray-800">{settings.shippingRatePerGram}</strong> 元/克</span>
                   <span className="text-gray-200">|</span>
                   <span className="text-gray-500">佣金 <strong className="text-gray-800">{(settings.platformFeeRate * 100).toFixed(0)}%</strong></span>
+                  <div className="ml-auto">
+                    <button
+                      onClick={handleDeleteAll}
+                      className="text-xs text-red-400 hover:text-red-600 border border-red-200 hover:border-red-400 px-3 py-1 rounded-lg transition-colors"
+                    >
+                      🗑️ 全部删除
+                    </button>
+                  </div>
                 </div>
               )}
 
