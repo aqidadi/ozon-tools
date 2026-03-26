@@ -6,12 +6,16 @@ const OZON_API = "https://api-seller.ozon.ru";
 // 文档: https://docs.ozon.ru/api/seller/#operation/ProductAPI_ImportProductsV3
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({}));
-  const { clientId, apiKey, product } = body;
+  const { product, clientId: bodyClientId, apiKey: bodyApiKey } = body;
+
+  // 优先用环境变量，其次用用户传入的
+  const clientId = process.env.OZON_CLIENT_ID || bodyClientId;
+  const apiKey = process.env.OZON_API_KEY || bodyApiKey;
 
   if (!clientId || !apiKey) {
     return NextResponse.json({ 
       error: "需要 Ozon Client-Id 和 Api-Key",
-      hint: "去 Ozon卖家后台 → 设置 → API Key 获取"
+      hint: "联系Crossly管理员配置API密钥"
     }, { status: 400 });
   }
 
@@ -32,7 +36,7 @@ export async function POST(req: NextRequest) {
       vat: "0",                                      // 税率（0=无税）
       
       // 类目（需要用Ozon类目ID）
-      category_id: product.categoryId || 17028463,  // 默认：玩具类
+      category_id: product.categoryId || 17028973,  // 默认：玩具类
       
       // 图片（Ozon要求公网可访问的HTTPS URL）
       images: (product.images || []).slice(0, 15),  // 最多15张主图
