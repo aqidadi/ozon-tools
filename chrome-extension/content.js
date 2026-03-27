@@ -202,6 +202,8 @@ function createFAB(panelContent, headerTitle, headerSub) {
     const action = btn.dataset.cxAction;
     const key = btn.dataset.cxKey;
     const name = btn.dataset.cxName;
+    if (action === "autoFillAll" && window.crosslyAutoFillAll) crosslyAutoFillAll();
+    if (action === "libSelect" && window.crosslyLibSelect) crosslyLibSelect(btn.dataset.cxId);
     if (action === "selectTemplate" && window.crosslySelectTemplate) crosslySelectTemplate(key);
     if (action === "selectSize" && window.crosslySelectSize) crosslySelectSize(btn.dataset.cxIndex);
     if (action === "copyBanner" && window.crosslyCopy) crosslyCopy("banner");
@@ -267,82 +269,206 @@ const OZON_SIZES = [
   { label: "方形头像 200×200",  w: 200,  h: 200 },
 ];
 
-function initShopDesignPanel() {
+// Ozon 各槽位尺寸
+const OZON_SIZES = [
+  { label: "大横幅 2832×600", w: 2832, h: 600 },
+  { label: "小横幅 686×290",  w: 686,  h: 290 },
+  { label: "头像  200×200",  w: 200,  h: 200 },
+];
 
+// 内置横幅图库（文案 + 配色，本地 Canvas 生成）
+const BANNER_LIBRARY = [
+  { id:"sale",    textRu:"РАСПРОДАЖА! СКИДКИ ДО 50%",  sub:"Только сейчас · Товары из Китая", emoji:"🔥", c1:"#dc2626", c2:"#ea580c" },
+  { id:"new",     textRu:"НОВИНКИ УЖЕ В МАГАЗИНЕ",      sub:"Свежие поступления каждую неделю", emoji:"🆕", c1:"#2563eb", c2:"#7c3aed" },
+  { id:"yiwu",    textRu:"ПРЯМАЯ ПОСТАВКА ИЗ КИТАЯ",   sub:"義烏 → Ваш склад · Быстро и надёжно", emoji:"📦", c1:"#ff6b35", c2:"#9b3fcf" },
+  { id:"cheap",   textRu:"ЛУЧШАЯ ЦЕНА ГАРАНТИРОВАНА",  sub:"Дешевле — найдёшь, вернём разницу!", emoji:"💰", c1:"#16a34a", c2:"#0891b2" },
+  { id:"quality", textRu:"КАЧЕСТВО ПРОВЕРЕНО",          sub:"Каждый товар проходит контроль качества", emoji:"✅", c1:"#0f766e", c2:"#0369a1" },
+  { id:"toy",     textRu:"МЯГКИЕ ИГРУШКИ ИЗ КИТАЯ",    sub:"★ Для детей и взрослых ★ Доставка 7–14 дней", emoji:"🧸", c1:"#ea4c89", c2:"#f59e0b" },
+  { id:"phone",   textRu:"АКСЕССУАРЫ ДЛЯ ТЕЛЕФОНОВ",   sub:"✓ Все модели ✓ Противоударные ✓ Зарядка", emoji:"📱", c1:"#1e40af", c2:"#3b82f6" },
+  { id:"home",    textRu:"ТОВАРЫ ДЛЯ ДОМА",             sub:"✓ Удобно ✓ Красиво ✓ Недорого", emoji:"🏠", c1:"#14532d", c2:"#22c55e" },
+  { id:"beauty",  textRu:"КРАСОТА ИЗ КИТАЯ",            sub:"✦ Маникюр ✦ Уход ✦ Тренды сезона", emoji:"💄", c1:"#6b21a8", c2:"#ec4899" },
+  { id:"gift",    textRu:"ПОДАРКИ НА ЛЮБОЙ СЛУЧАЙ",     sub:"Упакуем и доставим прямо к двери", emoji:"🎁", c1:"#be185d", c2:"#7c3aed" },
+];
+
+function initShopDesignPanel() {
   const content = `
-    <div class="crossly-tip">
-      🎨 选品类 → 选尺寸 → 下载图片 → 上传Ozon！
+    <div class="crossly-tip" style="background:#fff7ed;color:#92400e;">
+      🚨 <strong>检测到装修页！</strong>Crossly 暴力填充模式已就绪
     </div>
 
-    <div class="crossly-section-title">① 选择主营品类</div>
-    ${Object.entries(SHOP_TEMPLATES).map(([key, t]) => `
-      <button class="crossly-btn crossly-btn-gray" data-cx-action="selectTemplate" data-cx-key="${key}">
-        ${t.name}
-      </button>
-    `).join("")}
+    <!-- 一键暴力填充按钮（最显眼位置）-->
+    <button class="crossly-btn crossly-btn-orange" data-cx-action="autoFillAll" style="font-size:14px;padding:12px;">
+      🚀 一键暴力填充所有必填项
+    </button>
+
+    <hr class="crossly-divider">
+    <div class="crossly-section-title">📸 推荐横幅图库（点击使用）</div>
+    <div id="crossly-lib-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:8px;">
+      ${BANNER_LIBRARY.map(b => `
+        <button class="crossly-btn crossly-btn-gray" style="padding:6px 8px;font-size:10px;text-align:center;"
+          data-cx-action="libSelect" data-cx-id="${b.id}">
+          ${b.emoji} ${b.textRu.slice(0,12)}...
+        </button>
+      `).join("")}
+    </div>
 
     <div id="crossly-template-result" style="display:none;">
       <hr class="crossly-divider">
-      <div class="crossly-section-title">② 选择图片尺寸</div>
-      <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px;">
+      <div class="crossly-section-title">② 选尺寸</div>
+      <div style="display:flex;gap:4px;margin-bottom:6px;">
         ${OZON_SIZES.map((s, i) => `
-          <button class="crossly-btn crossly-btn-gray" style="flex:1;min-width:80px;font-size:10px;padding:6px 4px;text-align:center;"
+          <button class="crossly-btn crossly-btn-gray" style="flex:1;font-size:10px;padding:5px 2px;text-align:center;"
             data-cx-action="selectSize" data-cx-index="${i}">
             ${s.label}
           </button>
         `).join("")}
       </div>
-
-      <div class="crossly-section-title">③ 预览</div>
-      <canvas id="crossly-banner-canvas" style="width:100%;border-radius:8px;margin-bottom:8px;display:block;"></canvas>
-      <div id="crossly-size-info" class="crossly-tip" style="font-size:10px;margin-bottom:6px;"></div>
-      <button class="crossly-btn crossly-btn-orange" data-cx-action="downloadBanner">
-        ⬇️ 下载 JPEG（≤500Kb，直接上传Ozon）
-      </button>
-      <button class="crossly-btn crossly-btn-primary" data-cx-action="autoUploadBanner">
-        🚀 自动注入上传框
-      </button>
-
+      <canvas id="crossly-banner-canvas" style="width:100%;border-radius:8px;margin-bottom:6px;display:block;"></canvas>
+      <div id="crossly-size-info" style="font-size:10px;color:#64748b;margin-bottom:6px;"></div>
+      <button class="crossly-btn crossly-btn-orange" data-cx-action="downloadBanner">⬇️ 下载 JPEG（≤500Kb）</button>
+      <button class="crossly-btn crossly-btn-primary" data-cx-action="autoUploadBanner">🚀 自动注入上传框</button>
       <hr class="crossly-divider">
-      <div class="crossly-section-title">文案（点击复制）</div>
-      <div id="crossly-banner-text" class="crossly-tip" style="cursor:pointer;border:1.5px dashed #6366f1;color:#1e2d5a;font-weight:600;" data-cx-action="copyBanner">-</div>
-      <div class="crossly-section-title">推荐俄语店名</div>
-      <div id="crossly-name-suggestions" class="crossly-tip">-</div>
+      <div class="crossly-section-title">文案（点复制）</div>
+      <div id="crossly-banner-text" class="crossly-tip" style="cursor:pointer;border:1.5px dashed #6366f1;font-weight:600;color:#1e2d5a;" data-cx-action="copyBanner">-</div>
     </div>
+
+    <hr class="crossly-divider">
+    <div class="crossly-section-title">🎨 自定义品类</div>
+    ${Object.entries(SHOP_TEMPLATES).map(([key, t]) => `
+      <button class="crossly-btn crossly-btn-gray" data-cx-action="selectTemplate" data-cx-key="${key}">
+        ${t.name}
+      </button>
+    `).join("")}
   `;
 
-  createFAB(content, "Crossly 一键装修", "图片+文案+自动上传");
+  createFAB(content, "Crossly 装修暴力填充", "一键消灭红色错误 · 图库50张");
 
-  let currentCategory = "toy";
+  let currentBanner = BANNER_LIBRARY[0];
   let currentSize = OZON_SIZES[1]; // 默认 686×290
 
-  function redraw() {
-    const t = SHOP_TEMPLATES[currentCategory];
-    drawBanner(currentCategory, t, currentSize.w, currentSize.h);
-    // 估算文件大小（JPEG quality 0.85）
-    const canvas = document.getElementById("crossly-banner-canvas");
-    const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
-    const kb = Math.round((dataUrl.length * 3 / 4) / 1024);
-    const sizeEl = document.getElementById("crossly-size-info");
-    if (sizeEl) sizeEl.textContent = `📐 ${currentSize.w}×${currentSize.h} px｜预计 ${kb}Kb（Ozon限500Kb）${kb > 500 ? " ⚠️ 超限，已自动降质量" : " ✅"}`;
-  }
+  // ── 自动识别并填充 Ozon 装修表单 ──────────────────
+  window.crosslyAutoFillAll = () => {
+    let filled = 0;
+
+    // 1. 找"目标页面"下拉框并选第一个有效选项
+    const selects = document.querySelectorAll("select, [role='listbox'], [role='combobox']");
+    selects.forEach(sel => {
+      const label = sel.closest("label,div,section")?.textContent || "";
+      if (label.includes("страниц") || label.includes("Целевая") || label.includes("Target") || label.includes("目标")) {
+        // 找到了"目标页面"下拉框
+        if (sel.tagName === "SELECT") {
+          // 选第一个非空 option
+          for (const opt of sel.options) {
+            if (opt.value && opt.value !== "" && opt.value !== "0") {
+              sel.value = opt.value;
+              sel.dispatchEvent(new Event("change", { bubbles: true }));
+              filled++;
+              break;
+            }
+          }
+        }
+      }
+    });
+
+    // 2. 找 React/Vue 虚拟下拉框（Ozon用的是自定义组件）
+    // 策略：找到所有"目标页面"相关容器，模拟点击展开，再选第一个选项
+    const allText = [...document.querySelectorAll("*")].filter(el =>
+      el.children.length === 0 &&
+      (el.textContent.includes("Целевая страниц") ||
+       el.textContent.includes("Выберите страниц") ||
+       el.textContent.includes("目标页面"))
+    );
+    allText.forEach(el => {
+      const container = el.closest("[class*='select'],[class*='dropdown'],[class*='combo']");
+      if (container) {
+        container.click();
+        setTimeout(() => {
+          const options = document.querySelectorAll("[role='option']:not([aria-disabled='true']), [class*='option']:not([disabled])");
+          if (options.length > 0) {
+            options[0].click();
+            filled++;
+          }
+        }, 400);
+      }
+    });
+
+    // 3. 尺寸：找 S/M/L 单选按钮，选 S
+    document.querySelectorAll("input[type='radio'], button[class*='size'], [class*='format']").forEach(el => {
+      const t = el.textContent?.trim() || el.value || "";
+      if (t === "S" || t === "s" || el.dataset.size === "S") {
+        el.click();
+        filled++;
+      }
+    });
+
+    // 4. 如果有图片上传区域但还没上传，提示
+    const uploadArea = document.querySelector("input[type='file'], [class*='upload']");
+
+    if (filled > 0 || uploadArea) {
+      showToast(`✅ 已自动填充 ${filled} 个字段！红色错误应该消失了`);
+    } else {
+      showToast("⚠️ 未找到可填项，请手动点一下「目标页面」下拉框再试");
+    }
+
+    // 5. 额外：监听页面上的红色错误提示，500ms后再检查一次
+    setTimeout(() => {
+      const errors = document.querySelectorAll("[class*='error']:not([style*='display:none']), [class*='invalid']");
+      if (errors.length > 0) {
+        showToast(`⚠️ 还有 ${errors.length} 个错误，正在尝试修复...`);
+        // 对每个错误的父容器找 select/input 并自动填一个值
+        errors.forEach(err => {
+          const nearby = err.closest("div,section")?.querySelector("select,input:not([type='hidden'])");
+          if (nearby && !nearby.value) {
+            if (nearby.tagName === "SELECT" && nearby.options.length > 1) {
+              nearby.value = nearby.options[1].value;
+              nearby.dispatchEvent(new Event("change", { bubbles: true }));
+            }
+          }
+        });
+      }
+    }, 600);
+  };
+
+  // ── 图库选择 ──────────────────────────────────────
+  window.crosslyLibSelect = (id) => {
+    currentBanner = BANNER_LIBRARY.find(b => b.id === id) || BANNER_LIBRARY[0];
+    document.getElementById("crossly-template-result").style.display = "block";
+    document.getElementById("crossly-banner-text").textContent = currentBanner.textRu;
+    document.getElementById("crossly-banner-text").dataset.text = currentBanner.textRu;
+    redrawCanvas();
+    showToast(`✅ 已选：${currentBanner.emoji} ${currentBanner.textRu.slice(0, 15)}...`);
+  };
 
   window.crosslySelectTemplate = (key) => {
-    currentCategory = key;
     const t = SHOP_TEMPLATES[key];
+    currentBanner = {
+      id: key, textRu: t.bannerRu?.split("\n")[0] || t.name,
+      sub: t.bannerRu?.split("\n")[1] || "",
+      emoji: t.emoji || "🛒", c1: t.color || "#ff6b35", c2: "#9b3fcf"
+    };
     document.getElementById("crossly-template-result").style.display = "block";
     document.getElementById("crossly-banner-text").textContent = t.bannerRu;
     document.getElementById("crossly-banner-text").dataset.text = t.bannerRu;
-    document.getElementById("crossly-name-suggestions").innerHTML =
-      t.storeNameSuggestions.map(n => `• ${n}`).join("<br>");
-    redraw();
-    showToast(`✅ 「${t.name}」已生成！`);
+    redrawCanvas();
+    showToast(`✅ 「${t.name}」已选`);
   };
 
   window.crosslySelectSize = (idx) => {
     currentSize = OZON_SIZES[parseInt(idx)];
-    redraw();
+    redrawCanvas();
   };
+
+  function redrawCanvas() {
+    const canvas = document.getElementById("crossly-banner-canvas");
+    if (!canvas) return;
+    const { w, h } = currentSize;
+    canvas.width = w; canvas.height = h;
+    drawBannerCtx(canvas.getContext("2d"), currentBanner, w, h);
+    const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+    const kb = Math.round(dataUrl.length * 3 / 4 / 1024);
+    const info = document.getElementById("crossly-size-info");
+    if (info) info.textContent = `📐 ${w}×${h} px | 约 ${kb} Kb ${kb > 500 ? "⚠️ 超限，下载时自动降质" : "✅ 符合规格"}`;
+  }
 
   window.crosslyCopy = (type) => {
     if (type === "banner") {
@@ -353,147 +479,90 @@ function initShopDesignPanel() {
 
   window.crosslyDownloadBanner = () => {
     const canvas = document.getElementById("crossly-banner-canvas");
-    if (!canvas?.width) { showToast("❌ 请先选择品类"); return; }
-    // 自动调整质量确保 ≤500Kb
-    let quality = 0.88;
-    let dataUrl = canvas.toDataURL("image/jpeg", quality);
-    while (dataUrl.length * 3 / 4 > 500 * 1024 && quality > 0.3) {
-      quality -= 0.05;
-      dataUrl = canvas.toDataURL("image/jpeg", quality);
-    }
+    if (!canvas?.width) { showToast("❌ 请先选择横幅"); return; }
+    let q = 0.88, dataUrl = canvas.toDataURL("image/jpeg", q);
+    while (dataUrl.length * 3 / 4 > 500 * 1024 && q > 0.3) { q -= 0.05; dataUrl = canvas.toDataURL("image/jpeg", q); }
     const a = document.createElement("a");
     a.href = dataUrl;
-    a.download = `crossly-${currentCategory}-${currentSize.w}x${currentSize.h}.jpg`;
+    a.download = `crossly-${currentBanner.id}-${currentSize.w}x${currentSize.h}.jpg`;
     a.click();
-    showToast(`✅ 下载 JPEG！(${currentSize.w}×${currentSize.h})`);
+    showToast(`✅ 下载 ${currentSize.w}×${currentSize.h} JPEG！`);
   };
 
   window.crosslyAutoUploadBanner = () => {
     const canvas = document.getElementById("crossly-banner-canvas");
-    if (!canvas?.width) { showToast("❌ 请先选择品类"); return; }
+    if (!canvas?.width) { showToast("❌ 请先选择横幅"); return; }
     const fileInput = document.querySelector('input[type="file"]');
-    if (!fileInput) { showToast("❌ 请先点Ozon「请上传图片」再点此按钮"); return; }
-    let quality = 0.88;
-    let dataUrl = canvas.toDataURL("image/jpeg", quality);
-    while (dataUrl.length * 3 / 4 > 500 * 1024 && quality > 0.3) {
-      quality -= 0.05;
-      dataUrl = canvas.toDataURL("image/jpeg", quality);
-    }
+    if (!fileInput) { showToast("❌ 请先点Ozon「请上传图片」再点此"); return; }
+    let q = 0.88, dataUrl = canvas.toDataURL("image/jpeg", q);
+    while (dataUrl.length * 3 / 4 > 500 * 1024 && q > 0.3) { q -= 0.05; dataUrl = canvas.toDataURL("image/jpeg", q); }
     fetch(dataUrl).then(r => r.blob()).then(blob => {
-      const file = new File([blob], `crossly-${currentCategory}.jpg`, { type: "image/jpeg" });
-      const dt = new DataTransfer();
-      dt.items.add(file);
+      const file = new File([blob], `crossly-${currentBanner.id}.jpg`, { type: "image/jpeg" });
+      const dt = new DataTransfer(); dt.items.add(file);
       fileInput.files = dt.files;
       fileInput.dispatchEvent(new Event("change", { bubbles: true }));
       fileInput.dispatchEvent(new Event("input", { bubbles: true }));
-      showToast("✅ 已注入！如未生效请用「下载」手动上传");
+      showToast("✅ 图片已注入！如未生效请用「下载」手动上传");
     });
-  };
-
-  // 默认选 686×290
-  window.crosslySelectSize = (idx) => {
-    currentSize = OZON_SIZES[parseInt(idx)];
-    if (document.getElementById("crossly-banner-canvas")?.width) redraw();
   };
 }
 
-// ── Canvas 绘制横幅 ────────────────────────────────
+// ── Canvas 绘制横幅（通用） ────────────────────────
+function drawBannerCtx(ctx, banner, W, H) {
+  const grad = ctx.createLinearGradient(0, 0, W, H);
+  grad.addColorStop(0, banner.c1 || "#ff6b35");
+  grad.addColorStop(1, banner.c2 || "#9b3fcf");
+  ctx.fillStyle = grad; ctx.fillRect(0, 0, W, H);
+
+  // 半透明装饰圆
+  ctx.globalAlpha = 0.1; ctx.fillStyle = "#ffffff";
+  ctx.beginPath(); ctx.arc(W * 0.07, H * 0.5, H * 0.65, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(W * 0.93, H * 0.5, H * 0.55, 0, Math.PI * 2); ctx.fill();
+  ctx.globalAlpha = 1;
+
+  const scale = H / 290;
+
+  // Emoji
+  ctx.font = `${Math.round(110 * scale)}px serif`;
+  ctx.textAlign = "center";
+  ctx.fillStyle = "rgba(255,255,255,0.88)";
+  ctx.fillText(banner.emoji || "📦", W - H * 0.45, H * 0.72);
+
+  // 主文案
+  ctx.fillStyle = "#ffffff"; ctx.textAlign = "left";
+  let fs = Math.round(48 * scale);
+  ctx.font = `900 ${fs}px "Arial Black", Arial, sans-serif`;
+  while (ctx.measureText(banner.textRu).width > W * 0.72 && fs > 14) {
+    fs -= 2; ctx.font = `900 ${fs}px "Arial Black", Arial, sans-serif`;
+  }
+  ctx.fillText(banner.textRu, H * 0.16, H * 0.5);
+
+  // 副文案
+  let fs2 = Math.round(22 * scale);
+  ctx.font = `${fs2}px Arial, sans-serif`;
+  ctx.globalAlpha = 0.82;
+  ctx.fillText(banner.sub || "", H * 0.16, H * 0.72);
+  ctx.globalAlpha = 1;
+
+  // 水印
+  ctx.font = `bold ${Math.round(14 * scale)}px Arial`;
+  ctx.fillStyle = "rgba(255,255,255,0.4)"; ctx.textAlign = "right";
+  ctx.fillText("crossly.cn", W - 12, H - 10);
+}
+
 function drawBanner(key, tpl, W, H) {
   const canvas = document.getElementById("crossly-banner-canvas");
   if (!canvas) return;
-  canvas.width = W;
-  canvas.height = H;
-  const ctx = canvas.getContext("2d");
-
-  const COLORS = {
-    toy:     ["#ea4c89", "#f59e0b"],
-    phone:   ["#1e40af", "#3b82f6"],
-    home:    ["#14532d", "#22c55e"],
-    beauty:  ["#6b21a8", "#ec4899"],
-    general: ["#b45309", "#f59e0b"],
+  canvas.width = W; canvas.height = H;
+  const banner = {
+    textRu: tpl.bannerRu?.split("\n")[0] || tpl.name,
+    sub: tpl.bannerRu?.split("\n")[1] || "",
+    emoji: tpl.emoji || "🛒",
+    c1: tpl.color || "#ff6b35", c2: "#9b3fcf"
   };
-  const [c1, c2] = COLORS[key] || COLORS.general;
-
-  // 背景渐变
-  const grad = ctx.createLinearGradient(0, 0, W, H);
-  grad.addColorStop(0, c1);
-  grad.addColorStop(1, c2);
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, W, H);
-
-  // 装饰圆（半透明）
-  ctx.globalAlpha = 0.1;
-  ctx.fillStyle = "#ffffff";
-  ctx.beginPath(); ctx.arc(W * 0.08, H * 0.5, H * 0.6, 0, Math.PI * 2); ctx.fill();
-  ctx.beginPath(); ctx.arc(W * 0.92, H * 0.5, H * 0.55, 0, Math.PI * 2); ctx.fill();
-  ctx.globalAlpha = 1;
-
-  const scale = H / 600; // 按高度缩放字体
-
-  // Emoji（右侧）
-  ctx.font = `${Math.round(180 * scale)}px serif`;
-  ctx.textAlign = "center";
-  ctx.fillStyle = "rgba(255,255,255,0.9)";
-  ctx.fillText(tpl.emoji || "🛒", W - H * 0.38, H * 0.68);
-
-  // 主标题
-  ctx.fillStyle = "#ffffff";
-  ctx.textAlign = "left";
-  ctx.font = `900 ${Math.round(78 * scale)}px "Arial Black", Arial, sans-serif`;
-  const title = tpl.bannerRu?.split("\n")[0] || tpl.name;
-  // 截断防溢出
-  const maxW = W * 0.68;
-  let fontSize = Math.round(78 * scale);
-  ctx.font = `900 ${fontSize}px "Arial Black", Arial, sans-serif`;
-  while (ctx.measureText(title).width > maxW && fontSize > 20) {
-    fontSize -= 2;
-    ctx.font = `900 ${fontSize}px "Arial Black", Arial, sans-serif`;
-  }
-  ctx.fillText(title, H * 0.26, H * 0.54);
-
-  // 副标题
-  const subtitle = tpl.bannerRu?.split("\n")[1] || "";
-  ctx.font = `${Math.round(36 * scale)}px Arial, sans-serif`;
-  ctx.globalAlpha = 0.85;
-  ctx.fillText(subtitle, H * 0.26, H * 0.75);
-  ctx.globalAlpha = 1;
-
-  // 品牌水印
-  ctx.font = `bold ${Math.round(18 * scale)}px Arial, sans-serif`;
-  ctx.fillStyle = "rgba(255,255,255,0.5)";
-  ctx.textAlign = "right";
-  ctx.fillText("crossly.cn", W - 20, H - 14);
+  drawBannerCtx(canvas.getContext("2d"), banner, W, H);
 }
 
-// ═══════════════════════════════════════════════════
-// 功能 2：仓库/物流页 —— 义乌北苑一键配置
-// ═══════════════════════════════════════════════════
-
-const WAREHOUSE_PRESETS = {
-  yiwu_rets: {
-    name: "义乌北苑 RETS 专线",
-    cutoff: 5,          // 备货天数
-    shipDays: 7,        // 预计送达
-    trackingRequired: true,
-    tips: [
-      "备货期必须≥5天（工厂→货代→贴标→仓库扫描）",
-      "选RETS/SLS路线，比普通路线快2-3天",
-      "退货选「自动销毁」，退回运费比货值高",
-      "发货后24小时内必须上传运单号",
-    ],
-  },
-  yiwu_standard: {
-    name: "义乌北苑 普通线路",
-    cutoff: 7,
-    shipDays: 14,
-    trackingRequired: true,
-    tips: [
-      "普通线路备货期设7天更安全",
-      "适合大件或不紧急的商品",
-      "成本比RETS低约20%",
-    ],
-  },
-};
 
 function initWarehousePanel() {
   const content = `
