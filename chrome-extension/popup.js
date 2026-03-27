@@ -273,21 +273,40 @@ async function initCollectTab() {
       try {
         const [result] = await chrome.scripting.executeScript({
           target: { tabId: tab.id },
-          func: () => window.__crosslyGetData ? window.__crosslyGetData() : null,
+          func: () => {
+            if (window.__crosslyGetData) return window.__crosslyGetData();
+            const data = { images: [], detailImages: [], price: 0, title: "", specs: {} };
+            const h1 = document.querySelector("h1, .mod-detail-title, [class*='title'] h1");
+            if (h1) data.title = h1.textContent.trim();
+            const ogTitle = document.querySelector("meta[property='og:title']")?.content;
+            if (ogTitle && ogTitle.length > data.title.length) data.title = ogTitle;
+            const priceEl = document.querySelector("[class*='price-range'], [class*='price'] span, .price");
+            if (priceEl) { const m = priceEl.textContent.match(/[\d.]+/); if (m) data.price = parseFloat(m[0]); }
+            const seen = new Set();
+            document.querySelectorAll("img").forEach(img => {
+              [img.src, img.getAttribute("data-src"), img.getAttribute("data-lazy-src")].forEach(src => {
+                if (src && src.includes("cbu01.alicdn.com") && !seen.has(src)) { seen.add(src); data.images.push(src); }
+              });
+            });
+            const html = document.body.outerHTML;
+            const matches = html.matchAll(/https?:\/\/cbu01\.alicdn\.com\/img\/ibank\/[^"'\s\\]+/g);
+            for (const m of matches) { const u = m[0]; if (!seen.has(u)) { seen.add(u); data.images.push(u); } }
+            document.querySelectorAll("tr").forEach(row => {
+              const cells = row.querySelectorAll("td");
+              if (cells.length >= 2) { const k = cells[0].textContent.trim(); const v = cells[1].textContent.trim(); if (k && v && k.length < 20) data.specs[k] = v; }
+            });
+            return data.title ? data : null;
+          },
         });
         const data = result?.result;
         if (!data || !data.title) {
           $("scrape-result").style.display = "block";
-          $("scrape-result").textContent = "❌ 未能采集到数据，请确保在商品详情页";
+          $("scrape-result").textContent = "❌ 未采集到数据，请进入商品详情页（不是搜索列表页）";
         } else {
           await chrome.storage.local.set({ lastProduct: data });
           $("scrape-result").style.display = "block";
-          $("scrape-result").innerHTML = `
-            ✅ 采集成功！<br>
-            <strong>${data.title.slice(0,30)}...</strong><br>
-            图片：${data.images?.length || 0} 张 | 价格：¥${data.price || "?"}
-          `;
-          showToast("✅ 商品已采集，去「刊登」Tab 发布");
+          $("scrape-result").innerHTML = "✅ 采集成功！<br><strong>" + data.title.slice(0,35) + "...</strong><br>图片 " + (data.images?.length||0) + " 张 | 价格 ¥" + (data.price||"?") + "<br><span style='color:#16a34a;font-size:10px;'>→ 去「刊登」Tab 一键发到Ozon</span>";
+          showToast("✅ 采集成功！去「🚀刊登」Tab 发布");
         }
       } catch (e) {
         $("scrape-result").style.display = "block";
