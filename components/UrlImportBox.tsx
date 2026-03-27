@@ -121,138 +121,57 @@ export function UrlImportBox({ onImport, onBatchImport }: Props & { onBatchImpor
         <Link2 size={15} className="text-blue-500" />
         <div>
           <span className="text-sm font-bold text-gray-800">像发朋友圈一样简单 🚀</span>
-          <p className="text-xs text-gray-400 mt-0.5">复制1688链接贴这里，AI翻译+改价+上架，我们全包！无需PS，无需外语，30秒搞定一件跨境爆款</p>
+          <p className="text-xs text-gray-400 mt-0.5">找到好货？一键导入，AI翻译+改价+上架全包！</p>
         </div>
-        <div className="ml-auto flex items-center gap-1">
-          <button
-            onClick={() => { setBatchMode(false); setBatchResults([]); }}
-            className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all ${!batchMode ? "bg-blue-600 text-white" : "text-gray-500 hover:bg-gray-100"}`}
-          >单个</button>
-          <button
-            onClick={() => setBatchMode(true)}
-            className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all ${batchMode ? "bg-blue-600 text-white" : "text-gray-500 hover:bg-gray-100"}`}
+      </div>
+
+      <div className="px-4 pb-4 space-y-3">
+
+        {/* 1688 → 插件引导 */}
+        <div className="flex items-center gap-3 bg-orange-50 border border-orange-200 rounded-xl px-3 py-2.5">
+          <span className="text-xl flex-shrink-0">🛒</span>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-bold text-orange-800">1688商品 → 用Chrome插件导入</p>
+            <p className="text-[11px] text-orange-600 mt-0.5">在1688商品页安装插件，点「导入Crossly」，秒进选品列表</p>
+          </div>
+          <a
+            href="https://github.com/aqidadi/ozon-tools/raw/main/crossly-extension-v1.8.3.zip"
+            className="flex-shrink-0 text-[11px] font-bold bg-orange-500 text-white px-2.5 py-1.5 rounded-lg hover:bg-orange-600 transition-colors whitespace-nowrap"
           >
-            <span className="flex items-center gap-1"><Upload size={10} />批量</span>
-          </button>
+            下载插件
+          </a>
+        </div>
+
+        {/* 义乌购 → 单条链接 */}
+        <div>
+          <p className="text-xs text-gray-500 mb-1.5 font-medium">🏪 义乌购链接直接粘贴：</p>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleImport()}
+              placeholder="https://www.yiwugo.com/product/detail/xxxxxx.html"
+              className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 font-mono"
+            />
+            <button
+              onClick={handleImport}
+              disabled={loading || !url.trim()}
+              className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors whitespace-nowrap"
+            >
+              {loading ? <Loader2 size={14} className="animate-spin" /> : <Link2 size={14} />}
+              {loading ? "抓取中..." : "导入"}
+            </button>
+          </div>
+          {status !== "idle" && (
+            <div className={`flex items-center gap-2 mt-2 text-xs ${status === "success" ? "text-green-600" : "text-red-500"}`}>
+              {status === "success" ? <CheckCircle size={12} /> : <AlertCircle size={12} />}
+              {msg}
+            </div>
+          )}
         </div>
       </div>
 
-      <div className="px-4 pb-4">
-        {!batchMode ? (
-          /* 单个模式 */
-          <>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleImport()}
-                placeholder="https://detail.1688.com/offer/xxxxxxxx.html"
-                className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 font-mono"
-              />
-              <button
-                onClick={handleImport}
-                disabled={loading || !url.trim()}
-                className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors whitespace-nowrap"
-              >
-                {loading ? <Loader2 size={14} className="animate-spin" /> : <Link2 size={14} />}
-                {loading ? "抓取中..." : "导入"}
-              </button>
-            </div>
-            {status !== "idle" && (
-              <div className={`flex items-center gap-2 mt-2 text-xs ${status === "success" ? "text-green-600" : "text-red-500"}`}>
-                {status === "success" ? <CheckCircle size={12} /> : <AlertCircle size={12} />}
-                {msg}
-              </div>
-            )}
-          </>
-        ) : (
-          /* 批量模式 */
-          <>
-            <textarea
-              ref={textareaRef}
-              value={batchUrls}
-              onChange={(e) => setBatchUrls(e.target.value)}
-              placeholder={"每行一个1688链接，最多20个：\nhttps://detail.1688.com/offer/111111.html\nhttps://detail.1688.com/offer/222222.html\nhttps://detail.1688.com/offer/333333.html"}
-              rows={5}
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"
-            />
-            <div className="flex items-center gap-2 mt-2">
-              <button
-                onClick={handleBatchImport}
-                disabled={batchLoading || !batchUrls.trim()}
-                className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
-              >
-                {batchLoading ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
-                {batchLoading ? `抓取中 ${batchProgress.done}/${batchProgress.total}...` : "批量导入"}
-              </button>
-              {!batchLoading && batchUrls && (
-                <button onClick={() => { setBatchUrls(""); setBatchResults([]); setShowBatchResult(false); }}
-                  className="p-1.5 text-gray-400 hover:text-gray-600 rounded">
-                  <X size={14} />
-                </button>
-              )}
-              <span className="text-xs text-gray-400 ml-auto">
-                {batchUrls.split(/[\n,，\s]+/).filter(l => l.includes("1688.com")).length} 个有效链接
-              </span>
-            </div>
-
-            {/* 进度条 */}
-            {batchLoading && batchProgress.total > 0 && (
-              <div className="mt-3">
-                <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-blue-500 transition-all duration-500 rounded-full"
-                    style={{ width: `${(batchProgress.done / batchProgress.total) * 100}%` }}
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* 批量结果 */}
-            {showBatchResult && batchResults.length > 0 && (
-              <div className="mt-3 border border-gray-100 rounded-lg overflow-hidden">
-                <div className="flex items-center justify-between px-3 py-2 bg-gray-50 border-b border-gray-100">
-                  <span className="text-xs font-medium text-gray-600">
-                    导入结果：
-                    <span className="text-green-600 ml-1">{batchResults.filter(r => r.success).length} 成功</span>
-                    {batchResults.filter(r => !r.success).length > 0 && (
-                      <span className="text-red-500 ml-1">{batchResults.filter(r => !r.success).length} 失败</span>
-                    )}
-                  </span>
-                  {!batchLoading && (
-                    <button onClick={() => setShowBatchResult(false)} className="text-gray-400 hover:text-gray-600">
-                      <X size={12} />
-                    </button>
-                  )}
-                </div>
-                <div className="max-h-40 overflow-y-auto divide-y divide-gray-50">
-                  {batchResults.map((r, i) => (
-                    <div key={i} className="flex items-start gap-2 px-3 py-2">
-                      {r.success
-                        ? <CheckCircle size={12} className="text-green-500 flex-shrink-0 mt-0.5" />
-                        : <AlertCircle size={12} className="text-red-400 flex-shrink-0 mt-0.5" />
-                      }
-                      <div className="min-w-0">
-                        <p className={`text-xs truncate ${r.success ? "text-gray-700" : "text-red-500"}`}>
-                          {r.success ? r.title : r.error}
-                        </p>
-                        <p className="text-[10px] text-gray-400 truncate">{r.url}</p>
-                      </div>
-                    </div>
-                  ))}
-                  {batchLoading && batchResults.length < batchProgress.total && (
-                    <div className="flex items-center gap-2 px-3 py-2">
-                      <Loader2 size={12} className="animate-spin text-blue-400" />
-                      <span className="text-xs text-gray-400">正在抓取中...</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </>
-        )}
-      </div>
     </div>
   );
 }
