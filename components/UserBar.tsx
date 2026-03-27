@@ -257,6 +257,7 @@ function UpgradeModal({ onClose, user }: { onClose: () => void; user: { email: s
     { emoji: "🍱", name: "一顿午饭", price: "¥19.9", period: "感谢最多 🙏", tag: "感谢最多", highlight: true },
     { emoji: "💪", name: "一年支持", price: "¥69", period: "最强后盾", tag: "", highlight: false },
   ];
+  const [selected, setSelected] = useState(1); // 默认选中「一顿午饭」
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={onClose}>
@@ -276,23 +277,43 @@ function UpgradeModal({ onClose, user }: { onClose: () => void; user: { email: s
           </p>
         </div>
 
-        {/* 三档套餐横排 */}
+        {/* 三档套餐横排 — 可点击选中 */}
         <div className="grid grid-cols-3 gap-2 px-4 mb-4">
-          {plans.map(plan => (
-            <div key={plan.name} className="relative">
-              {plan.highlight && (
-                <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 z-10">
-                  <span className="text-[9px] font-bold text-white bg-pink-500 px-2 py-0.5 rounded-full whitespace-nowrap">感谢最多</span>
+          {plans.map((plan, idx) => {
+            const isSelected = selected === idx;
+            return (
+              <div key={plan.name} className="relative" onClick={() => setSelected(idx)}>
+                {plan.highlight && (
+                  <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 z-10">
+                    <span className="text-[9px] font-bold text-white bg-pink-500 px-2 py-0.5 rounded-full whitespace-nowrap">感谢最多</span>
+                  </div>
+                )}
+                <div className={`rounded-2xl border-2 px-2 py-3 text-center cursor-pointer transition-all active:scale-95 ${
+                  isSelected
+                    ? "border-pink-500 bg-pink-50 shadow-md shadow-pink-100 scale-105"
+                    : "border-gray-100 bg-gray-50 hover:border-gray-300"
+                }`}>
+                  {isSelected && (
+                    <div className="absolute top-1.5 right-1.5 w-4 h-4 bg-pink-500 rounded-full flex items-center justify-center">
+                      <span className="text-white text-[8px] font-bold">✓</span>
+                    </div>
+                  )}
+                  <div className="text-2xl mb-1">{plan.emoji}</div>
+                  <p className="text-[11px] text-gray-600 mb-1">{plan.name}</p>
+                  <p className={`text-lg font-black ${isSelected ? "text-pink-500" : "text-gray-800"}`}>{plan.price}</p>
+                  <p className="text-[9px] text-gray-400 mt-0.5">{plan.period}</p>
                 </div>
-              )}
-              <div className={`rounded-2xl border-2 px-2 py-3 text-center ${plan.highlight ? "border-pink-400 bg-pink-50" : "border-gray-100 bg-gray-50"}`}>
-                <div className="text-2xl mb-1">{plan.emoji}</div>
-                <p className="text-[11px] text-gray-600 mb-1">{plan.name}</p>
-                <p className={`text-lg font-black ${plan.highlight ? "text-pink-500" : "text-gray-800"}`}>{plan.price}</p>
-                <p className="text-[9px] text-gray-400 mt-0.5">{plan.period}</p>
               </div>
-            </div>
-          ))}
+            );
+          })}
+        </div>
+
+        {/* 已选提示 */}
+        <div className="mx-4 mb-2 text-center">
+          <p className="text-xs text-gray-500">
+            已选：<span className="font-bold text-pink-500">{plans[selected].name} {plans[selected].price}</span>
+            <span className="text-gray-400 ml-1">— 按此金额付款</span>
+          </p>
         </div>
 
         {/* 支付区 */}
