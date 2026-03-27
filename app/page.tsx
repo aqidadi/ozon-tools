@@ -398,7 +398,7 @@ export default function Home() {
           {tab === "mintools" && <MiniToolsPage />}
           {tab === "clock" && <ClockPage />}
           {tab === "ozon" && <OzonPublishPage products={products} settings={settings} onUpdate={handleUpdateProduct} />}
-          {tab === "batch" && <BatchImportPage accessToken={accessToken || undefined} onDone={() => { /* 刷新商品列表 */ }} />}
+          {tab === "batch" && <BatchImportPage accessToken={accessToken || undefined} onDone={() => { /* 刷新商品列表 */ }} onTabChange={(t) => setTab(t as Tab)} />}
           {tab === "settings" && <SettingsPanel settings={settings} onChange={setSettings} />}
           {tab === "monitor" && (
             <ComingSoon title="价格监控" icon="🔔" desc="自动监控竞品价格变动，价格下跌时及时提醒，帮你抓住调价时机。" color="yellow" />
