@@ -263,18 +263,34 @@ function UpgradeModal({ onClose, user }: { onClose: () => void; user: { email: s
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-xs">
         <div className="px-4 pt-4 pb-2 flex items-center justify-between">
           <h2 className="text-sm font-bold text-gray-900 flex items-center gap-1.5">
-            <Crown size={14} className="text-yellow-500" />升级 Pro
+            <Crown size={14} className="text-yellow-500" />给 Crossly 充电 ⚡
           </h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
             <X size={16} />
           </button>
         </div>
 
-        {/* 特权一行 */}
-        <div className="mx-4 bg-blue-50 rounded-lg px-3 py-2 mb-2 flex flex-wrap gap-x-3 gap-y-0.5">
-          {["✅ 无限导入", "✅ 批量搬运", "✅ 多平台货币", "✅ Excel导出"].map(f => (
-            <span key={f} className="text-[11px] text-blue-600">{f}</span>
-          ))}
+        {/* 升级亮点 */}
+        <div className="mx-4 mb-3">
+          <p className="text-[10px] text-center text-gray-400 mb-2">给 Crossly 充电，解锁全部能量 ⚡</p>
+          <div className="grid grid-cols-2 gap-1.5">
+            {[
+              { icon: "♾️", text: "无限商品导入", sub: "免费只有100个" },
+              { icon: "🤖", text: "AI自动翻译标题", sub: "一键生成外文文案" },
+              { icon: "🖼️", text: "批量生成朋友圈海报", sub: "一键发给宝妈群" },
+              { icon: "📊", text: "利润计算器·不限次", sub: "每款都算清楚再发货" },
+              { icon: "🌏", text: "多平台一键同步", sub: "Ozon/Shopee/TikTok" },
+              { icon: "💌", text: "专属客服优先响应", sub: "有问题秒回" },
+            ].map(f => (
+              <div key={f.text} className="flex items-start gap-1.5 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl px-2.5 py-2">
+                <span className="text-base flex-shrink-0">{f.icon}</span>
+                <div>
+                  <p className="text-[11px] font-bold text-gray-800">{f.text}</p>
+                  <p className="text-[9px] text-gray-400">{f.sub}</p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* 套餐列表 */}
