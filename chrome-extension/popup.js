@@ -379,6 +379,7 @@ async function initAccountTab() {
       <input class="input" id="input-api-key" placeholder="Api-Key（uuid格式）" />
       <button class="btn btn-green" id="btn-save-ozon">✅ 保存 Ozon 账号</button>
       <hr class="divider">
+      <button class="btn btn-blue" id="btn-refresh-pro">🔄 刷新会员状态</button>
       <button class="btn btn-gray" id="btn-logout">退出登录</button>
       <div class="tip" style="font-size:10px;margin-top:4px;">🔒 账号信息只存本地，不上传服务器</div>
     `;
@@ -394,6 +395,29 @@ async function initAccountTab() {
       _state.ozonClientId = cid; _state.ozonApiKey = akey;
       showToast("✅ Ozon 账号已保存！");
     });
+    $("btn-refresh-pro").addEventListener("click", async () => {
+      $("btn-refresh-pro").textContent = "⏳ 查询中...";
+      $("btn-refresh-pro").disabled = true;
+      try {
+        const { crosslyUserId, crosslyToken } = await chrome.storage.local.get(["crosslyUserId","crosslyToken"]);
+        const resp = await fetch(
+          `${SUPABASE_URL}/rest/v1/profiles?id=eq.${crosslyUserId}&select=is_pro,quota`,
+          { headers: { "apikey": SUPABASE_ANON, "Authorization": `Bearer ${crosslyToken}` } }
+        );
+        const profiles = await resp.json();
+        const isPro = !!profiles?.[0]?.is_pro;
+        await chrome.storage.local.set({ crosslyPro: isPro });
+        _state.crosslyPro = isPro;
+        updateHeader();
+        showToast(isPro ? "✅ 会员状态已确认！" : "ℹ️ 当前是免费版，充电升级会员");
+        setTimeout(() => initAccountTab(), 300);
+      } catch (e) {
+        showToast("❌ 查询失败：" + e.message);
+      }
+      $("btn-refresh-pro").textContent = "🔄 刷新会员状态";
+      $("btn-refresh-pro").disabled = false;
+    });
+
     $("btn-logout").addEventListener("click", async () => {
       await chrome.storage.local.remove(["crosslyToken", "crosslyUser", "crosslyPro"]);
       showToast("已退出");
@@ -453,15 +477,29 @@ async function initAccountTab() {
         const data = await supabaseAuth(email, password, isSignup);
         if (data.access_token) {
           const user = data.user?.email || email;
+          const userId = data.user?.id;
+
+          // 查询会员状态
+          let isPro = false;
+          try {
+            const profileResp = await fetch(
+              `${SUPABASE_URL}/rest/v1/profiles?id=eq.${userId}&select=is_pro,quota`,
+              { headers: { "apikey": SUPABASE_ANON, "Authorization": `Bearer ${data.access_token}` } }
+            );
+            const profiles = await profileResp.json();
+            if (profiles?.[0]?.is_pro) isPro = true;
+          } catch {}
+
           await chrome.storage.local.set({
             crosslyToken: data.access_token,
             crosslyUser: user,
-            crosslyPro: false, // 默认免费，充电后再升级
+            crosslyUserId: userId,
+            crosslyPro: isPro,
           });
           _state.crosslyToken = data.access_token;
           _state.crosslyUser = user;
-          _state.crosslyPro = false;
-          showToast("✅ " + (isSignup ? "注册成功！" : "登录成功！"));
+          _state.crosslyPro = isPro;
+          showToast("✅ " + (isSignup ? "注册成功！" : "登录成功！") + (isPro ? " 💪 会员已激活" : ""));
           updateHeader();
           setTimeout(() => initAccountTab(), 300);
         } else {
