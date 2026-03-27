@@ -813,7 +813,7 @@ function CoursePage() {
       <div className="space-y-3">
         {COURSES.map(course => (
           <div key={course.id} className="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm">
-            <button className="w-full text-left px-4 py-3.5" onClick={() => setOpenId(openId === course.id ? null : course.id)}>
+            <button className="w-full text-left px-4 py-3.5 hover:bg-gray-50 transition-colors" onClick={() => setOpenId(openId === course.id ? null : course.id)}>
               <div className="flex items-start gap-3">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1 flex-wrap">
@@ -827,7 +827,9 @@ function CoursePage() {
                   </div>
                   <p className="text-sm font-bold text-gray-900 leading-snug">{course.title}</p>
                 </div>
-                <span className="text-gray-400 text-sm mt-1 flex-shrink-0">{openId === course.id ? "▲" : "▼"}</span>
+                <span className={`text-xs px-2 py-1 rounded-lg flex-shrink-0 mt-1 font-medium transition-colors ${openId === course.id ? "bg-gray-100 text-gray-500" : "bg-orange-50 text-orange-500"}`}>
+                  {openId === course.id ? "收起▲" : "查看▼"}
+                </span>
               </div>
             </button>
             {openId === course.id && (
@@ -845,9 +847,10 @@ function CoursePage() {
                   </div>
                 </div>
                 {course.free ? (
-                  <button className="w-full py-2.5 rounded-xl text-sm font-bold text-white"
-                    style={{ background: "linear-gradient(135deg, #ea580c, #dc2626)" }}>
-                    📖 查看图文教程（完全免费）
+                  <button
+                    onClick={() => setOpenId(null)}
+                    className="w-full py-2 rounded-xl text-xs font-medium text-gray-400 border border-gray-100 hover:bg-gray-50 transition-colors">
+                    已读完 · 收起 ▲
                   </button>
                 ) : (
                   <div className="text-center">
