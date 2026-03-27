@@ -46,21 +46,39 @@ $("btn-launch-decorator").addEventListener("click", async () => {
     showToast("❌ 请先打开 Ozon 后台页面");
     return;
   }
+
+  // 先试 crosslyLaunch（content.js 已加载时）
   try {
     const [result] = await chrome.scripting.executeScript({
       target: { tabId: tab.id },
-      func: () => typeof window.crosslyLaunch === "function" ? window.crosslyLaunch() : "not_loaded",
+      func: () => typeof window.crosslyLaunch === "function" ? window.crosslyLaunch() : null,
     });
-    if (result?.result === "not_loaded") {
-      showToast("❌ 请刷新 Ozon 页面后再试");
-    } else if (result?.result === false) {
-      showToast("❌ 请在 Ozon 后台页面使用");
-    } else {
-      showToast("✅ 装修助手已启动！看右下角📦按钮");
+    if (result?.result) {
+      showToast("✅ 装修助手已启动！看右下角📦");
       window.close();
+      return;
     }
+  } catch {}
+
+  // 备用：直接注入 inject.js（不依赖 content.js）
+  try {
+    await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      func: (siteUrl) => {
+        document.getElementById("crossly-fab")?.remove();
+        document.getElementById("crossly-panel")?.remove();
+        document.getElementById("cx-style")?.remove();
+        document.getElementById("cx-toast")?.remove();
+        const s = document.createElement("script");
+        s.src = siteUrl + "/inject.js?t=" + Date.now();
+        document.head.appendChild(s);
+      },
+      args: ["https://www.crossly.cn"],
+    });
+    showToast("✅ 装修助手启动中...看右下角📦");
+    window.close();
   } catch (e) {
-    showToast("❌ 启动失败，请刷新页面重试");
+    showToast("❌ 失败：" + e.message);
   }
 });
 
