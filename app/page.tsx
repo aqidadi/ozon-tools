@@ -59,18 +59,25 @@ const AD_SLOTS_C = [
 function RateBar() {
   const [i] = useState(() => Math.floor(Math.random() * 4));
   return (
-    <div className="grid grid-cols-3 border-b border-gray-100 text-[11px] font-medium divide-x divide-gray-100">
-      <div className="flex items-center justify-center gap-1 bg-yellow-50 px-3 py-1.5 text-yellow-700 cursor-pointer hover:bg-yellow-100 transition-colors whitespace-nowrap overflow-hidden"
-        title="联系我们投广告：aqiliaobi@163.com">
+    <div className="border-b border-gray-100 text-[11px] font-medium">
+      {/* 桌面：3列 */}
+      <div className="hidden md:grid grid-cols-3 divide-x divide-gray-100">
+        <div className="flex items-center justify-center gap-1 bg-yellow-50 px-3 py-1.5 text-yellow-700 cursor-pointer hover:bg-yellow-100 transition-colors whitespace-nowrap overflow-hidden"
+          title="联系我们投广告：aqiliaobi@163.com">
+          📣 {AD_SLOTS_A[i]}
+        </div>
+        <div className="flex items-center justify-center gap-1 bg-blue-50 px-3 py-1.5 text-blue-600 cursor-pointer hover:bg-blue-100 transition-colors whitespace-nowrap overflow-hidden"
+          title="联系我们投广告：aqiliaobi@163.com">
+          {AD_SLOTS_B[i]}
+        </div>
+        <div className="flex items-center justify-center gap-1 bg-purple-50 px-3 py-1.5 text-purple-600 cursor-pointer hover:bg-purple-100 transition-colors whitespace-nowrap overflow-hidden"
+          title="联系我们投广告：aqiliaobi@163.com">
+          {AD_SLOTS_C[i]}
+        </div>
+      </div>
+      {/* 手机：单行轮播 */}
+      <div className="md:hidden flex items-center justify-center gap-1 bg-yellow-50 px-3 py-1.5 text-yellow-700 whitespace-nowrap overflow-hidden">
         📣 {AD_SLOTS_A[i]}
-      </div>
-      <div className="flex items-center justify-center gap-1 bg-blue-50 px-3 py-1.5 text-blue-600 cursor-pointer hover:bg-blue-100 transition-colors whitespace-nowrap overflow-hidden"
-        title="联系我们投广告：aqiliaobi@163.com">
-        {AD_SLOTS_B[i]}
-      </div>
-      <div className="flex items-center justify-center gap-1 bg-purple-50 px-3 py-1.5 text-purple-600 cursor-pointer hover:bg-purple-100 transition-colors whitespace-nowrap overflow-hidden"
-        title="联系我们投广告：aqiliaobi@163.com">
-        {AD_SLOTS_C[i]}
       </div>
     </div>
   );
@@ -244,7 +251,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar - 深色渐变 */}
-      <aside className="w-56 flex flex-col fixed h-full z-20"
+      <aside className="w-56 hidden md:flex flex-col fixed h-full z-20"
         style={{ background: "linear-gradient(180deg, #1e2d5a 0%, #2d1b69 50%, #1a1a2e 100%)" }}>
         {/* Logo */}
         <div className="px-4 py-4 border-b border-white/10">
@@ -313,7 +320,7 @@ export default function Home() {
       </aside>
 
       {/* Main content */}
-      <div className="flex-1 ml-56 overflow-x-hidden">
+      <div className="flex-1 md:ml-56 overflow-x-hidden min-w-0">
         {/* 搞笑广告走马灯 */}
         <div className="overflow-hidden bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white text-xs font-medium">
           <div className="flex animate-marquee whitespace-nowrap py-1.5">
@@ -383,7 +390,7 @@ export default function Home() {
         <RateBar />
 
         {/* Page content */}
-        <main className="p-6">
+        <main className="p-4 md:p-6 pb-24 md:pb-6">
           {tab === "landing" && <LandingPage onStart={() => setTab("products")} />}
           {tab === "hot" && <HotPage />}
           {tab === "picker" && <PickerPage />}
@@ -492,6 +499,25 @@ export default function Home() {
       {showAddModal && (
         <AddProductModal onAdd={handleAddProduct} onClose={() => setShowAddModal(false)} />
       )}
+
+      {/* 手机底部 Tab Bar (md以上隐藏) */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-30 border-t border-white/10 flex"
+        style={{ background: "linear-gradient(180deg, #1e2d5a 0%, #1a1a2e 100%)" }}>
+        {[
+          { id: "landing",   icon: "🏠", label: "首页" },
+          { id: "guide",     icon: "📖", label: "新手" },
+          { id: "hot",       icon: "🔥", label: "榜单" },
+          { id: "products",  icon: "📦", label: "选品" },
+          { id: "course",    icon: "📚", label: "私房课" },
+        ].map(item => (
+          <button key={item.id} onClick={() => setTab(item.id as Tab)}
+            className={`flex-1 flex flex-col items-center justify-center py-2 gap-0.5 transition-colors ${tab === item.id ? "text-white" : "text-white/40"}`}>
+            <span className="text-lg leading-none">{item.icon}</span>
+            <span className="text-[9px] font-medium">{item.label}</span>
+            {tab === item.id && <span className="w-1 h-1 rounded-full bg-indigo-400 mt-0.5" />}
+          </button>
+        ))}
+      </nav>
     </div>
   );
 }
@@ -986,10 +1012,10 @@ function LandingPage({ onStart }: { onStart: () => void }) {
           <div className="inline-flex items-center gap-2 bg-white/10 text-white/70 text-xs font-semibold px-4 py-1.5 rounded-full mb-5 border border-white/20">
             🚀 Crossly · 让跨境像微商一样简单
           </div>
-          <h1 className="text-4xl font-black text-white leading-tight mb-4">
+          <h1 className="text-2xl md:text-4xl font-black text-white leading-tight mb-4">
             让跨境像<span style={{ background: "linear-gradient(90deg, #a78bfa, #60a5fa)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>微商</span>一样简单
           </h1>
-          <div className="grid grid-cols-2 gap-3 mb-6 text-left max-w-xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3 mb-6 text-left max-w-xl mx-auto">
             {[
               { icon: "✨", t: "我们不只提供工具，我们提供可能", s: "普通人也能轻松开启跨境之路" },
               { icon: "🚫", t: "零基础：无需外语，无需PS", s: "AI帮你翻译标题、处理图片" },
