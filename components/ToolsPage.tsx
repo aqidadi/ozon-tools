@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { ExternalLink } from "lucide-react";
 
-// ── 统帅配置单：按「新手上路路径」编排 ────────────────────
+// ── 小学生配置单：按「新手上路路径」编排 ────────────────────
 const GUIDE_CONFIGS = [
   {
     step: 1,
@@ -16,7 +16,7 @@ const GUIDE_CONFIGS = [
         name: "Crossly 选品看板",
         tag: "免费·独家",
         tagColor: "bg-green-100 text-green-700",
-        desc: "统帅精选300+爆款关键词，一键搜索1688，自动计算建议售价",
+        desc: "小学生精选300+爆款关键词，一键搜索1688，自动计算建议售价",
         url: "#picker",
         emoji: "🏆",
         crossly: true,
@@ -54,7 +54,7 @@ const GUIDE_CONFIGS = [
     step: 2,
     emoji: "🛒",
     title: "第二步：去这里找货",
-    badge: "统帅推荐",
+    badge: "小学生推荐",
     badgeColor: "bg-orange-500",
     desc: "货源就用1688。义乌购是补充。其他的先不用管。",
     tools: [
@@ -80,16 +80,16 @@ const GUIDE_CONFIGS = [
   {
     step: 3,
     emoji: "🚀",
-    title: "第三步：用这个上货（统帅亲测最稳）",
-    badge: "统帅亲测",
+    title: "第三步：用这个上货（小学生亲测最稳）",
+    badge: "小学生亲测",
     badgeColor: "bg-red-500",
-    desc: "上货工具统帅全测过了。秒手最适合Ozon新手，店小秘适合多平台老手。不要听别人乱推荐。",
+    desc: "上货工具小学生全测过了。秒手最适合Ozon新手，店小秘适合多平台老手。不要听别人乱推荐。",
     tools: [
       {
         name: "秒手",
         tag: "新手首选",
         tagColor: "bg-red-100 text-red-600",
-        desc: "【统帅亲测最稳】专为Ozon设计，一键从1688上货到Ozon，操作傻瓜，新手必装",
+        desc: "【小学生亲测最稳】专为Ozon设计，一键从1688上货到Ozon，操作傻瓜，新手必装",
         url: "https://www.miaoshou.com",
         emoji: "⚡",
         recommend: true,
@@ -118,7 +118,7 @@ const GUIDE_CONFIGS = [
     step: 4,
     emoji: "✈️",
     title: "第四步：发货物流",
-    badge: "义乌统帅在地推荐",
+    badge: "小学生在地推荐",
     badgeColor: "bg-teal-500",
     desc: "我在义乌北苑，这些货代我亲自用过。你照着找，少踩坑。",
     tools: [
@@ -238,8 +238,8 @@ export function ToolsPage() {
       <div className="-mx-6 -mt-6 mb-6 px-6 py-7 text-white"
         style={{ background: "linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%)" }}>
         <div className="flex items-center gap-2 mb-2">
-          <span className="text-2xl">🧭</span>
-          <h1 className="text-lg font-black">统帅配置单</h1>
+          <span className="text-2xl">🎒</span>
+          <h1 className="text-lg font-black">小学生配置单</h1>
           <span className="text-[10px] bg-orange-500 text-white font-bold px-2 py-0.5 rounded-full ml-1">亲测有效</span>
         </div>
         <p className="text-sm text-white/70 leading-relaxed">
@@ -247,7 +247,7 @@ export function ToolsPage() {
           <span className="text-white font-semibold">照着这个配置单走，少踩90%的坑。</span>
         </p>
         <div className="mt-3 flex items-center gap-2 text-xs text-white/40">
-          <span>📍 义乌统帅亲测</span>
+          <span>📍 小学生亲测</span>
           <span>·</span>
           <span>2026年最新版</span>
           <span>·</span>
@@ -259,7 +259,7 @@ export function ToolsPage() {
       <div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 mb-4 flex items-start gap-3">
         <span className="text-xl flex-shrink-0">💬</span>
         <div>
-          <p className="text-xs font-black text-amber-800 mb-0.5">统帅说：我们推荐竞品，因为我们更自信</p>
+          <p className="text-xs font-black text-amber-800 mb-0.5">小学生说：我们推荐竞品，因为我们更自信</p>
           <p className="text-[11px] text-amber-700 leading-relaxed">
             秒手上货稳，店小秘管多平台，Crossly 帮你选品和算利润——这是目前最好的新手组合。
             工具不分你我，帮你赚到钱才是目的。
@@ -308,7 +308,7 @@ export function ToolsPage() {
                               <span className="font-bold text-gray-900 text-sm">{tool.name}</span>
                               <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${tool.tagColor}`}>{tool.tag}</span>
                               {(tool as {crossly?: boolean}).crossly && <span className="text-[9px] bg-indigo-500 text-white font-bold px-1.5 py-0.5 rounded-full">Crossly内置</span>}
-                              {(tool as {recommend?: boolean}).recommend && !(tool as {crossly?: boolean}).crossly && <span className="text-[9px] bg-orange-500 text-white font-bold px-1.5 py-0.5 rounded-full">⭐ 统帅推荐</span>}
+                              {(tool as {recommend?: boolean}).recommend && !(tool as {crossly?: boolean}).crossly && <span className="text-[9px] bg-orange-500 text-white font-bold px-1.5 py-0.5 rounded-full">⭐ 小学生推荐</span>}
                             </div>
                             <p className="text-[11px] text-gray-500 leading-relaxed">{tool.desc}</p>
                             {(tool as {tip?: string}).tip && (
@@ -335,7 +335,7 @@ export function ToolsPage() {
       </div>
 
       <div className="text-center mt-6 text-xs text-gray-400 pb-4">
-        <p>📍 以上工具均为统帅亲测，非广告推荐</p>
+        <p>📍 以上工具均为小学生亲测，非广告推荐</p>
         <p className="mt-1">发现更好的工具？<span className="underline text-indigo-400">告诉我们</span>，我们持续更新配置单</p>
       </div>
     </div>

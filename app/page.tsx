@@ -89,7 +89,7 @@ type Tab = "landing" | "products" | "ozon" | "hot" | "picker" | "guide" | "tools
 
 const NAV_ITEMS = [
   { id: "guide",     label: "🔥 新手指南", icon: BookOpen,    color: "red",    badge: "必看·免费" },
-  { id: "course",    label: "📚 统帅私房课", icon: BookOpen,   color: "orange", badge: "独家" },
+  { id: "course",    label: "📚 小学生私房课", icon: BookOpen,   color: "orange", badge: "独家" },
   { id: "landing",   label: "首页",        icon: Globe,        color: "blue" },
   { id: "hot",       label: "爆品榜单",    icon: Flame,        color: "red" },
   { id: "picker",    label: "选品参考",    icon: TrendingUp,   color: "orange" },
@@ -678,16 +678,16 @@ function ExtensionInstallModal({ onClose }: { onClose: () => void }) {
 }
 
 // ────────────────────────────────────────────────────────────
-// 统帅私房课页面
+// 小学生私房课页面
 // ────────────────────────────────────────────────────────────
 const COURSES = [
   {
     id: 1,
     tag: "📦 发货篇",
     tagColor: "bg-orange-100 text-orange-600",
-    title: "《义乌统帅带你跑遍北苑仓库：发货最后一公里》",
+    title: "《小学生带你跑遍北苑仓库：发货最后一公里》",
     desc: "我在义乌北苑，仓库就在脚下。这节课我带你从1688下单→货代收货→贴标→发往全球，全程手把手，你在家就像站在义乌一样。",
-    author: "义乌统帅",
+    author: "小学生",
     avatar: "👨‍💼",
     duration: "23分钟",
     type: "🎬 短视频",
@@ -701,7 +701,7 @@ const COURSES = [
     tagColor: "bg-blue-100 text-blue-600",
     title: "《不懂货的新手，如何在义乌1小时选出3款爆品》",
     desc: "我在义乌每天逛市场，帮你踩坑。毛绒/棉花娃娃/家居哪个好卖？货代老板娘告诉我的秘密，今天全部说给你听。",
-    author: "义乌统帅",
+    author: "小学生",
     avatar: "👨‍💼",
     duration: "18分钟",
     type: "🎙️ 语音课",
@@ -715,7 +715,7 @@ const COURSES = [
     tagColor: "bg-green-100 text-green-600",
     title: "《宝妈必看：第一件商品定多少钱才不亏？》",
     desc: "很多新手第一单都亏了——不是货不好，是价格没算对。我给你一个傻瓜公式：进价×3 + 运费 = 保本线，看这节课搞定定价恐惧症。",
-    author: "义乌统帅",
+    author: "小学生",
     avatar: "👨‍💼",
     duration: "12分钟",
     type: "🎙️ 语音课",
@@ -728,7 +728,7 @@ const COURSES = [
     tagColor: "bg-purple-100 text-purple-600",
     title: "《Ozon vs Shopee vs TikTok Shop：新手到底选哪个？》",
     desc: "三个平台我都做过，优缺点我清楚。俄罗斯单价高但路途远，东南亚走量但价格战；不同阶段选不同平台，这节课帮你做决定。",
-    author: "义乌统帅",
+    author: "小学生",
     avatar: "👨‍💼",
     duration: "15分钟",
     type: "🎬 短视频",
@@ -741,7 +741,7 @@ const COURSES = [
     tagColor: "bg-pink-100 text-pink-600",
     title: "《用手机拍出爆款主图：不需要摄影基础》",
     desc: "1688的图片能直接发吗？答案：不能！我教你用手机5分钟拍一张比供应商更好看的主图，白底背景、光线、角度，全套白话教学。",
-    author: "义乌统帅",
+    author: "小学生",
     avatar: "👨‍💼",
     duration: "10分钟",
     type: "🎬 短视频",
@@ -754,7 +754,7 @@ const COURSES = [
     tagColor: "bg-teal-100 text-teal-600",
     title: "《怎么找到靠谱货代？避开黑货代的5个套路》",
     desc: "我在义乌见过太多宝妈被黑货代坑：货丢了、延误了、乱收费。这节课我教你识别好货代的3个标准，还有我用过的靠谱货代推荐。",
-    author: "义乌统帅",
+    author: "小学生",
     avatar: "👨‍💼",
     duration: "20分钟",
     type: "🎙️ 语音课",
@@ -766,8 +766,8 @@ const COURSES = [
     tag: "🛠️ 工具篇",
     tagColor: "bg-indigo-100 text-indigo-600",
     title: "《全网对比：店小秘 vs 秒手 vs 芒果店长，新手宝妈到底用哪个？》",
-    desc: "统帅亲口告诉你：我把这三个工具都用了一遍，结论很简单——新手用秒手，多平台老手用店小秘，Crossly帮你选品算利润，秒手帮你上货，这才是省钱省力的黄金搭配。",
-    author: "义乌统帅",
+    desc: "小学生亲口告诉你：我把这三个工具都用了一遍，结论很简单——新手用秒手，多平台老手用店小秘，Crossly帮你选品算利润，秒手帮你上货，这才是省钱省力的黄金搭配。",
+    author: "小学生",
     avatar: "👨‍💼",
     duration: "25分钟",
     type: "🎬 短视频",
@@ -785,7 +785,7 @@ function CoursePage() {
       <div className="-mx-6 -mt-6 mb-6 px-6 py-8 text-white text-center"
         style={{ background: "linear-gradient(135deg, #ea580c 0%, #dc2626 100%)" }}>
         <div className="text-4xl mb-2">📚</div>
-        <h1 className="text-xl font-black mb-1">统帅私房课</h1>
+        <h1 className="text-xl font-black mb-1">小学生私房课</h1>
         <p className="text-sm text-orange-100 leading-relaxed">
           我在义乌北苑，仓库就在脚下<br/>
           <span className="font-semibold text-white">你在家，就像和娘家人一起做生意</span>
@@ -803,9 +803,9 @@ function CoursePage() {
       <div className="bg-orange-50 border border-orange-100 rounded-2xl p-4 mb-4 flex items-center gap-3">
         <div className="w-12 h-12 rounded-full bg-orange-200 flex items-center justify-center text-2xl flex-shrink-0">👨‍💼</div>
         <div>
-          <p className="font-black text-gray-900 text-sm">义乌统帅</p>
-          <p className="text-xs text-gray-500 mt-0.5">常驻义乌北苑 · 跨境老兵 · 帮2000+宝妈开启第一单</p>
-          <p className="text-xs text-orange-600 mt-1 font-medium">「我不卖课，我只是不想你们踩我踩过的坑」</p>
+          <p className="font-black text-gray-900 text-sm">义乌小学生 🎒</p>
+          <p className="text-xs text-gray-500 mt-0.5">常驻义乌北苑 · 跨境学徒 · 帮2000+宝妈开启第一单</p>
+          <p className="text-xs text-orange-600 mt-1 font-medium">「我也是新手过来的，把踩过的坑都告诉你」</p>
         </div>
       </div>
 
@@ -864,7 +864,7 @@ function CoursePage() {
       </div>
 
       <div className="text-center mt-6 text-xs text-gray-400">
-        <p>📍 义乌统帅常驻义乌北苑实地录制</p>
+        <p>📍 小学生常驻义乌北苑实地录制</p>
         <p className="mt-1">更多课程陆续更新中 · 永远不收学费 · 真正帮你赚到钱</p>
       </div>
     </div>
@@ -1030,7 +1030,7 @@ function LandingPage({ onStart }: { onStart: () => void }) {
 
       {/* ── 爆款库看板 ── */}
       <div>
-        <h2 className="text-center text-base font-black text-gray-900 mb-1">🏆 统帅爆款库（全球）</h2>
+        <h2 className="text-center text-base font-black text-gray-900 mb-1">🏆 小学生爆款库（全球）</h2>
         <p className="text-center text-xs text-gray-400 mb-3">真实在售商品 · AI已生成外语标题 · 点击复制搬运</p>
         <div className="columns-2 gap-2 space-y-2">
           {[
@@ -1075,7 +1075,7 @@ function LandingPage({ onStart }: { onStart: () => void }) {
             </div>
           ))}
         </div>
-        <p className="text-center text-[10px] text-gray-300 mt-2">更多爆款持续更新 · 由义乌统帅团队精选</p>
+        <p className="text-center text-[10px] text-gray-300 mt-2">更多爆款持续更新 · 由小学生团队精选</p>
       </div>
 
       {/* 广告位2 */}
