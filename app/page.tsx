@@ -897,9 +897,81 @@ function CoursePage() {
   );
 }
 
+// ── 实时战报数据 ────────────────────────────────────────────
+const BATTLE_REPORTS = [
+  { city: "南京", role: "宝妈", platform: "Ozon", product: "毛绒玩偶", profit: 58, time: "2分钟前" },
+  { city: "义乌", role: "摆摊小哥", platform: "Shopee", product: "家居收纳盒", profit: 34, time: "5分钟前" },
+  { city: "广州", role: "大学生", platform: "TikTok Shop", product: "美妆工具", profit: 92, time: "8分钟前" },
+  { city: "杭州", role: "宝妈", platform: "Ozon", product: "棉花娃娃", profit: 147, time: "12分钟前" },
+  { city: "深圳", role: "上班族", platform: "Lazada", product: "手机支架", profit: 41, time: "15分钟前" },
+  { city: "成都", role: "宝妈", platform: "Ozon", product: "卡皮巴拉玩偶", profit: 76, time: "18分钟前" },
+  { city: "温州", role: "个体户", platform: "Shopee", product: "针织手套", profit: 23, time: "22分钟前" },
+  { city: "武汉", role: "宝妈", platform: "Ozon", product: "鳄鱼长条枕", profit: 88, time: "25分钟前" },
+  { city: "北京", role: "自由职业", platform: "TikTok Shop", product: "宠物逗猫棒", profit: 55, time: "31分钟前" },
+  { city: "苏州", role: "宝妈", platform: "Ozon", product: "睫毛夹套装", profit: 39, time: "38分钟前" },
+];
+
+function BattleReportBar() {
+  const [idx, setIdx] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setIdx(i => (i + 1) % BATTLE_REPORTS.length), 3500);
+    return () => clearInterval(t);
+  }, []);
+  const r = BATTLE_REPORTS[idx];
+  return (
+    <div className="flex items-center gap-2 bg-green-50 border border-green-200 rounded-xl px-3 py-2 text-xs overflow-hidden">
+      <span className="text-green-500 animate-pulse flex-shrink-0">🟢</span>
+      <p className="text-green-800 flex-1 truncate">
+        <span className="font-bold">恭喜{r.city}的{r.role}</span>，通过 Crossly 在 {r.platform} 卖出「{r.product}」，
+        <span className="font-black text-green-600">净利 ¥{r.profit}</span> 🎉
+      </p>
+      <span className="text-green-400 flex-shrink-0 text-[10px]">{r.time}</span>
+    </div>
+  );
+}
+
 function LandingPage({ onStart }: { onStart: () => void }) {
   const { user } = useAuth();
   const [showInstall, setShowInstall] = useState(false);
+  const [posterItem, setPosterItem] = useState<null | {img: string; name: string; nameEn: string; price: number; suggestRub: number; suggestUsd: number}>(null);
+
+  const generatePoster = (item: typeof posterItem) => {
+    if (!item) return;
+    const canvas = document.createElement("canvas");
+    canvas.width = 750; canvas.height = 1000;
+    const ctx = canvas.getContext("2d")!;
+    // 背景渐变
+    const grad = ctx.createLinearGradient(0, 0, 0, 1000);
+    grad.addColorStop(0, "#0f172a"); grad.addColorStop(1, "#1e1b4b");
+    ctx.fillStyle = grad; ctx.fillRect(0, 0, 750, 1000);
+    // 大Emoji
+    ctx.font = "200px serif"; ctx.textAlign = "center";
+    ctx.fillText(item.img, 375, 320);
+    // 商品名
+    ctx.fillStyle = "#ffffff"; ctx.font = "bold 42px sans-serif";
+    ctx.fillText(item.name, 375, 420);
+    // 英文名
+    ctx.fillStyle = "#94a3b8"; ctx.font = "28px sans-serif";
+    ctx.fillText(item.nameEn, 375, 470);
+    // 分隔线
+    ctx.strokeStyle = "#334155"; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(100, 510); ctx.lineTo(650, 510); ctx.stroke();
+    // 价格信息
+    ctx.fillStyle = "#fbbf24"; ctx.font = "bold 36px sans-serif";
+    ctx.fillText(`进价 ¥${item.price}  →  建议售价 ₽${item.suggestRub}`, 375, 570);
+    ctx.fillStyle = "#94a3b8"; ctx.font = "26px sans-serif";
+    ctx.fillText(`约 $${item.suggestUsd} USD`, 375, 615);
+    // Crossly品牌
+    ctx.fillStyle = "#6366f1"; ctx.font = "bold 32px sans-serif";
+    ctx.fillText("Crossly · 让跨境像微商一样简单", 375, 700);
+    ctx.fillStyle = "#475569"; ctx.font = "24px sans-serif";
+    ctx.fillText("crossly.cn  |  免费开始跨境", 375, 745);
+    // 下载
+    const link = document.createElement("a");
+    link.download = `crossly-${item.name}.png`;
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+  };
 
   return (
     <div className="space-y-5 pb-8">
@@ -953,6 +1025,9 @@ function LandingPage({ onStart }: { onStart: () => void }) {
         </div>
       </div>
 
+      {/* ── 实时战报 ── */}
+      <BattleReportBar />
+
       {/* ── 3大核心优势 ── */}
       <div className="space-y-3">
         <h2 className="text-center text-base font-black text-gray-900">为什么选 Crossly？</h2>
@@ -985,6 +1060,38 @@ function LandingPage({ onStart }: { onStart: () => void }) {
             <p className="text-[10px] text-gray-400 mt-0.5">{d.sub}</p>
           </div>
         ))}
+      </div>
+
+      {/* ── 邀请激励 ── */}
+      <div className="rounded-2xl overflow-hidden border border-indigo-100"
+        style={{ background: "linear-gradient(135deg, #eef2ff 0%, #faf5ff 100%)" }}>
+        <div className="px-4 py-4 flex items-center gap-3">
+          <div className="text-3xl flex-shrink-0">🎁</div>
+          <div className="flex-1 min-w-0">
+            <p className="font-black text-gray-900 text-sm mb-0.5">邀请好友，一起做跨境</p>
+            <p className="text-xs text-gray-500 leading-relaxed">你的好友注册 Crossly，你们<span className="text-indigo-600 font-bold">各得50次AI翻译额度</span>——越多人用，你们都赚得越多</p>
+          </div>
+          <button onClick={() => {
+            const link = `${window.location.origin}?ref=${user?.id || "friend"}`;
+            navigator.clipboard.writeText(link);
+            alert("✅ 邀请链接已复制！分享给宝妈群吧～");
+          }} className="flex-shrink-0 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-2 rounded-xl transition-colors">
+            复制邀请链接
+          </button>
+        </div>
+        <div className="grid grid-cols-3 divide-x divide-indigo-100 border-t border-indigo-100 bg-white/50">
+          {[
+            { num: "50次", label: "AI翻译额度", sub: "你和好友各得" },
+            { num: "无上限", label: "邀请人数", sub: "邀多少得多少" },
+            { num: "永久有效", label: "奖励不过期", sub: "赚到就是你的" },
+          ].map(d => (
+            <div key={d.label} className="text-center py-2.5">
+              <p className="text-sm font-black text-indigo-600">{d.num}</p>
+              <p className="text-[10px] font-bold text-gray-700">{d.label}</p>
+              <p className="text-[9px] text-gray-400">{d.sub}</p>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* ── 全球平台对比 ── */}
@@ -1091,12 +1198,19 @@ function LandingPage({ onStart }: { onStart: () => void }) {
                     <span className="text-[10px] font-bold text-indigo-600">₽{item.suggestRub} / ${item.suggestUsd}</span>
                   </div>
                 </div>
-                <button
-                  onClick={() => navigator.clipboard.writeText(item.name)}
-                  className="w-full mt-2 py-1.5 rounded-lg text-[10px] font-bold text-white"
-                  style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)" }}>
-                  复制标题 → 去1688搬运
-                </button>
+                <div className="flex gap-1.5 mt-2">
+                  <button
+                    onClick={() => navigator.clipboard.writeText(item.name)}
+                    className="flex-1 py-1.5 rounded-lg text-[10px] font-bold text-white"
+                    style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)" }}>
+                    复制标题
+                  </button>
+                  <button
+                    onClick={() => generatePoster(item)}
+                    className="flex-1 py-1.5 rounded-lg text-[10px] font-bold text-white bg-pink-500 hover:bg-pink-600 transition-colors">
+                    🖼️ 生成海报
+                  </button>
+                </div>
               </div>
             </div>
           ))}
