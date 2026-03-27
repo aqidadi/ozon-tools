@@ -20,6 +20,7 @@ import { useAuth } from "@/lib/auth-context";
 import { exportToExcel } from "@/lib/export";
 import { Product, Settings, LANGUAGES, PLATFORMS, getPlatform } from "@/lib/types";
 import { BatchImportPage } from "@/components/BatchImportPage";
+import { AddToHomeScreen } from "@/components/AddToHomeScreen";
 import {
   ShoppingBag, Settings2, Download, Plus, TrendingUp,
   BookOpen, Languages, Bell, BarChart2, Package, Globe, Zap, Shield, Flame, Clock, Wrench, DatabaseZap
@@ -499,6 +500,9 @@ export default function Home() {
       {showAddModal && (
         <AddProductModal onAdd={handleAddProduct} onClose={() => setShowAddModal(false)} />
       )}
+
+      {/* 添加到桌面引导 */}
+      <AddToHomeScreen />
 
       {/* 手机底部 Tab Bar (md以上隐藏) */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-30 border-t border-white/10 flex"

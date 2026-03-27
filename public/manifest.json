@@ -1,0 +1,25 @@
+{
+  "name": "Crossly 跨境卖家工具箱",
+  "short_name": "Crossly",
+  "description": "让跨境像微商一样简单",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1e2d5a",
+  "theme_color": "#6366f1",
+  "orientation": "portrait",
+  "lang": "zh-CN",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
