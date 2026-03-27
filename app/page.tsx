@@ -104,7 +104,7 @@ const NAV_ITEMS = [
   { id: "batch",     label: "批量导入",    icon: DatabaseZap,  color: "purple" },
   { id: "products",  label: "选品列表",    icon: Package,      color: "blue" },
   { id: "ozon",      label: "Ozon刊登",    icon: Zap,          color: "orange", badge: "核心" },
-  { id: "tools",     label: "工具导航",    icon: Zap,          color: "green" },
+  { id: "tools",     label: "选品流程",    icon: Zap,          color: "green" },
   { id: "mintools",  label: "实用工具",    icon: Wrench,       color: "teal" },
   { id: "clock",     label: "世界时间",    icon: Clock,        color: "cyan" },
   { id: "settings",  label: "参数设置",    icon: Settings2,    color: "gray" },
@@ -534,17 +534,49 @@ export default function Home() {
 }
 
 function ComingSoon({ title, icon, desc, color }: { title: string; icon: string; desc: string; color: string }) {
-  const colorMap: Record<string, string> = {
-    yellow: "from-yellow-50 to-orange-50 border-yellow-200",
-    pink: "from-pink-50 to-purple-50 border-pink-200",
-  };
+  const jokes = [
+    "🧑‍💻 程序员正在义乌仓库「实地考察」，回来就上线",
+    "☕ 小学生已经喝了第4杯咖啡，代码快写完了",
+    "🐛 Bug太多，正在一条一条消灭，敬请期待",
+    "🚀 功能已经在飞机上了，快降落了",
+    "🐢 慢工出细活，磨刀不误砍柴工",
+  ];
+  const joke = jokes[Math.floor(Math.random() * jokes.length)];
+
   return (
-    <div className={`max-w-2xl mx-auto mt-16 text-center bg-gradient-to-br ${colorMap[color]} border rounded-2xl p-12`}>
-      <div className="text-6xl mb-4">{icon}</div>
-      <h2 className="text-2xl font-bold text-gray-800 mb-3">{title}</h2>
-      <p className="text-base text-gray-600 mb-8 max-w-md mx-auto">{desc}</p>
-      <div className="inline-flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-6 py-3 text-sm font-medium text-gray-600 shadow-sm">
-        🚧 即将上线，敬请期待
+    <div className="max-w-md mx-auto px-4 pt-8 pb-16">
+      {/* 主体卡片 */}
+      <div className={`text-center bg-gradient-to-br ${color === "yellow" ? "from-yellow-50 to-orange-50 border-yellow-200" : "from-pink-50 to-purple-50 border-pink-200"} border rounded-2xl p-8 mb-6`}>
+        <div className="text-5xl mb-3">{icon}</div>
+        <h2 className="text-xl font-bold text-gray-800 mb-2">{title}</h2>
+        <p className="text-sm text-gray-500 mb-4 leading-relaxed">{desc}</p>
+        <div className="inline-flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-4 py-2 text-xs font-medium text-gray-500 shadow-sm">
+          🚧 开发中
+        </div>
+      </div>
+
+      {/* 幽默状态 */}
+      <div className="bg-white border border-gray-100 rounded-2xl px-4 py-3 mb-4 text-center shadow-sm">
+        <p className="text-xs text-gray-500 italic">{joke}</p>
+      </div>
+
+      {/* 等待期间推荐 */}
+      <div className="space-y-2">
+        <p className="text-xs font-bold text-gray-500 text-center mb-3">— 等待期间，先用这些 —</p>
+        {[
+          { icon: "📖", label: "新手指南", desc: "从零开始第一单，30分钟看完", tab: "guide" },
+          { icon: "🔥", label: "爆品榜单", desc: "看看现在什么最好卖", tab: "hot" },
+          { icon: "📦", label: "我的选品", desc: "管理已导入的商品", tab: "products" },
+        ].map(r => (
+          <div key={r.tab} className="flex items-center gap-3 bg-white border border-gray-100 rounded-xl px-3 py-2.5 shadow-sm">
+            <span className="text-xl flex-shrink-0">{r.icon}</span>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-bold text-gray-800">{r.label}</p>
+              <p className="text-[10px] text-gray-400">{r.desc}</p>
+            </div>
+            <span className="text-gray-300 text-sm">→</span>
+          </div>
+        ))}
       </div>
     </div>
   );
