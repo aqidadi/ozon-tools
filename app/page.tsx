@@ -780,6 +780,19 @@ function LandingPage({ onStart }: { onStart: () => void }) {
             </button>
             <span className="text-white/30 text-xs">无需信用卡</span>
           </div>
+          {/* 插件下载 */}
+          <div className="mt-4 flex items-center justify-center gap-2">
+            <a
+              href="https://github.com/aqidadi/ozon-tools/raw/main/crossly-extension-v1.8.3.zip"
+              target="_blank" rel="noopener noreferrer"
+              className="flex items-center gap-2 bg-white/15 hover:bg-white/25 border border-white/20 text-white text-xs font-semibold px-4 py-2 rounded-xl transition-all"
+            >
+              <span>🧩</span>
+              <span>下载 Chrome 插件 v1.8.3</span>
+              <span className="text-white/50">↓</span>
+            </a>
+            <span className="text-white/30 text-[10px]">从1688一键搬运商品</span>
+          </div>
         </div>
       </div>
 
@@ -1035,6 +1048,13 @@ function LandingPage({ onStart }: { onStart: () => void }) {
           现在开始，完全免费 →
         </button>
         <p className="text-[10px] text-gray-300 mt-2">无需注册 · 无需信用卡 · 随时退出</p>
+        <div className="mt-3">
+          <a href="https://github.com/aqidadi/ozon-tools/raw/main/crossly-extension-v1.8.3.zip"
+            target="_blank" rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-semibold px-4 py-2 rounded-xl transition-all">
+            🧩 下载 Chrome 插件 v1.8.3 · 从1688一键搬运商品
+          </a>
+        </div>
       </div>
 
     </div>
