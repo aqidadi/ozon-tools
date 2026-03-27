@@ -194,6 +194,20 @@ function createFAB(panelContent, headerTitle, headerSub) {
 
   fab.addEventListener("click", () => panel.classList.toggle("open"));
   document.getElementById("crossly-close-btn").addEventListener("click", () => panel.classList.remove("open"));
+
+  // 事件委托：处理所有 data-cx-action 点击（避免 CSP 内联 onclick 限制）
+  panel.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-cx-action]");
+    if (!btn) return;
+    const action = btn.dataset.cxAction;
+    const key = btn.dataset.cxKey;
+    const name = btn.dataset.cxName;
+    if (action === "selectTemplate" && window.crosslySelectTemplate) crosslySelectTemplate(key);
+    if (action === "copyBanner" && window.crosslyCopy) crosslyCopy("banner");
+    if (action === "applyWarehouse" && window.crosslyApplyWarehouse) crosslyApplyWarehouse(key);
+    if (action === "copyName" && window.crosslyCopyName) crosslyCopyName(name);
+    if (action === "translateName" && window.crosslyTranslateName) crosslyTranslateName();
+  });
 }
 
 // ═══════════════════════════════════════════════════
@@ -251,7 +265,7 @@ function initShopDesignPanel() {
 
     <div class="crossly-section-title">选择你的主营品类</div>
     ${Object.entries(SHOP_TEMPLATES).map(([key, t]) => `
-      <button class="crossly-btn crossly-btn-gray" onclick="crosslySelectTemplate('${key}')">
+      <button class="crossly-btn crossly-btn-gray" data-cx-action="selectTemplate" data-cx-key="${key}">
         ${t.name}
         <span style="margin-left:auto;font-size:10px;color:#94a3b8">点击选择</span>
       </button>
@@ -260,7 +274,7 @@ function initShopDesignPanel() {
     <div id="crossly-template-result" style="display:none;">
       <hr class="crossly-divider">
       <div class="crossly-section-title">📋 横幅文案（复制到Ozon横幅文字框）</div>
-      <div id="crossly-banner-text" class="crossly-tip" style="cursor:pointer;border:1.5px dashed #e2e8f0;" onclick="crosslyCopy('banner')">
+      <div id="crossly-banner-text" class="crossly-tip" style="cursor:pointer;border:1.5px dashed #e2e8f0;" data-cx-action="copyBanner">
         点击上方品类生成文案...
       </div>
 
@@ -339,7 +353,7 @@ function initWarehousePanel() {
     <div class="crossly-section-title">选择物流方案</div>
     ${Object.entries(WAREHOUSE_PRESETS).map(([key, p]) => `
       <button class="crossly-btn ${key === 'yiwu_rets' ? 'crossly-btn-orange' : 'crossly-btn-gray'}"
-        onclick="crosslyApplyWarehouse('${key}')">
+        data-cx-action="applyWarehouse" data-cx-key="${key}">
         ${p.name}
         <span style="margin-left:auto;font-size:10px;opacity:0.8">备货${p.cutoff}天</span>
       </button>
@@ -423,7 +437,7 @@ function initStoreNamePanel() {
     <div class="crossly-section-title">✨ 推荐店名（点击一键复制）</div>
     <div id="crossly-name-list">
       ${NAME_TEMPLATES.toy.map(n => `
-        <button class="crossly-btn crossly-btn-gray" onclick="crosslyCopyName('${n}')">
+        <button class="crossly-btn crossly-btn-gray" data-cx-action="copyName" data-cx-name="${n}">
           ${n}
           <span style="margin-left:auto;font-size:10px;color:#94a3b8">点击复制</span>
         </button>
@@ -433,7 +447,7 @@ function initStoreNamePanel() {
     <hr class="crossly-divider">
     <div class="crossly-section-title">✏️ 自定义店名翻译</div>
     <input id="crossly-custom-name" class="crossly-input" placeholder="输入中文名，我帮你翻译成俄语..." />
-    <button class="crossly-btn crossly-btn-primary" onclick="crosslyTranslateName()">
+    <button class="crossly-btn crossly-btn-primary" data-cx-action="translateName">
       🤖 AI翻译成俄语
     </button>
     <div id="crossly-translate-result" class="crossly-tip" style="display:none;"></div>
@@ -446,7 +460,7 @@ function initStoreNamePanel() {
     const names = NAME_TEMPLATES[cat] || NAME_TEMPLATES.general;
     document.getElementById("crossly-name-list").innerHTML =
       names.map(n => `
-        <button class="crossly-btn crossly-btn-gray" onclick="crosslyCopyName('${n}')">
+        <button class="crossly-btn crossly-btn-gray" data-cx-action="copyName" data-cx-name="${n}">
           ${n}
           <span style="margin-left:auto;font-size:10px;color:#94a3b8">点击复制</span>
         </button>
