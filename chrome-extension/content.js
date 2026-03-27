@@ -293,16 +293,18 @@ const BANNER_LIBRARY = [
 function initShopDesignPanel() {
   const content = `
     <div class="crossly-tip" style="background:#fff7ed;color:#92400e;">
-      🚨 <strong>检测到装修页！</strong>Crossly 暴力填充模式已就绪
+      🚨 <strong>检测到Ozon装修页！</strong><br>图片传好了？还差「类目」没选？点下面橙色按钮自动搞定！
     </div>
 
     <!-- 一键暴力填充按钮（最显眼位置）-->
     <button class="crossly-btn crossly-btn-orange" data-cx-action="autoFillAll" style="font-size:14px;padding:12px;">
-      🚀 一键暴力填充所有必填项
+      🚀 一键消灭红色错误（自动选类目）
     </button>
+    <div style="font-size:10px;color:#92400e;margin-bottom:6px;">↑ 点这个！自动选「类目」下拉，红色报错瞬间消失</div>
 
     <hr class="crossly-divider">
-    <div class="crossly-section-title">📸 推荐横幅图库（点击使用）</div>
+    <div class="crossly-section-title">📸 内置横幅图（点选 → 下载 → 上传Ozon）</div>
+    <div style="font-size:10px;color:#64748b;margin-bottom:5px;">选一张图，然后点「⬇️下载JPEG」，去Ozon「请上传图片」处上传</div>
     <div id="crossly-lib-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:8px;">
       ${BANNER_LIBRARY.map(b => `
         <button class="crossly-btn crossly-btn-gray" style="padding:6px 8px;font-size:10px;text-align:center;"
@@ -314,7 +316,7 @@ function initShopDesignPanel() {
 
     <div id="crossly-template-result" style="display:none;">
       <hr class="crossly-divider">
-      <div class="crossly-section-title">② 选尺寸</div>
+      <div class="crossly-section-title">② 选尺寸（你的槽位选「小横幅 686×290」）</div>
       <div style="display:flex;gap:4px;margin-bottom:6px;">
         ${OZON_SIZES.map((s, i) => `
           <button class="crossly-btn crossly-btn-gray" style="flex:1;font-size:10px;padding:5px 2px;text-align:center;"
@@ -325,15 +327,17 @@ function initShopDesignPanel() {
       </div>
       <canvas id="crossly-banner-canvas" style="width:100%;border-radius:8px;margin-bottom:6px;display:block;"></canvas>
       <div id="crossly-size-info" style="font-size:10px;color:#64748b;margin-bottom:6px;"></div>
-      <button class="crossly-btn crossly-btn-orange" data-cx-action="downloadBanner">⬇️ 下载 JPEG（≤500Kb）</button>
-      <button class="crossly-btn crossly-btn-primary" data-cx-action="autoUploadBanner">🚀 自动注入上传框</button>
+      <button class="crossly-btn crossly-btn-orange" data-cx-action="downloadBanner">⬇️ 下载JPEG（≤500Kb，符合Ozon规格）</button>
+      <div style="font-size:10px;color:#64748b;margin-bottom:4px;">下载后去Ozon点「请上传图片」手动选文件上传</div>
+      <button class="crossly-btn crossly-btn-primary" data-cx-action="autoUploadBanner">⚡ 自动注入（先点Ozon上传区再点这里）</button>
       <hr class="crossly-divider">
-      <div class="crossly-section-title">文案（点复制）</div>
+      <div class="crossly-section-title">📝 俄语标题文案（点击复制，粘贴到Ozon横幅文字框）</div>
       <div id="crossly-banner-text" class="crossly-tip" style="cursor:pointer;border:1.5px dashed #6366f1;font-weight:600;color:#1e2d5a;" data-cx-action="copyBanner">-</div>
+      <div style="font-size:10px;color:#94a3b8;margin-bottom:4px;">↑ 这是俄语广告语，复制后粘贴到Ozon横幅的"文字"输入框</div>
     </div>
 
     <hr class="crossly-divider">
-    <div class="crossly-section-title">🎨 自定义品类</div>
+    <div class="crossly-section-title">🎨 按品类生成专属图（可替代上面图库）</div>
     ${Object.entries(SHOP_TEMPLATES).map(([key, t]) => `
       <button class="crossly-btn crossly-btn-gray" data-cx-action="selectTemplate" data-cx-key="${key}">
         ${t.name}
@@ -348,85 +352,92 @@ function initShopDesignPanel() {
 
   // ── 自动识别并填充 Ozon 装修表单 ──────────────────
   window.crosslyAutoFillAll = () => {
+    showToast("⏳ 正在扫描页面，自动填充...");
     let filled = 0;
 
-    // 1. 找"目标页面"下拉框并选第一个有效选项
-    const selects = document.querySelectorAll("select, [role='listbox'], [role='combobox']");
-    selects.forEach(sel => {
-      const label = sel.closest("label,div,section")?.textContent || "";
-      if (label.includes("страниц") || label.includes("Целевая") || label.includes("Target") || label.includes("目标")) {
-        // 找到了"目标页面"下拉框
-        if (sel.tagName === "SELECT") {
-          // 选第一个非空 option
-          for (const opt of sel.options) {
-            if (opt.value && opt.value !== "" && opt.value !== "0") {
-              sel.value = opt.value;
-              sel.dispatchEvent(new Event("change", { bubbles: true }));
-              filled++;
-              break;
-            }
-          }
-        }
-      }
-    });
-
-    // 2. 找 React/Vue 虚拟下拉框（Ozon用的是自定义组件）
-    // 策略：找到所有"目标页面"相关容器，模拟点击展开，再选第一个选项
-    const allText = [...document.querySelectorAll("*")].filter(el =>
-      el.children.length === 0 &&
-      (el.textContent.includes("Целевая страниц") ||
-       el.textContent.includes("Выберите страниц") ||
-       el.textContent.includes("目标页面"))
-    );
-    allText.forEach(el => {
-      const container = el.closest("[class*='select'],[class*='dropdown'],[class*='combo']");
-      if (container) {
-        container.click();
-        setTimeout(() => {
-          const options = document.querySelectorAll("[role='option']:not([aria-disabled='true']), [class*='option']:not([disabled])");
-          if (options.length > 0) {
-            options[0].click();
-            filled++;
-          }
-        }, 400);
-      }
-    });
-
-    // 3. 尺寸：找 S/M/L 单选按钮，选 S
-    document.querySelectorAll("input[type='radio'], button[class*='size'], [class*='format']").forEach(el => {
-      const t = el.textContent?.trim() || el.value || "";
-      if (t === "S" || t === "s" || el.dataset.size === "S") {
+    // Step 1: 选尺寸 S（Ozon横幅默认选S）
+    document.querySelectorAll("button, label, div").forEach(el => {
+      const t = (el.textContent || "").trim();
+      if (t === "S" && el.offsetParent) {
         el.click();
         filled++;
       }
     });
 
-    // 4. 如果有图片上传区域但还没上传，提示
-    const uploadArea = document.querySelector("input[type='file'], [class*='upload']");
-
-    if (filled > 0 || uploadArea) {
-      showToast(`✅ 已自动填充 ${filled} 个字段！红色错误应该消失了`);
-    } else {
-      showToast("⚠️ 未找到可填项，请手动点一下「目标页面」下拉框再试");
+    // Step 2: 找「类目」下拉框（报错核心）
+    // Ozon 用的是自定义 React 下拉，class 里带 select/dropdown
+    // 策略：找所有带 "类目" 或 "Категория" 文字的父容器，点击展开，选第一个选项
+    function clickFirstOption(containerEl) {
+      containerEl.click();
+      setTimeout(() => {
+        // 找弹出的选项列表
+        const popup = document.querySelector(
+          "[class*='popup'] [class*='item'], [class*='dropdown'] [class*='item'], " +
+          "[class*='menu'] [class*='item'], [role='option'], [class*='option-item'], " +
+          "li[class*='select'], [class*='listitem']"
+        );
+        if (popup) {
+          popup.click();
+          filled++;
+          setTimeout(() => showToast("✅ 类目已自动选择！红色错误消失了"), 300);
+        } else {
+          // 备用：找所有可见的 li/div 选项
+          const opts = [...document.querySelectorAll("li, [role='option']")]
+            .filter(el => el.offsetParent && el.textContent.trim().length > 0 && el.textContent.trim().length < 50);
+          if (opts.length > 0) {
+            opts[0].click();
+            filled++;
+            setTimeout(() => showToast("✅ 已选择第一个类目选项"), 300);
+          } else {
+            showToast("⚠️ 请手动点开「类目」下拉框，选任意一项即可");
+          }
+        }
+      }, 500);
     }
 
-    // 5. 额外：监听页面上的红色错误提示，500ms后再检查一次
-    setTimeout(() => {
-      const errors = document.querySelectorAll("[class*='error']:not([style*='display:none']), [class*='invalid']");
-      if (errors.length > 0) {
-        showToast(`⚠️ 还有 ${errors.length} 个错误，正在尝试修复...`);
-        // 对每个错误的父容器找 select/input 并自动填一个值
-        errors.forEach(err => {
-          const nearby = err.closest("div,section")?.querySelector("select,input:not([type='hidden'])");
-          if (nearby && !nearby.value) {
-            if (nearby.tagName === "SELECT" && nearby.options.length > 1) {
-              nearby.value = nearby.options[1].value;
-              nearby.dispatchEvent(new Event("change", { bubbles: true }));
-            }
-          }
-        });
+    // 找类目容器
+    let found = false;
+    document.querySelectorAll("*").forEach(el => {
+      if (found) return;
+      const txt = el.textContent?.trim() || "";
+      const isLeaf = el.children.length <= 2;
+      if (isLeaf && (txt === "类目" || txt === "Категория" || txt === "Category")) {
+        // 找可点击的父容器（下拉触发器）
+        let trigger = el.closest("[class*='select'],[class*='dropdown'],[class*='input']");
+        if (!trigger) trigger = el.parentElement?.parentElement;
+        if (trigger && trigger.offsetParent) {
+          found = true;
+          clickFirstOption(trigger);
+        }
       }
-    }, 600);
+    });
+
+    // Step 3: 找「目标页面」下拉（第二个必填项）
+    setTimeout(() => {
+      let found2 = false;
+      document.querySelectorAll("*").forEach(el => {
+        if (found2) return;
+        const txt = el.textContent?.trim() || "";
+        const isLeaf = el.children.length <= 2;
+        if (isLeaf && (txt.includes("Целевая") || txt.includes("Target") || txt.includes("目标页面") || txt.includes("страниц"))) {
+          let trigger = el.closest("[class*='select'],[class*='dropdown'],[class*='input']");
+          if (!trigger) trigger = el.parentElement?.parentElement;
+          if (trigger && trigger.offsetParent) {
+            found2 = true;
+            trigger.click();
+            setTimeout(() => {
+              const opts = [...document.querySelectorAll("[role='option'], li")]
+                .filter(el => el.offsetParent && el.textContent.trim().length > 0);
+              if (opts.length > 0) { opts[0].click(); filled++; }
+            }, 500);
+          }
+        }
+      });
+    }, 1000);
+
+    if (!found) {
+      showToast("⚠️ 没找到类目框，请手动点开「类目」下拉选一项");
+    }
   };
 
   // ── 图库选择 ──────────────────────────────────────
