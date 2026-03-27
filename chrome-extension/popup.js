@@ -67,7 +67,7 @@ function updateHeader() {
     quota.textContent = `免费采集剩余 ${getFreeLeft()} 次`;
   }
   badge.addEventListener("click", () => {
-    document.querySelectorAll(".tab").forEach(t => { if (t.dataset.tab === "account") t.click(); });
+    document.querySelectorAll(".tab").forEach(t => { if (t.dataset.tab === "account") { t.click(); initAccountTab(); } });
   });
 }
 
@@ -366,7 +366,8 @@ async function initAccountTab() {
       showToast("已退出登录");
       window.close();
     } else {
-      chrome.tabs.create({ url: getSite() + "/login?from=extension" });
+      // 跳到网站首页，用户在页面右上角点「登录」
+      chrome.tabs.create({ url: getSite() + "/?login=1" });
     }
   });
 

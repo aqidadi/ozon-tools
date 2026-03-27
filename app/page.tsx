@@ -197,11 +197,21 @@ export default function Home() {
     if (!authLoading) {
       loadProducts(true);
       if (accessToken) {
-        const timer = setInterval(() => loadProducts(false), 30000); // 30秒刷新一次，不要太频繁
+        const timer = setInterval(() => loadProducts(false), 30000);
         return () => clearInterval(timer);
       }
     }
   }, [loadProducts, authLoading, accessToken]);
+
+  // 插件跳转过来自动弹出登录框
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("login") === "1" && !user && !authLoading) {
+        setShowLoginPrompt(true);
+      }
+    }
+  }, [user, authLoading]);
 
   useEffect(() => {
     localStorage.setItem("ozon-settings", JSON.stringify(settings));
