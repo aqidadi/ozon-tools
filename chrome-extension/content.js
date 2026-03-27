@@ -1,22 +1,46 @@
-// Crossly content script v1.9.0
+// Crossly content script v1.9.2
 // 双模式：1688/义乌购商品采集 + Ozon Seller后台智能助手
 
 // ═══════════════════════════════════════════════════
-// 模式检测：当前在哪个页面
+// SPA路由监听：Ozon是单页应用，URL变化不会重新加载页面
 // ═══════════════════════════════════════════════════
-const url = location.href;
-const isOzonSeller = url.includes("seller.ozon.ru");
-const isShopDesign = isOzonSeller && (
-  url.includes("/showcase") ||
-  url.includes("constructor") ||
-  url.includes("commercial-space") ||
-  url.includes("store-design") ||
-  url.includes("shop-design")
-);
-const isWarehouse  = isOzonSeller && (url.includes("/warehouse") || url.includes("/supply") || url.includes("delivery-method") || url.includes("logistic"));
-const isStoreName  = isOzonSeller && (url.includes("/profile") || url.includes("/settings") || url.includes("seller-info") || url.includes("company"));
-const is1688       = url.includes("1688.com");
-const isYiwugo     = url.includes("yiwugo.com");
+let _crosslyPanelInjected = false;
+
+function checkAndInjectOzonPanel() {
+  const url = location.href;
+  if (!url.includes("seller.ozon.ru")) return;
+
+  const path = url;
+  let targetFn = null;
+
+  if (path.includes("showcase") || path.includes("constructor") || path.includes("commercial")) {
+    targetFn = initShopDesignPanel;
+  } else if (path.includes("warehouse") || path.includes("delivery") || path.includes("logistic") || path.includes("supply")) {
+    targetFn = initWarehousePanel;
+  } else if (path.includes("profile") || path.includes("settings") || path.includes("seller-info") || path.includes("company")) {
+    targetFn = initStoreNamePanel;
+  } else {
+    targetFn = initShopDesignPanel; // 兜底
+  }
+
+  // 移除旧面板再重建
+  document.getElementById("crossly-fab")?.remove();
+  document.getElementById("crossly-panel")?.remove();
+  document.getElementById("crossly-toast")?.remove();
+  _crosslyPanelInjected = false;
+
+  if (!_crosslyPanelInjected) {
+    _crosslyPanelInjected = true;
+    setTimeout(targetFn, 800);
+  }
+}
+
+// 监听 History API（pushState/replaceState）
+const _origPush = history.pushState.bind(history);
+const _origReplace = history.replaceState.bind(history);
+history.pushState = function(...args) { _origPush(...args); setTimeout(checkAndInjectOzonPanel, 1000); };
+history.replaceState = function(...args) { _origReplace(...args); setTimeout(checkAndInjectOzonPanel, 1000); };
+window.addEventListener("popstate", () => setTimeout(checkAndInjectOzonPanel, 1000));
 
 // ═══════════════════════════════════════════════════
 // 工具函数
@@ -484,31 +508,15 @@ function scanProductData() {
 window.__crosslyGetData = scanProductData;
 
 // ═══════════════════════════════════════════════════
-// 入口：根据页面类型注入对应功能
-// ═══════════════════════════════════════════════════
+// 入口
 function init() {
-  // Ozon Seller 后台
-  if (isOzonSeller) {
-    setTimeout(() => {
-      const path = location.pathname + location.href;
-      if (path.includes("showcase") || path.includes("constructor") || path.includes("commercial")) {
-        initShopDesignPanel();
-      } else if (path.includes("warehouse") || path.includes("delivery") || path.includes("logistic") || path.includes("supply")) {
-        initWarehousePanel();
-      } else if (path.includes("profile") || path.includes("settings") || path.includes("seller-info") || path.includes("company")) {
-        initStoreNamePanel();
-      } else {
-        // 兜底：所有其他 Ozon Seller 页面都显示装修面板
-        initShopDesignPanel();
-      }
-    }, 1500);
+  const url = location.href;
+  if (url.includes("seller.ozon.ru")) {
+    checkAndInjectOzonPanel();
     return;
   }
-
-  // 1688 / 义乌购：商品数据采集
-  if (is1688 || isYiwugo) {
-    scanProductData(); // 初始化数据
-    // 监听 SPA 路由变化
+  if (url.includes("1688.com") || url.includes("yiwugo.com")) {
+    scanProductData();
     let lastUrl = location.href;
     new MutationObserver(() => {
       if (location.href !== lastUrl) {
