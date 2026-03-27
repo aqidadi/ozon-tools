@@ -4,8 +4,8 @@
   "description": "让跨境像微商一样简单",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#1e2d5a",
-  "theme_color": "#6366f1",
+  "background_color": "#2d1b69",
+  "theme_color": "#ff6b35",
   "orientation": "portrait",
   "lang": "zh-CN",
   "icons": [

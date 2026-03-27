@@ -257,10 +257,7 @@ export default function Home() {
         {/* Logo */}
         <div className="px-4 py-4 border-b border-white/10">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center shadow-lg"
-              style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)" }}>
-              <ShoppingBag size={18} className="text-white" />
-            </div>
+            <img src="/icon-192.png" alt="Crossly" className="w-9 h-9 rounded-xl shadow-lg object-cover" />
             <div>
               <p className="text-sm font-bold text-white leading-tight">Crossly</p>
               <p className="text-[10px] text-white/50">跨境卖家工具箱</p>
