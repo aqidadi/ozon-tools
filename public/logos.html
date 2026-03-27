@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crossly Logo 方案选择</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#0f172a; min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:32px 16px; font-family:"PingFang SC","Microsoft YaHei",sans-serif; }
+h1 { color:white; font-size:20px; margin-bottom:8px; font-weight:900; }
+p { color:#94a3b8; font-size:13px; margin-bottom:32px; }
+.grid { display:grid; grid-template-columns:repeat(2,1fr); gap:24px; max-width:560px; width:100%; }
+.card { background:#1e293b; border-radius:20px; padding:24px; text-align:center; cursor:pointer; border:2px solid transparent; transition:all 0.2s; }
+.card:hover { border-color:#6366f1; transform:translateY(-2px); }
+canvas { border-radius:16px; display:block; margin:0 auto; box-shadow:0 4px 24px rgba(0,0,0,0.4); }
+.label { color:white; font-size:13px; font-weight:700; margin-top:12px; }
+.sub { color:#64748b; font-size:11px; margin-top:4px; }
+.badge { display:inline-block; background:#6366f1; color:white; font-size:10px; font-weight:700; padding:2px 10px; border-radius:20px; margin-top:6px; }
+</style>
+</head>
+<body>
+<h1>🎨 Crossly Logo 方案</h1>
+<p>点击你喜欢的方案，告诉我 A / B / C / D</p>
+<div class="grid">
+  <div class="card">
+    <canvas id="a" width="160" height="160"></canvas>
+    <div class="label">方案 A</div>
+    <div class="sub">C字母 + 出海箭头</div>
+    <div class="badge">科技·出海感</div>
+  </div>
+  <div class="card">
+    <canvas id="b" width="160" height="160"></canvas>
+    <div class="label">方案 B</div>
+    <div class="sub">包裹 + 闪电</div>
+    <div class="badge">活力·微商感</div>
+  </div>
+  <div class="card">
+    <canvas id="c" width="160" height="160"></canvas>
+    <div class="label">方案 C</div>
+    <div class="sub">极简大C · 圆形</div>
+    <div class="badge">极简·高级感</div>
+  </div>
+  <div class="card">
+    <canvas id="d" width="160" height="160"></canvas>
+    <div class="label">方案 D</div>
+    <div class="sub">C + 地球弧线</div>
+    <div class="badge">全球·科技风</div>
+  </div>
+</div>
+<script>
+function rr(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.closePath();}
+
+// A: C + 箭头
+(function(){
+  const cv=document.getElementById('a'),ctx=cv.getContext('2d'),S=160;
+  const g=ctx.createLinearGradient(0,0,S,S);
+  g.addColorStop(0,'#1e2d5a');g.addColorStop(1,'#7c3aed');
+  ctx.fillStyle=g; rr(ctx,0,0,S,S,S*0.2); ctx.fill();
+  // C
+  ctx.strokeStyle='white';ctx.lineWidth=S*0.13;ctx.lineCap='round';
+  ctx.beginPath();ctx.arc(S*0.46,S*0.52,S*0.24,0.52,Math.PI*2-0.52);ctx.stroke();
+  // 箭头
+  ctx.strokeStyle='#a78bfa';ctx.lineWidth=S*0.075;ctx.lineJoin='round';
+  ctx.beginPath();ctx.moveTo(S*0.63,S*0.63);ctx.lineTo(S*0.79,S*0.3);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(S*0.62,S*0.3);ctx.lineTo(S*0.79,S*0.3);ctx.lineTo(S*0.79,S*0.47);ctx.stroke();
+})();
+
+// B: 包裹 + 闪电
+(function(){
+  const cv=document.getElementById('b'),ctx=cv.getContext('2d'),S=160;
+  const g=ctx.createLinearGradient(0,0,S,S);
+  g.addColorStop(0,'#ea580c');g.addColorStop(0.55,'#9333ea');g.addColorStop(1,'#1e2d5a');
+  ctx.fillStyle=g; rr(ctx,0,0,S,S,S*0.2); ctx.fill();
+  ctx.strokeStyle='rgba(255,255,255,0.92)';ctx.lineJoin='round';ctx.lineCap='round';
+  // 箱体
+  ctx.lineWidth=S*0.065;
+  ctx.strokeRect(S*0.2,S*0.34,S*0.6,S*0.46);
+  // 盖子
+  ctx.strokeRect(S*0.17,S*0.24,S*0.66,S*0.1);
+  // 横线
+  ctx.lineWidth=S*0.05;
+  ctx.beginPath();ctx.moveTo(S*0.5,S*0.34);ctx.lineTo(S*0.5,S*0.8);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(S*0.2,S*0.55);ctx.lineTo(S*0.8,S*0.55);ctx.stroke();
+  // 闪电
+  ctx.fillStyle='#fbbf24';
+  ctx.beginPath();
+  ctx.moveTo(S*0.53,S*0.36);ctx.lineTo(S*0.42,S*0.53);ctx.lineTo(S*0.5,S*0.53);
+  ctx.lineTo(S*0.47,S*0.66);ctx.lineTo(S*0.6,S*0.49);ctx.lineTo(S*0.52,S*0.49);
+  ctx.closePath();ctx.fill();
+})();
+
+// C: 极简大C 圆形
+(function(){
+  const cv=document.getElementById('c'),ctx=cv.getContext('2d'),S=160;
+  const g=ctx.createRadialGradient(S*0.38,S*0.38,0,S/2,S/2,S*0.58);
+  g.addColorStop(0,'#4f46e5');g.addColorStop(1,'#1e1b4b');
+  ctx.fillStyle=g;
+  ctx.beginPath();ctx.arc(S/2,S/2,S/2,0,Math.PI*2);ctx.fill();
+  // 大C
+  ctx.strokeStyle='white';ctx.lineWidth=S*0.15;ctx.lineCap='round';
+  ctx.beginPath();ctx.arc(S*0.48,S*0.51,S*0.25,0.48,Math.PI*2-0.48);ctx.stroke();
+  // 右上角小圆点
+  ctx.fillStyle='#818cf8';
+  ctx.beginPath();ctx.arc(S*0.74,S*0.26,S*0.045,0,Math.PI*2);ctx.fill();
+})();
+
+// D: C + 地球线 + 箭头
+(function(){
+  const cv=document.getElementById('d'),ctx=cv.getContext('2d'),S=160;
+  const g=ctx.createLinearGradient(0,S,S,0);
+  g.addColorStop(0,'#0f172a');g.addColorStop(0.5,'#1e2d5a');g.addColorStop(1,'#312e81');
+  ctx.fillStyle=g; rr(ctx,0,0,S,S,S*0.2); ctx.fill();
+  // 地球弧线
+  ctx.strokeStyle='rgba(99,102,241,0.35)';ctx.lineWidth=1.2;
+  for(const r of [S*0.36,S*0.42,S*0.48]){
+    ctx.beginPath();ctx.arc(S/2,S/2,r,0,Math.PI*2);ctx.stroke();
+  }
+  ctx.beginPath();ctx.ellipse(S/2,S/2,S*0.14,S*0.48,0,0,Math.PI*2);ctx.stroke();
+  // C 渐变色
+  const cg=ctx.createLinearGradient(S*0.2,S*0.2,S*0.8,S*0.8);
+  cg.addColorStop(0,'#a78bfa');cg.addColorStop(1,'#60a5fa');
+  ctx.strokeStyle=cg;ctx.lineWidth=S*0.13;ctx.lineCap='round';
+  ctx.beginPath();ctx.arc(S*0.47,S*0.51,S*0.23,0.58,Math.PI*2-0.58);ctx.stroke();
+  // 小箭头
+  ctx.strokeStyle='#a78bfa';ctx.lineWidth=S*0.06;ctx.lineJoin='round';
+  ctx.beginPath();ctx.moveTo(S*0.65,S*0.44);ctx.lineTo(S*0.77,S*0.25);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(S*0.63,S*0.25);ctx.lineTo(S*0.77,S*0.25);ctx.lineTo(S*0.77,S*0.39);ctx.stroke();
+})();
+</script>
+</body>
+</html>
