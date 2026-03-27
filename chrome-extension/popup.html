@@ -2,136 +2,170 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Ozon 选品工具</title>
+  <title>Crossly 全能管家</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      width: 340px;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      width: 360px;
+      font-family: -apple-system, "PingFang SC", sans-serif;
       background: #f8fafc;
       color: #1e293b;
     }
     .header {
-      background: #2563eb;
+      background: linear-gradient(135deg, #ff6b35, #9b3fcf);
       color: white;
       padding: 14px 16px;
       display: flex;
       align-items: center;
       gap: 10px;
     }
-    .header h1 { font-size: 15px; font-weight: 600; }
-    .header p { font-size: 11px; opacity: 0.8; margin-top: 2px; }
-    .body { padding: 14px 16px; }
-    .status-box {
+    .header-logo { font-size: 28px; }
+    .header-text h1 { font-size: 15px; font-weight: 800; }
+    .header-text p  { font-size: 10px; opacity: 0.8; margin-top: 2px; }
+    .tabs {
+      display: flex;
       background: white;
-      border: 1px solid #e2e8f0;
-      border-radius: 10px;
-      padding: 14px;
-      margin-bottom: 12px;
+      border-bottom: 2px solid #f1f5f9;
     }
-    .status-label { font-size: 11px; color: #94a3b8; margin-bottom: 6px; }
-    .status-title { font-size: 13px; font-weight: 500; color: #1e293b; line-height: 1.4; }
-    .status-meta { display: flex; gap: 12px; margin-top: 8px; }
-    .meta-item { font-size: 12px; }
-    .meta-item span { color: #94a3b8; }
-    .meta-item strong { color: #2563eb; }
-    .not-1688 {
-      text-align: center;
-      padding: 20px 0;
-      color: #94a3b8;
-      font-size: 13px;
+    .tab {
+      flex: 1; padding: 9px 4px; font-size: 11px; font-weight: 700;
+      border: none; background: none; cursor: pointer; color: #94a3b8;
+      border-bottom: 2px solid transparent; margin-bottom: -2px;
+      transition: color 0.15s;
     }
-    .not-1688 .icon { font-size: 32px; margin-bottom: 8px; }
+    .tab.active { color: #ff6b35; border-bottom-color: #ff6b35; }
+    .body { padding: 12px 14px; }
+    .panel { display: none; }
+    .panel.active { display: block; }
+    .tip {
+      font-size: 11px; color: #64748b; background: #f0f4ff;
+      border-radius: 8px; padding: 8px 10px; margin-bottom: 10px; line-height: 1.6;
+    }
+    .section-title {
+      font-size: 10px; font-weight: 800; color: #94a3b8;
+      letter-spacing: 0.8px; text-transform: uppercase; margin: 10px 0 5px;
+    }
     .btn {
-      width: 100%;
-      padding: 12px;
-      border: none;
-      border-radius: 10px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.15s;
+      width: 100%; padding: 10px 14px; border-radius: 10px; border: none;
+      font-size: 13px; font-weight: 700; cursor: pointer; margin-bottom: 8px;
+      transition: opacity 0.15s; text-align: left;
     }
-    .btn-primary {
-      background: #2563eb;
-      color: white;
+    .btn:hover { opacity: 0.88; }
+    .btn-primary { background: linear-gradient(135deg,#6366f1,#8b5cf6); color: white; }
+    .btn-orange  { background: linear-gradient(135deg,#ff6b35,#ea4c89); color: white; }
+    .btn-green   { background: linear-gradient(135deg,#16a34a,#22c55e); color: white; }
+    .btn-blue    { background: linear-gradient(135deg,#2563eb,#60a5fa); color: white; }
+    .btn-gray    { background: #f1f5f9; color: #374151; }
+    .input {
+      width: 100%; border: 1.5px solid #e2e8f0; border-radius: 8px;
+      padding: 8px 10px; font-size: 12px; margin-bottom: 8px; outline: none;
     }
-    .btn-primary:hover { background: #1d4ed8; }
-    .btn-primary:disabled { background: #93c5fd; cursor: not-allowed; }
-    .btn-success {
-      background: #16a34a;
-      color: white;
+    .input:focus { border-color: #6366f1; }
+    .badge {
+      display: inline-block; font-size: 9px; font-weight: 800;
+      padding: 2px 7px; border-radius: 20px; margin-left: 5px;
+      background: #fef3c7; color: #92400e; vertical-align: middle;
     }
-    .setting-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 10px;
+    .badge.red { background: #fee2e2; color: #991b1b; }
+    .badge.green { background: #d1fae5; color: #065f46; }
+    .divider { border: none; border-top: 1px solid #f1f5f9; margin: 10px 0; }
+    .step {
+      display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px;
     }
-    .setting-row label { font-size: 12px; color: #64748b; }
-    .setting-row input {
-      width: 100px;
-      border: 1px solid #e2e8f0;
-      border-radius: 6px;
-      padding: 5px 8px;
-      font-size: 12px;
-      text-align: right;
+    .step-num {
+      min-width: 20px; height: 20px; border-radius: 50%;
+      background: linear-gradient(135deg,#ff6b35,#9b3fcf);
+      color: white; font-size: 10px; font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
     }
-    .divider { height: 1px; background: #e2e8f0; margin: 12px 0; }
-    .site-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 10px;
-    }
-    .site-row label { font-size: 12px; color: #64748b; flex: 1; }
-    .site-row input {
-      flex: 2;
-      border: 1px solid #e2e8f0;
-      border-radius: 6px;
-      padding: 5px 8px;
-      font-size: 11px;
-    }
+    .step-text { font-size: 11px; color: #374151; line-height: 1.5; }
     .toast {
-      position: fixed;
-      bottom: 16px;
-      left: 50%;
+      position: fixed; bottom: 12px; left: 50%;
       transform: translateX(-50%);
-      background: #1e293b;
-      color: white;
-      padding: 8px 16px;
-      border-radius: 8px;
-      font-size: 13px;
-      opacity: 0;
-      transition: opacity 0.3s;
-      pointer-events: none;
-      white-space: nowrap;
+      background: #1e293b; color: white;
+      padding: 7px 14px; border-radius: 8px; font-size: 12px;
+      opacity: 0; transition: opacity 0.3s; pointer-events: none;
+      white-space: nowrap; z-index: 9999;
     }
     .toast.show { opacity: 1; }
-    .loading { display: inline-block; animation: spin 1s linear infinite; }
-    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    #ozon-status { font-size: 11px; padding: 6px 10px; border-radius: 8px; margin-bottom: 8px; }
+    .status-ok { background: #d1fae5; color: #065f46; }
+    .status-err { background: #fee2e2; color: #991b1b; }
   </style>
 </head>
 <body>
   <div class="header">
-    <div style="flex:1;">
-      <h1>🛍️ Ozon 选品工具</h1>
-      <p id="headerUser" style="font-size:10px;opacity:0.9;">检查登录中...</p>
-    </div>
-    <div style="display:flex;gap:3px;flex-wrap:wrap;justify-content:flex-end;">
-      <button id="tabSearch" style="border:none;border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer;background:#f1f5f9;color:#64748b;">🔍 搜索</button>
-      <button id="tabImport" style="border:none;border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer;background:#f1f5f9;color:#64748b;">📤 导入</button>
-      <button id="tabBatch" style="border:none;border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer;background:#f1f5f9;color:#64748b;">📦 批量</button>
-      <button id="tabAccount" style="border:none;border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer;background:#f1f5f9;color:#64748b;">👤 账号</button>
+    <div class="header-logo">📦</div>
+    <div class="header-text">
+      <h1>Crossly 全能管家</h1>
+      <p>让跨境像微商一样简单 · 小学生都会用</p>
     </div>
   </div>
 
+  <div class="tabs">
+    <button class="tab active" data-tab="guide">🗺️ 向导</button>
+    <button class="tab" data-tab="collect">🔍 采集</button>
+    <button class="tab" data-tab="publish">🚀 刊登</button>
+    <button class="tab" data-tab="account">⚙️ 账号</button>
+  </div>
+
   <div class="body">
-    <div id="content">
-      <div class="not-1688">
-        <div class="icon">🔍</div>
-        <p>请在 1688 商品详情页使用</p>
+
+    <!-- 向导 Tab -->
+    <div class="panel active" id="panel-guide">
+      <div class="tip">👋 第一次用？跟着步骤走，10分钟就会！</div>
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-text"><strong>采集商品</strong> — 打开义乌购商品页，点「采集」Tab 抓取数据</div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-text"><strong>自动翻译</strong> — 标题/描述自动翻译成外语，无需手动</div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-text"><strong>一键刊登</strong> — 点「刊登」Tab，填好利润，发到Ozon</div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-text"><strong>店铺装修</strong> — 去 <strong>Ozon 商店设计页</strong>，右下角出现「📦」按钮，点开即可一键装修</div>
+      </div>
+      <hr class="divider">
+      <button class="btn btn-orange" id="btn-open-crossly">🌐 打开 Crossly 网站</button>
+      <button class="btn btn-gray" id="btn-open-guide">📖 查看小白保姆教程</button>
+    </div>
+
+    <!-- 采集 Tab -->
+    <div class="panel" id="panel-collect">
+      <div id="collect-status" class="tip">检测当前页面中...</div>
+      <div id="collect-content">
+        <div class="tip">请打开义乌购商品详情页，然后点击采集按钮</div>
+        <button class="btn btn-blue" id="btn-open-yiwugo">打开义乌购 →</button>
+      </div>
+    </div>
+
+    <!-- 刊登 Tab -->
+    <div class="panel" id="panel-publish">
+      <div class="section-title">Ozon 账号</div>
+      <div id="ozon-status" class="status-err">⚠️ 未配置 Ozon Key，请先去「账号」Tab 填写</div>
+      <div class="section-title">当前商品</div>
+      <div id="publish-product" class="tip">暂无已采集商品，请先在采集页抓取</div>
+      <button class="btn btn-primary" id="btn-publish">🚀 一键刊登到 Ozon</button>
+    </div>
+
+    <!-- 账号 Tab -->
+    <div class="panel" id="panel-account">
+      <div class="section-title">Crossly 网站</div>
+      <input class="input" id="input-site" placeholder="https://www.crossly.cn" />
+
+      <div class="section-title">Ozon 卖家账号 <span class="badge">必填</span></div>
+      <input class="input" id="input-client-id" placeholder="Client-Id（数字）" />
+      <input class="input" id="input-api-key" placeholder="Api-Key（uuid格式）" />
+      <button class="btn btn-green" id="btn-save-account">✅ 保存账号信息</button>
+
+      <hr class="divider">
+      <div class="tip" style="font-size:10px;">
+        🔒 账号信息只存在你的浏览器本地，不会上传到任何服务器
       </div>
     </div>
   </div>
