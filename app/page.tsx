@@ -20,6 +20,7 @@ import { useAuth } from "@/lib/auth-context";
 import { exportToExcel } from "@/lib/export";
 import { Product, Settings, LANGUAGES, PLATFORMS, getPlatform } from "@/lib/types";
 import { BatchImportPage } from "@/components/BatchImportPage";
+import { BatchPublishPanel } from "@/components/BatchPublishPanel";
 import { AddToHomeScreen } from "@/components/AddToHomeScreen";
 import {
   ShoppingBag, Settings2, Download, Plus, TrendingUp,
@@ -474,18 +475,13 @@ export default function Home() {
                   </button>
                 </div>
               ) : (
-                <div className="space-y-1">
-                  {products.map((product) => (
-                    <ProductCard
-                      key={product.id}
-                      product={product}
-                      settings={settings}
-                      onUpdate={handleUpdateProduct}
-                      onDelete={handleDeleteProduct}
-                      accessToken={accessToken || undefined}
-                    />
-                  ))}
-                </div>
+                <BatchPublishPanel
+                  products={products}
+                  settings={settings}
+                  accessToken={accessToken || undefined}
+                  onUpdate={handleUpdateProduct}
+                  onDelete={handleDeleteProduct}
+                />
               )}
                 </>
               )}

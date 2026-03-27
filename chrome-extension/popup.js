@@ -461,6 +461,25 @@ async function batchImportFromUrls(urls, siteUrl, weight, onProgress) {
       const product = res?.[0]?.result;
       if (product && product.title) {
         product.weight = weight;
+
+        // ── 采集即上传：立刻把图片缓存到 Supabase ──
+        try {
+          const cacheRes = await fetch(`${siteUrl}/api/img-cache`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ urls: product.images || [], detailUrls: product.detailImages || [] }),
+          });
+          const cacheData = await cacheRes.json();
+          if (cacheData.images && cacheData.images.length > 0) {
+            product.images = cacheData.images;
+          }
+          if (cacheData.detailImages && cacheData.detailImages.length > 0) {
+            product.detailImages = cacheData.detailImages;
+          }
+        } catch (e) {
+          console.warn("图片缓存失败，使用原始URL", e);
+        }
+
         // 推送到服务器（带 token）
         await authFetch(`${siteUrl}/api/import`, {
           method: "POST",
