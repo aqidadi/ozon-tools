@@ -1121,16 +1121,16 @@ export function GuidePage() {
     <div className="space-y-4">
 
       {/* 🎁 领取手册入口 */}
-      <a href="/crossly-handbook.pdf" download="跨境小白生存手册1.0-Crossly.pdf"
-        className="flex items-center gap-3 rounded-2xl px-4 py-3 border-2 border-dashed border-indigo-300 bg-indigo-50 hover:bg-indigo-100 transition-colors group">
+      <a href="/crossly-handbook.pdf" target="_blank" rel="noopener noreferrer"
+        className="flex items-center gap-3 rounded-2xl px-4 py-3 border-2 border-dashed border-indigo-300 bg-indigo-50 hover:bg-indigo-100 active:bg-indigo-200 transition-colors group">
         <span className="text-2xl animate-pulse">🎁</span>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-black text-indigo-800 group-hover:text-indigo-900">
+          <p className="text-sm font-black text-indigo-800">
             领《跨境小白生存手册 1.0》PDF
           </p>
-          <p className="text-xs text-indigo-500">精华版 · 6章6条金句 · 永久免费下载</p>
+          <p className="text-xs text-indigo-500 mt-0.5">点击打开 · 手机长按可保存 · 电脑右键另存为</p>
         </div>
-        <span className="text-indigo-400 text-sm flex-shrink-0">↓ 下载</span>
+        <span className="text-indigo-400 text-sm flex-shrink-0 font-bold">打开 →</span>
       </a>
 
       {/* 置顶：0基础新手卡（全幅） */}
