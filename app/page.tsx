@@ -901,17 +901,37 @@ function LandingPage({ onStart }: { onStart: () => void }) {
             </button>
             <span className="text-white/30 text-xs">无需信用卡</span>
           </div>
-          {/* 插件下载 */}
-          <div className="mt-4 flex items-center justify-center gap-2">
-            <button
-              onClick={() => setShowInstall(true)}
-              className="flex items-center gap-2 bg-white/15 hover:bg-white/25 border border-white/20 text-white text-xs font-semibold px-4 py-2 rounded-xl transition-all"
-            >
-              <span>🧩</span>
-              <span>安装 Chrome 插件 v1.8.3</span>
-              <span className="text-white/50 text-[10px]">查看教程 →</span>
-            </button>
-            <span className="text-white/30 text-[10px]">从1688一键搬运商品</span>
+          {/* 插件展示卡片 */}
+          <div className="mt-5 mx-auto max-w-sm">
+            <div className="relative rounded-2xl overflow-hidden border border-white/20 bg-white/10 backdrop-blur-sm p-4">
+              {/* 角标 */}
+              <div className="absolute top-3 right-3 bg-orange-500 text-white text-[9px] font-black px-2 py-0.5 rounded-full">🔥 必装</div>
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-xl flex-shrink-0 shadow-lg">🧩</div>
+                <div>
+                  <p className="text-white font-black text-sm">Crossly 搬运插件</p>
+                  <p className="text-white/50 text-[10px]">Chrome Extension · v1.8.3 · 完全免费</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-1.5 mb-3">
+                {[
+                  { icon: "⚡", text: "1688商品一键导入" },
+                  { icon: "🖼️", text: "自动抓取所有图片" },
+                  { icon: "🤖", text: "AI自动翻译标题" },
+                  { icon: "🚀", text: "30秒上架到全球" },
+                ].map(f => (
+                  <div key={f.text} className="flex items-center gap-1.5 bg-white/10 rounded-lg px-2 py-1.5">
+                    <span className="text-xs">{f.icon}</span>
+                    <span className="text-[10px] text-white/80 font-medium">{f.text}</span>
+                  </div>
+                ))}
+              </div>
+              <button onClick={() => setShowInstall(true)}
+                className="w-full py-2.5 rounded-xl text-sm font-black text-white transition-all hover:scale-[1.02] shadow-lg"
+                style={{ background: "linear-gradient(135deg, #ea580c, #dc2626)" }}>
+                立即安装 · 查看教程 →
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -1168,11 +1188,33 @@ function LandingPage({ onStart }: { onStart: () => void }) {
           现在开始，完全免费 →
         </button>
         <p className="text-[10px] text-gray-300 mt-2">无需注册 · 无需信用卡 · 随时退出</p>
-        <div className="mt-3">
-          <button
-            onClick={() => setShowInstall(true)}
-            className="inline-flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-semibold px-4 py-2 rounded-xl transition-all">
-            🧩 安装 Chrome 插件 v1.8.3 · 查看安装教程 →
+        {/* 底部插件卡片 */}
+        <div className="mt-5 border border-gray-100 rounded-2xl p-4 bg-gradient-to-br from-indigo-50 to-purple-50 text-left">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-xl flex-shrink-0 shadow">🧩</div>
+            <div>
+              <p className="font-black text-gray-900 text-sm">Crossly 搬运插件</p>
+              <p className="text-[10px] text-gray-400">Chrome Extension · v1.8.3 · 完全免费安装</p>
+            </div>
+            <span className="ml-auto text-[9px] bg-orange-500 text-white font-black px-2 py-0.5 rounded-full flex-shrink-0">必装</span>
+          </div>
+          <div className="grid grid-cols-2 gap-1.5 mb-3">
+            {[
+              { icon: "⚡", text: "1688商品一键导入" },
+              { icon: "🖼️", text: "自动抓取所有图片" },
+              { icon: "🤖", text: "AI自动翻译标题" },
+              { icon: "🚀", text: "30秒上架到全球" },
+            ].map(f => (
+              <div key={f.text} className="flex items-center gap-1.5 bg-white rounded-lg px-2 py-1.5 border border-indigo-100">
+                <span className="text-xs">{f.icon}</span>
+                <span className="text-[10px] text-gray-700 font-medium">{f.text}</span>
+              </div>
+            ))}
+          </div>
+          <button onClick={() => setShowInstall(true)}
+            className="w-full py-2.5 rounded-xl text-sm font-black text-white shadow transition-all hover:scale-[1.02]"
+            style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)" }}>
+            🧩 立即安装插件 · 查看5分钟教程 →
           </button>
         </div>
       </div>
