@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: #fff;
+    color: #1a1a2e;
+  }
+
+  .page {
+    width: 210mm;
+    min-height: 297mm;
+    padding: 20mm 18mm 28mm 18mm;
+    position: relative;
+    page-break-after: always;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* 水印 */
+  .watermark {
+    position: absolute;
+    bottom: 10mm;
+    left: 0; right: 0;
+    text-align: center;
+    font-size: 9pt;
+    color: #94a3b8;
+    letter-spacing: 0.5px;
+  }
+
+  /* 封面 */
+  .cover {
+    background: linear-gradient(135deg, #1e2d5a 0%, #2d1b69 50%, #1a1a2e 100%);
+    color: white;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+  }
+
+  .cover-badge {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 50px;
+    padding: 6px 20px;
+    font-size: 10pt;
+    color: rgba(255,255,255,0.7);
+    margin-bottom: 24px;
+    display: inline-block;
+  }
+
+  .cover-title {
+    font-size: 32pt;
+    font-weight: 900;
+    line-height: 1.2;
+    margin-bottom: 8px;
+  }
+
+  .cover-title span {
+    background: linear-gradient(90deg, #a78bfa, #60a5fa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .cover-sub {
+    font-size: 14pt;
+    color: rgba(255,255,255,0.6);
+    margin-bottom: 40px;
+  }
+
+  .cover-author {
+    font-size: 11pt;
+    color: rgba(255,255,255,0.5);
+    margin-top: 40px;
+  }
+
+  .cover-motto {
+    font-size: 13pt;
+    color: #a78bfa;
+    font-weight: 700;
+    margin-top: 10px;
+  }
+
+  .cover-logo {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+    margin: 0 auto 30px;
+  }
+
+  .cover-boxes {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    margin-top: 40px;
+  }
+
+  .cover-box {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 12px;
+    padding: 14px 18px;
+    text-align: center;
+    min-width: 80px;
+  }
+
+  .cover-box-num {
+    font-size: 20pt;
+    font-weight: 900;
+    color: #a78bfa;
+  }
+
+  .cover-box-label {
+    font-size: 8pt;
+    color: rgba(255,255,255,0.5);
+    margin-top: 4px;
+  }
+
+  .cover-watermark {
+    position: absolute;
+    bottom: 10mm;
+    left: 0; right: 0;
+    text-align: center;
+    font-size: 9pt;
+    color: rgba(255,255,255,0.3);
+  }
+
+  /* 章节页 */
+  .chapter-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 18px;
+    border-radius: 14px;
+    margin-bottom: 20px;
+  }
+
+  .chapter-icon {
+    font-size: 32px;
+    flex-shrink: 0;
+  }
+
+  .chapter-num {
+    font-size: 9pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 3px;
+  }
+
+  .chapter-title {
+    font-size: 18pt;
+    font-weight: 900;
+    line-height: 1.2;
+  }
+
+  .body-text {
+    font-size: 11pt;
+    line-height: 1.8;
+    color: #374151;
+    margin-bottom: 14px;
+  }
+
+  .highlight {
+    font-weight: 700;
+    color: #1a1a2e;
+  }
+
+  /* 金句卡片 */
+  .golden-card {
+    border-radius: 14px;
+    padding: 16px 20px;
+    margin: 18px 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .golden-icon {
+    font-size: 22px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .golden-label {
+    font-size: 8pt;
+    font-weight: 900;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+  }
+
+  .golden-text {
+    font-size: 12pt;
+    font-weight: 700;
+    line-height: 1.5;
+  }
+
+  /* 步骤列表 */
+  .step-list {
+    list-style: none;
+    space-y: 10px;
+  }
+
+  .step-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    margin-bottom: 8px;
+  }
+
+  .step-num {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10pt;
+    font-weight: 900;
+    flex-shrink: 0;
+    color: white;
+  }
+
+  .step-content { flex: 1; }
+  .step-title { font-size: 11pt; font-weight: 700; margin-bottom: 2px; }
+  .step-desc { font-size: 9.5pt; color: #6b7280; line-height: 1.5; }
+
+  /* 流程图 */
+  .flow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 14px;
+    background: #f8fafc;
+    border-radius: 12px;
+    margin: 14px 0;
+    flex-wrap: wrap;
+  }
+
+  .flow-node {
+    text-align: center;
+    background: white;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 8px 14px;
+    min-width: 72px;
+  }
+
+  .flow-node-icon { font-size: 18px; }
+  .flow-node-label { font-size: 8pt; color: #64748b; margin-top: 3px; }
+  .flow-arrow { font-size: 16px; color: #94a3b8; }
+
+  /* 公式卡片 */
+  .formula {
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    border: 2px solid #f59e0b;
+    border-radius: 14px;
+    padding: 16px 20px;
+    margin: 14px 0;
+    text-align: center;
+  }
+
+  .formula-label {
+    font-size: 9pt;
+    font-weight: 700;
+    color: #92400e;
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+  }
+
+  .formula-text {
+    font-size: 13pt;
+    font-weight: 900;
+    color: #78350f;
+    line-height: 1.6;
+  }
+
+  .formula-example {
+    font-size: 9.5pt;
+    color: #92400e;
+    margin-top: 8px;
+  }
+
+  /* 警告/提示框 */
+  .alert {
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin: 12px 0;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+
+  .alert-icon { font-size: 18px; flex-shrink: 0; }
+  .alert-text { font-size: 10pt; line-height: 1.6; }
+
+  /* 工具对比表 */
+  .tool-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin: 14px 0;
+  }
+
+  .tool-card {
+    border-radius: 12px;
+    padding: 14px 12px;
+    text-align: center;
+    border: 1.5px solid;
+  }
+
+  .tool-icon { font-size: 24px; margin-bottom: 6px; }
+  .tool-name { font-size: 10pt; font-weight: 900; margin-bottom: 4px; }
+  .tool-role { font-size: 8.5pt; color: #6b7280; line-height: 1.4; }
+  .tool-tag { font-size: 7.5pt; font-weight: 700; padding: 2px 8px; border-radius: 20px; margin-top: 8px; display: inline-block; }
+
+  /* 尾页 */
+  .end-page {
+    background: linear-gradient(135deg, #1e2d5a 0%, #2d1b69 100%);
+    color: white;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+  }
+
+  @media print {
+    .page { page-break-after: always; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══ 封面 ══════════════════════════════════ -->
+<div class="page cover">
+  <div class="cover-badge">🚀 精华版 1.0 · 2026年最新</div>
+  <div class="cover-logo">📦</div>
+  <div class="cover-title">
+    跨境小白<br><span>生存手册</span>
+  </div>
+  <div class="cover-sub">让跨境像微商一样简单</div>
+
+  <div class="cover-boxes">
+    <div class="cover-box">
+      <div class="cover-box-num">6</div>
+      <div class="cover-box-label">核心章节</div>
+    </div>
+    <div class="cover-box">
+      <div class="cover-box-num">6</div>
+      <div class="cover-box-label">黄金准则</div>
+    </div>
+    <div class="cover-box">
+      <div class="cover-box-num">∞</div>
+      <div class="cover-box-label">永久免费</div>
+    </div>
+  </div>
+
+  <div class="cover-author">主笔：跨境小学生 · 阿柒 | 宗旨：让跨境像微商一样简单</div>
+  <div class="cover-motto">www.crossly.cn</div>
+  <div class="cover-watermark">www.crossly.cn — 跨境像微商一样简单</div>
+</div>
+
+<!-- ══ 第一章 ══════════════════════════════════ -->
+<div class="page">
+  <div class="chapter-header" style="background: linear-gradient(135deg, #eef2ff, #e0e7ff);">
+    <div class="chapter-icon">🧠</div>
+    <div>
+      <div class="chapter-num" style="color: #6366f1;">第一章</div>
+      <div class="chapter-title" style="color: #3730a3;">心态建设<br>「小学生」凭什么赚外币？</div>
+    </div>
+  </div>
+
+  <p class="body-text">
+    跨境不是高科技，就是 <span class="highlight">「信息差 + 勤快」</span>。
+    咱们不卷技术，咱们卷「傻瓜式操作」。
+    你不需要会外语，不需要懂 PS，只需要知道：
+    <span class="highlight">同一件商品，在国内卖 15 元，在海外卖 150 元。</span>
+    这个差价，就是咱们的机会。
+  </p>
+
+  <p class="body-text">
+    把你平时发朋友圈的劲头拿出来，每天上架 5 款货，剩下的交给 Crossly 的 AI 去翻译、去推算利润。
+    你负责找货，工具负责干活。
+  </p>
+
+  <div class="flow">
+    <div class="flow-node"><div class="flow-node-icon">🔍</div><div class="flow-node-label">1688找货</div></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node"><div class="flow-node-icon">🤖</div><div class="flow-node-label">AI翻译</div></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node"><div class="flow-node-icon">📦</div><div class="flow-node-label">上架平台</div></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node"><div class="flow-node-icon">💰</div><div class="flow-node-label">收外币</div></div>
+  </div>
+
+  <div class="alert" style="background: #fef9c3; border-left: 4px solid #eab308;">
+    <div class="alert-icon">⚠️</div>
+    <div class="alert-text" style="color: #713f12;">
+      <strong>新手最常见的错误：</strong>等到「准备好了」再开始。
+      跨境没有准备好的那一天，第一单才是最好的老师。
+    </div>
+  </div>
+
+  <div class="golden-card" style="background: linear-gradient(135deg, #fef3c7, #fde68a); border-left: 4px solid #f59e0b;">
+    <div class="golden-icon">🏆</div>
+    <div>
+      <div class="golden-label" style="color: #92400e;">黄金准则 1</div>
+      <div class="golden-text" style="color: #78350f;">
+        先开单，再谈理想；<br>先保本，再谈利润。
+      </div>
+    </div>
+  </div>
+
+  <div class="watermark">www.crossly.cn — 跨境像微商一样简单</div>
+</div>
+
+<!-- ══ 第二章 ══════════════════════════════════ -->
+<div class="page">
+  <div class="chapter-header" style="background: linear-gradient(135deg, #f0fdf4, #dcfce7);">
+    <div class="chapter-icon">💰</div>
+    <div>
+      <div class="chapter-num" style="color: #16a34a;">第二章</div>
+      <div class="chapter-title" style="color: #14532d;">定价保命符<br>别在算账上亏钱</div>
+    </div>
+  </div>
+
+  <p class="body-text">
+    很多新手看着出单了，一看账单却亏了。
+    不是货不好，是 <span class="highlight">价格没算对</span>。
+    跨境最容易忘算的两笔钱：<strong>头程运费</strong>和<strong>平台佣金</strong>。
+  </p>
+
+  <div class="formula">
+    <div class="formula-label">📌 傻瓜定价公式</div>
+    <div class="formula-text">
+      进价 + 头程运费（约¥20-30）<br>
+      + 平台佣金（约15%）+ 预期利润（≥¥15）<br>
+      = 最低起拍价
+    </div>
+    <div class="formula-example">
+      例：进价¥18 + 运费¥25 + 佣金¥10 + 利润¥15 = 起拍价¥68（约750卢布）
+    </div>
+  </div>
+
+  <div class="alert" style="background: #fef2f2; border-left: 4px solid #ef4444;">
+    <div class="alert-icon">🚫</div>
+    <div class="alert-text" style="color: #7f1d1d;">
+      <strong>死亡定价套路：</strong>看到竞品卖多少就跟多少。
+      你不知道别人的进价，跟价格等于跟着亏。
+    </div>
+  </div>
+
+  <div style="margin: 14px 0;">
+    <div class="step-item" style="background: #f0fdf4;">
+      <div class="step-num" style="background: #16a34a;">1</div>
+      <div class="step-content">
+        <div class="step-title">先算成本底线</div>
+        <div class="step-desc">进价 + 运费 = 你的成本。这个数字以下，一分都不能卖。</div>
+      </div>
+    </div>
+    <div class="step-item" style="background: #f0fdf4;">
+      <div class="step-num" style="background: #16a34a;">2</div>
+      <div class="step-content">
+        <div class="step-title">再看竞品参考价</div>
+        <div class="step-desc">在成本线以上，参考竞品，定一个「稍贵但有道理」的价格。</div>
+      </div>
+    </div>
+    <div class="step-item" style="background: #f0fdf4;">
+      <div class="step-num" style="background: #16a34a;">3</div>
+      <div class="step-content">
+        <div class="step-title">利润低于20%就换款</div>
+        <div class="step-desc">汇率随时波动，利润太薄根本扛不住。低于20%换下一个品。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="golden-card" style="background: linear-gradient(135deg, #fef3c7, #fde68a); border-left: 4px solid #f59e0b;">
+    <div class="golden-icon">🏆</div>
+    <div>
+      <div class="golden-label" style="color: #92400e;">黄金准则 2</div>
+      <div class="golden-text" style="color: #78350f;">
+        宁可价格高点不出单，<br>也绝不低价赔钱赚吆喝。
+      </div>
+    </div>
+  </div>
+
+  <div class="watermark">www.crossly.cn — 跨境像微商一样简单</div>
+</div>
+
+<!-- ══ 第三章 ══════════════════════════════════ -->
+<div class="page">
+  <div class="chapter-header" style="background: linear-gradient(135deg, #fff7ed, #ffedd5);">
+    <div class="chapter-icon">🚚</div>
+    <div>
+      <div class="chapter-num" style="color: #ea580c;">第三章</div>
+      <div class="chapter-title" style="color: #7c2d12;">发货避坑指南<br>义乌北苑的生存法则</div>
+    </div>
+  </div>
+
+  <p class="body-text">
+    发货是跨境里 <span class="highlight">坑最多的环节</span>，也是宝妈们最容易焦虑的地方。
+    记住一个核心原则：<strong>你不需要亲自动手，货代帮你搞定一切。</strong>
+  </p>
+
+  <div class="flow">
+    <div class="flow-node"><div class="flow-node-icon">🛒</div><div class="flow-node-label">1688下单</div></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node"><div class="flow-node-icon">🏭</div><div class="flow-node-label">货代收货</div></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node"><div class="flow-node-icon">🏷️</div><div class="flow-node-label">专业贴标</div></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node"><div class="flow-node-icon">✈️</div><div class="flow-node-label">国际发出</div></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node"><div class="flow-node-icon">💰</div><div class="flow-node-label">收款</div></div>
+  </div>
+
+  <div class="alert" style="background: #fef9c3; border-left: 4px solid #eab308;">
+    <div class="alert-icon">⏰</div>
+    <div class="alert-text" style="color: #713f12;">
+      <strong>发货时限必改！</strong>Ozon 后台默认发货时限是 2 天，新手务必改成 5 天。
+      厂家发货→货代收货→贴标→仓库扫描，每个环节都要时间。
+    </div>
+  </div>
+
+  <div class="step-item" style="background: #fff7ed; margin-bottom: 8px;">
+    <div class="step-num" style="background: #ea580c;">✓</div>
+    <div class="step-content">
+      <div class="step-title">下单时填货代地址，备注客户编号</div>
+      <div class="step-desc">货代会告诉你专属仓库地址，1688下单时直接填这个地址</div>
+    </div>
+  </div>
+  <div class="step-item" style="background: #fff7ed; margin-bottom: 8px;">
+    <div class="step-num" style="background: #ea580c;">✓</div>
+    <div class="step-content">
+      <div class="step-title">货代帮你打印平台标签贴货</div>
+      <div class="step-desc">别自己在家包快递！专业贴标是避免平台处罚的关键</div>
+    </div>
+  </div>
+  <div class="step-item" style="background: #fef2f2; margin-bottom: 8px;">
+    <div class="step-num" style="background: #dc2626;">✗</div>
+    <div class="step-content">
+      <div class="step-title">不要用黑货代！三个必问问题</div>
+      <div class="step-desc">① 帮不帮贴标？② 丢件怎么赔？③ 超重从多少克计费？</div>
+    </div>
+  </div>
+
+  <div class="golden-card" style="background: linear-gradient(135deg, #fef3c7, #fde68a); border-left: 4px solid #f59e0b;">
+    <div class="golden-icon">🏆</div>
+    <div>
+      <div class="golden-label" style="color: #92400e;">黄金准则 3</div>
+      <div class="golden-text" style="color: #78350f;">
+        货不过手，钱才到手。
+      </div>
+    </div>
+  </div>
+
+  <div class="watermark">www.crossly.cn — 跨境像微商一样简单</div>
+</div>
+
+<!-- ══ 第四章 ══════════════════════════════════ -->
+<div class="page">
+  <div class="chapter-header" style="background: linear-gradient(135deg, #fdf4ff, #fae8ff);">
+    <div class="chapter-icon">🔍</div>
+    <div>
+      <div class="chapter-num" style="color: #9333ea;">第四章</div>
+      <div class="chapter-title" style="color: #581c87;">选品逻辑<br>什么东西在全球卖得火？</div>
+    </div>
+  </div>
+
+  <p class="body-text">
+    选品是跨境的 <span class="highlight">第一生产力</span>。
+    货好不好，三分靠质量，七分靠选品。
+    新手选品最容易犯两个错：选自己喜欢的、选大牌仿品。
+    这两个错都能让你封店。
+  </p>
+
+  <div class="alert" style="background: #fef2f2; border-left: 4px solid #ef4444;">
+    <div class="alert-icon">🚫</div>
+    <div class="alert-text" style="color: #7f1d1d;">
+      <strong>碰了就封店的雷区：</strong>耐克、阿迪、迪士尼、任何 LOGO 仿品。
+      跨境平台对侵权零容忍，一次封号基本永久。
+    </div>
+  </div>
+
+  <div style="margin: 12px 0;">
+    <p style="font-size: 10pt; font-weight: 700; color: #374151; margin-bottom: 10px;">✅ 新手爆款品类参考：</p>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+      <div style="background: #fdf4ff; border: 1px solid #e9d5ff; border-radius: 10px; padding: 10px 12px;">
+        <div style="font-size: 18px; margin-bottom: 4px;">🧸</div>
+        <div style="font-size: 10pt; font-weight: 700; color: #581c87;">毛绒玩具/公仔</div>
+        <div style="font-size: 8.5pt; color: #7c3aed;">进价低·利润高·不易仿</div>
+      </div>
+      <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 10px 12px;">
+        <div style="font-size: 18px; margin-bottom: 4px;">💄</div>
+        <div style="font-size: 10pt; font-weight: 700; color: #14532d;">美甲/美容工具</div>
+        <div style="font-size: 8.5pt; color: #15803d;">轻小件·运费低·女性市场大</div>
+      </div>
+      <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; padding: 10px 12px;">
+        <div style="font-size: 18px; margin-bottom: 4px;">📱</div>
+        <div style="font-size: 10pt; font-weight: 700; color: #1e3a8a;">手机配件/支架</div>
+        <div style="font-size: 8.5pt; color: #1d4ed8;">刚需·复购高·SKU多</div>
+      </div>
+      <div style="background: #fff7ed; border: 1px solid #fed7aa; border-radius: 10px; padding: 10px 12px;">
+        <div style="font-size: 18px; margin-bottom: 4px;">🌙</div>
+        <div style="font-size: 10pt; font-weight: 700; color: #7c2d12;">氛围灯/小夜灯</div>
+        <div style="font-size: 8.5pt; color: #9a3412;">拍照好看·网红品·送礼佳品</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="golden-card" style="background: linear-gradient(135deg, #fef3c7, #fde68a); border-left: 4px solid #f59e0b;">
+    <div class="golden-icon">🏆</div>
+    <div>
+      <div class="golden-label" style="color: #92400e;">黄金准则 4</div>
+      <div class="golden-text" style="color: #78350f;">
+        选品看数据热度，不看个人喜好；<br>Crossly 推什么热门，你就优先试什么。
+      </div>
+    </div>
+  </div>
+
+  <div class="watermark">www.crossly.cn — 跨境像微商一样简单</div>
+</div>
+
+<!-- ══ 第五章 ══════════════════════════════════ -->
+<div class="page">
+  <div class="chapter-header" style="background: linear-gradient(135deg, #fef2f2, #fee2e2);">
+    <div class="chapter-icon">✂️</div>
+    <div>
+      <div class="chapter-num" style="color: #dc2626;">第五章</div>
+      <div class="chapter-title" style="color: #7f1d1d;">售后断臂术<br>新手最难过的一关</div>
+    </div>
+  </div>
+
+  <p class="body-text">
+    第一次有买家要退货，大部分新手的反应是：慌了。
+    但跨境老手会告诉你：<span class="highlight">退货是跨境最坑的陷阱之一。</span>
+    算一笔账，你就明白了。
+  </p>
+
+  <div class="formula">
+    <div class="formula-label">🧮 退货成本计算</div>
+    <div class="formula-text">
+      退货国际运费（寄回中国）：约 ¥80-150<br>
+      货物本身价值：¥15-30<br>
+      <span style="color: #dc2626;">结论：退货运费 > 货值，亏大了！</span>
+    </div>
+    <div class="formula-example">正确操作：在平台后台选「自动销毁」，退款给买家，比退货便宜太多</div>
+  </div>
+
+  <div style="margin: 12px 0;">
+    <div class="step-item" style="background: #fef2f2; margin-bottom: 8px;">
+      <div class="step-num" style="background: #dc2626;">1</div>
+      <div class="step-content">
+        <div class="step-title" style="color: #7f1d1d;">买家申请退货 → 选「自动销毁」</div>
+        <div class="step-desc">不要让货寄回中国，国际退货运费能亏死你</div>
+      </div>
+    </div>
+    <div class="step-item" style="background: #fef2f2; margin-bottom: 8px;">
+      <div class="step-num" style="background: #dc2626;">2</div>
+      <div class="step-content">
+        <div class="step-title" style="color: #7f1d1d;">退款成本 < 退货成本 → 直接退款</div>
+        <div class="step-desc">维护好评价，防止投诉，比省那点货值更重要</div>
+      </div>
+    </div>
+    <div class="step-item" style="background: #f0fdf4; margin-bottom: 8px;">
+      <div class="step-num" style="background: #16a34a;">✓</div>
+      <div class="step-content">
+        <div class="step-title" style="color: #14532d;">前期用"自动接受退款"设置</div>
+        <div class="step-desc">减少人工处理，节省精力，把时间花在选品上</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="golden-card" style="background: linear-gradient(135deg, #fef3c7, #fde68a); border-left: 4px solid #f59e0b;">
+    <div class="golden-icon">🏆</div>
+    <div>
+      <div class="golden-label" style="color: #92400e;">黄金准则 5</div>
+      <div class="golden-text" style="color: #78350f;">
+        断臂求生不丢人，<br>死磕退货运费才愚蠢。
+      </div>
+    </div>
+  </div>
+
+  <div class="watermark">www.crossly.cn — 跨境像微商一样简单</div>
+</div>
+
+<!-- ══ 第六章 ══════════════════════════════════ -->
+<div class="page">
+  <div class="chapter-header" style="background: linear-gradient(135deg, #eff6ff, #dbeafe);">
+    <div class="chapter-icon">🛠️</div>
+    <div>
+      <div class="chapter-num" style="color: #2563eb;">第六章</div>
+      <div class="chapter-title" style="color: #1e3a8a;">工具配置单<br>工欲善其事，必先利其器</div>
+    </div>
+  </div>
+
+  <p class="body-text">
+    跨境不需要十八般武艺，需要的是 <span class="highlight">把对的工具装在一起</span>。
+    以下是小学生亲测的新手黄金搭配，零成本起步，赚到钱再升级。
+  </p>
+
+  <div class="tool-grid">
+    <div class="tool-card" style="border-color: #c7d2fe; background: linear-gradient(135deg, #eef2ff, #e0e7ff);">
+      <div class="tool-icon">📦</div>
+      <div class="tool-name" style="color: #3730a3;">Crossly</div>
+      <div class="tool-role">选品看板<br>利润计算<br>AI翻译</div>
+      <div class="tool-tag" style="background: #818cf8; color: white;">免费·必装</div>
+    </div>
+    <div class="tool-card" style="border-color: #a7f3d0; background: linear-gradient(135deg, #f0fdf4, #dcfce7);">
+      <div class="tool-icon">⚡</div>
+      <div class="tool-name" style="color: #14532d;">秒手</div>
+      <div class="tool-role">1688→Ozon<br>一键上货<br>新手最简单</div>
+      <div class="tool-tag" style="background: #22c55e; color: white;">免费·新手选</div>
+    </div>
+    <div class="tool-card" style="border-color: #fde68a; background: linear-gradient(135deg, #fffbeb, #fef3c7);">
+      <div class="tool-icon">🌐</div>
+      <div class="tool-name" style="color: #78350f;">DeepL</div>
+      <div class="tool-role">标题翻译<br>描述优化<br>多语言</div>
+      <div class="tool-tag" style="background: #f59e0b; color: white;">免费额度</div>
+    </div>
+  </div>
+
+  <div class="alert" style="background: #eff6ff; border-left: 4px solid #3b82f6; margin-top: 10px;">
+    <div class="alert-icon">💡</div>
+    <div class="alert-text" style="color: #1e3a8a;">
+      <strong>推荐组合：</strong>Crossly 选品 → 秒手上货 → 货代发货 → 万里汇收款
+      这四步跑通，月入3000-10000元外币完全可以实现。
+    </div>
+  </div>
+
+  <div class="golden-card" style="background: linear-gradient(135deg, #fef3c7, #fde68a); border-left: 4px solid #f59e0b;">
+    <div class="golden-icon">🏆</div>
+    <div>
+      <div class="golden-label" style="color: #92400e;">黄金准则 6</div>
+      <div class="golden-text" style="color: #78350f;">
+        组合使用，效率翻倍；<br>别跟工具死磕，让工具为你干活。
+      </div>
+    </div>
+  </div>
+
+  <div class="watermark">www.crossly.cn — 跨境像微商一样简单</div>
+</div>
+
+<!-- ══ 尾页 ══════════════════════════════════ -->
+<div class="page end-page">
+  <div style="font-size: 48px; margin-bottom: 24px;">🎉</div>
+  <h2 style="font-size: 24pt; font-weight: 900; margin-bottom: 12px;">恭喜你看完了！</h2>
+  <p style="font-size: 12pt; color: rgba(255,255,255,0.6); max-width: 280px; line-height: 1.7; margin-bottom: 36px;">
+    看完手册还没底？加入「跨境小学生」交流群，阿柒每天在义乌北苑仓库答疑。
+    <br><br>
+    <strong style="color: #a78bfa;">不卖课，只带路，咱们群里见！</strong>
+  </p>
+
+  <div style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 20px; padding: 28px 32px; margin-bottom: 32px;">
+    <div style="font-size: 11pt; color: rgba(255,255,255,0.5); margin-bottom: 8px;">立即开始你的跨境之路</div>
+    <div style="font-size: 20pt; font-weight: 900; color: #a78bfa;">www.crossly.cn</div>
+    <div style="font-size: 10pt; color: rgba(255,255,255,0.4); margin-top: 6px;">免费注册 · 永不收费 · 只赚良心钱</div>
+  </div>
+
+  <div style="display: flex; gap: 20px; justify-content: center;">
+    <div style="text-align: center;">
+      <div style="font-size: 20pt; font-weight: 900; color: #a78bfa;">6</div>
+      <div style="font-size: 8pt; color: rgba(255,255,255,0.4);">章核心内容</div>
+    </div>
+    <div style="width: 1px; background: rgba(255,255,255,0.1);"></div>
+    <div style="text-align: center;">
+      <div style="font-size: 20pt; font-weight: 900; color: #60a5fa;">6</div>
+      <div style="font-size: 8pt; color: rgba(255,255,255,0.4);">条黄金准则</div>
+    </div>
+    <div style="width: 1px; background: rgba(255,255,255,0.1);"></div>
+    <div style="text-align: center;">
+      <div style="font-size: 20pt; font-weight: 900; color: #34d399;">∞</div>
+      <div style="font-size: 8pt; color: rgba(255,255,255,0.4);">永久免费</div>
+    </div>
+  </div>
+
+  <div class="cover-watermark">www.crossly.cn — 跨境像微商一样简单</div>
+</div>
+
+</body>
+</html>
