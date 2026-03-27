@@ -512,9 +512,16 @@ export default function Home() {
           { id: "guide",     icon: "📖", label: "新手" },
           { id: "hot",       icon: "🔥", label: "榜单" },
           { id: "products",  icon: "📦", label: "选品" },
-          { id: "course",    icon: "📚", label: "私房课" },
+          { id: "__mine__",  icon: user ? "👤" : "🔑", label: user ? "我的" : "登录" },
         ].map(item => (
-          <button key={item.id} onClick={() => setTab(item.id as Tab)}
+          <button key={item.id}
+            onClick={() => {
+              if (item.id === "__mine__") {
+                setShowLoginPrompt(true);
+              } else {
+                setTab(item.id as Tab);
+              }
+            }}
             className={`flex-1 flex flex-col items-center justify-center py-2 gap-0.5 transition-colors ${tab === item.id ? "text-white" : "text-white/40"}`}>
             <span className="text-lg leading-none">{item.icon}</span>
             <span className="text-[9px] font-medium">{item.label}</span>

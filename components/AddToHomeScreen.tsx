@@ -31,14 +31,29 @@ export function AddToHomeScreen() {
       return () => clearTimeout(t);
     }
 
-    // Android/Chrome: 监听安装事件
+    // 非iOS：检测是否支持 beforeinstallprompt（Chrome/Edge）
+    // UC/微信等不支持，也显示手动引导
+    let promptCaptured = false;
     const handler = (e: Event) => {
       e.preventDefault();
+      promptCaptured = true;
       setDeferredPrompt(e as BeforeInstallPromptEvent);
       setTimeout(() => setShow(true), 2000);
     };
     window.addEventListener("beforeinstallprompt", handler);
-    return () => window.removeEventListener("beforeinstallprompt", handler);
+
+    // 3秒后如果还没触发 beforeinstallprompt（UC/微信等），改用手动引导
+    const fallback = setTimeout(() => {
+      if (!promptCaptured) {
+        setIsIOS(false); // 用通用手动引导
+        setShow(true);
+      }
+    }, 4000);
+
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handler);
+      clearTimeout(fallback);
+    };
   }, []);
 
   const handleInstall = async () => {
@@ -75,27 +90,8 @@ export function AddToHomeScreen() {
           </button>
         </div>
 
-        {isIOS ? (
-          /* iOS：分步引导 */
-          <div className="px-4 py-3 space-y-2">
-            <p className="text-xs text-white/60 mb-3">按以下步骤，把 Crossly 装到手机桌面：</p>
-            {[
-              { step: "1", icon: "⬆️", text: '点底部工具栏的「分享」按钮' },
-              { step: "2", icon: "📲", text: '向下滑动，找到「添加到主屏幕」' },
-              { step: "3", icon: "✅", text: '点右上角「添加」，完成！' },
-            ].map(s => (
-              <div key={s.step} className="flex items-center gap-2.5">
-                <span className="text-xl flex-shrink-0">{s.icon}</span>
-                <p className="text-xs text-white/80">{s.text}</p>
-              </div>
-            ))}
-            <button onClick={handleDismiss}
-              className="w-full mt-2 py-2 text-xs text-white/40 hover:text-white/60 transition-colors">
-              我已经添加了，关闭
-            </button>
-          </div>
-        ) : (
-          /* Android/Chrome：一键安装 */
+        {deferredPrompt ? (
+          /* Chrome/Edge：一键安装 */
           <div className="px-4 py-3">
             <p className="text-xs text-white/60 mb-3">一键添加到手机桌面，随时打开，像 App 一样流畅</p>
             <div className="flex gap-2">
@@ -109,6 +105,44 @@ export function AddToHomeScreen() {
                 以后
               </button>
             </div>
+          </div>
+        ) : isIOS ? (
+          /* iOS Safari：分步引导 */
+          <div className="px-4 py-3 space-y-2.5">
+            <p className="text-xs text-white/60 mb-2">用 Safari 打开此页，按以下步骤：</p>
+            {[
+              { icon: "⬆️", text: '点底部中间的「分享」按钮（方框+箭头图标）' },
+              { icon: "📲", text: '向下滑，找「添加到主屏幕」并点击' },
+              { icon: "✅", text: '右上角点「添加」，完成！' },
+            ].map((s, i) => (
+              <div key={i} className="flex items-start gap-2.5">
+                <span className="text-lg flex-shrink-0 mt-0.5">{s.icon}</span>
+                <p className="text-xs text-white/80">{s.text}</p>
+              </div>
+            ))}
+            <button onClick={handleDismiss}
+              className="w-full mt-1 py-2 text-xs text-white/40 hover:text-white/60 transition-colors">
+              我已经添加了，关闭
+            </button>
+          </div>
+        ) : (
+          /* UC/微信等其他浏览器：通用引导 */
+          <div className="px-4 py-3 space-y-2.5">
+            <p className="text-xs text-white/60 mb-2">把 Crossly 装到手机桌面，随时打开：</p>
+            {[
+              { icon: "⋯", text: '点浏览器右上角「···」或「⋮」菜单' },
+              { icon: "📲", text: '找「添加到桌面」或「添加到主屏幕」' },
+              { icon: "✅", text: '确认添加，桌面就有图标了！' },
+            ].map((s, i) => (
+              <div key={i} className="flex items-start gap-2.5">
+                <span className={`flex-shrink-0 mt-0.5 ${i === 0 ? "text-base font-black text-white/60 w-5 text-center" : "text-lg"}`}>{s.icon}</span>
+                <p className="text-xs text-white/80">{s.text}</p>
+              </div>
+            ))}
+            <button onClick={handleDismiss}
+              className="w-full mt-1 py-2 text-xs text-white/40 hover:text-white/60 transition-colors">
+              我已经添加了，关闭
+            </button>
           </div>
         )}
       </div>
