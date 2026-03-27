@@ -682,99 +682,107 @@ function ExtensionInstallModal({ onClose }: { onClose: () => void }) {
 // ────────────────────────────────────────────────────────────
 const COURSES = [
   {
-    id: 1,
-    tag: "📦 发货篇",
-    tagColor: "bg-orange-100 text-orange-600",
+    id: 1, tag: "📦 发货篇", tagColor: "bg-orange-100 text-orange-600",
     title: "《小学生带你跑遍北苑仓库：发货最后一公里》",
-    desc: "我在义乌北苑，仓库就在脚下。这节课我带你从1688下单→货代收货→贴标→发往全球，全程手把手，你在家就像站在义乌一样。",
-    author: "小学生",
-    avatar: "👨‍💼",
-    duration: "23分钟",
-    type: "📖 图文详解",
-    free: true,
-    hot: true,
-    steps: ["1688下单填货代地址", "货代仓库收货贴标", "RETS/SLS物流发出", "买家签收你收钱"],
+    desc: "我在义乌北苑，仓库就在脚下。从1688下单→货代收货→贴标→发往全球，全程手把手。",
+    duration: "23分钟", type: "📖 图文详解", free: true, hot: true,
+    banner: ["🛒","→","🏭","→","🏷️","→","✈️","→","💰"],
+    bannerLabels: ["1688下单","","货代收货","","贴Ozon标","","发出国际","","收钱！"],
+    steps: [
+      { img: "🛒", title: "第1步：1688下单填货代地址", detail: "在1688找好货 → 下单时「收货地址」填货代仓库地址 → 备注写上你的客户编号，货代才知道是你的货" },
+      { img: "🏭", title: "第2步：货代仓库收货贴标", detail: "货代收到货后，帮你拆包检查 → 打印Ozon/Shopee条形码贴上去 → 重新打包。你全程不用动手，一个微信截图就搞定" },
+      { img: "✈️", title: "第3步：选对物流发出", detail: "Ozon选RETS跨境快线（¥25-50/500g，5-10天）；Shopee选SLS（¥2-8/500g，7-14天）。货代会帮你选最优惠线路" },
+      { img: "📍", title: "第4步：平台填追踪单号", detail: "货代给你单号 → 复制到Ozon/Shopee卖家后台填入 → 买家可以自己查进度，你不用一个一个回复" },
+      { img: "💰", title: "第5步：买家签收，收钱！", detail: "买家确认收货后平台打款：Ozon约14天，Shopee约7天，TikTok约3-7天。用万里汇提现到国内银行卡" },
+    ],
   },
   {
-    id: 2,
-    tag: "🔍 选品篇",
-    tagColor: "bg-blue-100 text-blue-600",
+    id: 2, tag: "🔍 选品篇", tagColor: "bg-blue-100 text-blue-600",
     title: "《不懂货的新手，如何在义乌1小时选出3款爆品》",
-    desc: "我在义乌每天逛市场，帮你踩坑。毛绒/棉花娃娃/家居哪个好卖？货代老板娘告诉我的秘密，今天全部说给你听。",
-    author: "小学生",
-    avatar: "👨‍💼",
-    duration: "18分钟",
-    type: "📖 图文详解",
-    free: true,
-    hot: true,
-    steps: ["从1688热搜词找方向", "对比3家看买家评价", "先拍5件测款不压货", "跑通后再加量"],
+    desc: "不用去义乌，不用逛市场。用手机30分钟找出海外热卖商品，货代老板娘的选品秘诀全在这里。",
+    duration: "18分钟", type: "📖 图文详解", free: true, hot: true,
+    banner: ["🔥","→","📊","→","🛒","→","🧪","→","🚀"],
+    bannerLabels: ["找热词","","看销量","","选3款","","测5件","","爆单"],
+    steps: [
+      { img: "🔥", title: "第1步：找热词（用Crossly选品参考）", detail: "打开Crossly「选品参考」→ 选品类（比如毛绒玩具）→ 点🔥热门关键词 → 点「搜」直达1688。这些词是有真实买家在搜的" },
+      { img: "📊", title: "第2步：看月销量排序", detail: "1688搜索结果 → 点「销量」排序 → 找月销1000+的款 → 看买家评价里的买家秀图片（真实质量参考）" },
+      { img: "🔍", title: "第3步：对比3家供货商", detail: "同款找3家比价 → 看：月销量/买家晒图/发货速度/是否支持混批。月销>1000、买家秀>50张的更可信" },
+      { img: "🧪", title: "第4步：先拍5件测款", detail: "新款不要一次进太多！先拍5件 → 发货 → 出单了再加量。亏也就亏200-300元，换来真实市场数据" },
+      { img: "🚀", title: "第5步：跑通后批量铺货", detail: "测款成功 → 加量20-50件 → 同款多颜色/规格 → 复制到Ozon+Shopee同步铺货 → 利润翻倍" },
+    ],
   },
   {
-    id: 3,
-    tag: "💰 定价篇",
-    tagColor: "bg-green-100 text-green-600",
+    id: 3, tag: "💰 定价篇", tagColor: "bg-green-100 text-green-600",
     title: "《宝妈必看：第一件商品定多少钱才不亏？》",
-    desc: "很多新手第一单都亏了——不是货不好，是价格没算对。我给你一个傻瓜公式：进价×3 + 运费 = 保本线，看这节课搞定定价恐惧症。",
-    author: "小学生",
-    avatar: "👨‍💼",
-    duration: "12分钟",
-    type: "📖 图文详解",
-    free: true,
-    steps: ["进价×3=最低保本价", "加上头程运费", "参考同款竞品报价", "利润<30%换个款"],
+    desc: "很多新手第一单亏了——不是货不好，是价格没算对。一个傻瓜公式搞定定价恐惧症。",
+    duration: "12分钟", type: "📖 图文详解", free: true,
+    banner: ["💴","+","✈️","+","📦","=","💰"],
+    bannerLabels: ["进价","","运费","","平台费","","售价"],
+    steps: [
+      { img: "💴", title: "第1步：确认进价", detail: "1688拿货价就是进价。比如：一个毛绒玩具，1688进价¥18/件。注意最小起订量是多少件" },
+      { img: "✈️", title: "第2步：加头程运费（每件）", detail: "Ozon（俄罗斯）RETS：约¥30/件；Shopee（东南亚）：约¥5/件。这是每件商品必须承担的固定成本" },
+      { img: "📦", title: "第3步：算平台佣金", detail: "Ozon约10-15%；Shopee约2-6%；TikTok约2-8%。把这个比例算进去，定价要覆盖" },
+      { img: "🧮", title: "📌 傻瓜公式", detail: "建议售价 = (进价 + 头程运费) × 3\n例：进价¥18 + 运费¥30 = 成本¥48 × 3 = 售价¥144（约1600卢布）\n利润率约33%，扣佣金后净利约20-25%" },
+      { img: "⚠️", title: "红线：利润<20%就换款", detail: "算出来净利润低于20%就放弃这款，换进价更低的。跨境利润太薄，汇率一波动就亏了" },
+    ],
   },
   {
-    id: 4,
-    tag: "🌍 平台篇",
-    tagColor: "bg-purple-100 text-purple-600",
+    id: 4, tag: "🌍 平台篇", tagColor: "bg-purple-100 text-purple-600",
     title: "《Ozon vs Shopee vs TikTok Shop：新手到底选哪个？》",
-    desc: "三个平台我都做过，优缺点我清楚。俄罗斯单价高但路途远，东南亚走量但价格战；不同阶段选不同平台，这节课帮你做决定。",
-    author: "小学生",
-    avatar: "👨‍💼",
-    duration: "15分钟",
-    type: "📖 图文详解",
-    free: true,
-    steps: ["新手首选Ozon（利润高）", "有视频能力选TikTok", "走量补仓选Shopee", "慢慢多平台铺开"],
+    desc: "三个平台优缺点一图看懂。不同阶段选不同平台，这节课帮你做决定。",
+    duration: "15分钟", type: "📖 图文详解", free: true,
+    banner: ["🇷🇺","VS","🌏","VS","🎵"],
+    bannerLabels: ["Ozon","","Shopee","","TikTok"],
+    steps: [
+      { img: "🇷🇺", title: "Ozon（俄罗斯）：新手首选 🏆", detail: "✅ 竞争小、利润高30-50%、客单价高\n⚠️ 需科学上网、物流贵¥30+/件、语言障碍（AI翻译解决）\n👉 新手第一站选Ozon，蓝海市场，最容易赚第一桶金" },
+      { img: "🌏", title: "Shopee（东南亚）：走量之选", detail: "✅ 运费超便宜¥2-8/件、国内直连不需科学上网\n⚠️ 价格战激烈、利润薄15-25%、退货率高\n👉 先跑通Ozon，再加上Shopee走量" },
+      { img: "🎵", title: "TikTok Shop：内容创作者选", detail: "✅ 佣金最低2-8%、爆单快\n⚠️ 必须有视频内容、流量不稳定\n👉 会拍短视频的选它；不会的先跳过" },
+      { img: "📋", title: "推荐开店顺序", detail: "第1阶段：只做Ozon，跑通第一单\n第2阶段：Ozon稳定后加Shopee\n第3阶段：多平台铺开，Crossly一键同步\n❌ 不建议同时开三个，精力分散三个都做不好" },
+    ],
   },
   {
-    id: 5,
-    tag: "📸 图片篇",
-    tagColor: "bg-pink-100 text-pink-600",
+    id: 5, tag: "📸 图片篇", tagColor: "bg-pink-100 text-pink-600",
     title: "《用手机拍出爆款主图：不需要摄影基础》",
-    desc: "1688的图片能直接发吗？答案：不能！我教你用手机5分钟拍一张比供应商更好看的主图，白底背景、光线、角度，全套白话教学。",
-    author: "小学生",
-    avatar: "👨‍💼",
-    duration: "10分钟",
-    type: "📖 图文详解",
-    free: true,
-    steps: ["白色A4纸当背景", "手机开人像模式", "自然光靠窗拍", "用Crossly一键压缩上传"],
+    desc: "1688的图片不能直接用！教你5分钟用手机拍一张比供应商更好看的白底主图。",
+    duration: "10分钟", type: "📖 图文详解", free: true,
+    banner: ["📦","→","🤳","→","✂️","→","🖼️"],
+    bannerLabels: ["收到货","","手机拍","","AI抠图","","完美主图"],
+    steps: [
+      { img: "🏠", title: "第1步：布置拍摄场景（30秒）", detail: "找一张白色A4纸铺在桌上当背景 → 靠近窗户利用自然光 → 不要开室内灯（会有黄色色差）→ 商品放纸中央" },
+      { img: "📱", title: "第2步：手机拍摄技巧", detail: "开「人像模式」→ 商品占画面80%以上 → 从正面/45度/俯视各拍一张 → 选最清晰的那张" },
+      { img: "✂️", title: "第3步：AI一键抠图换白底", detail: "打开 remove.bg（免费）→ 上传照片 → 5秒自动抠图换白底 → 下载。平台要求白底主图，这步必做" },
+      { img: "📏", title: "第4步：裁剪压缩", detail: "手机相册「编辑」裁成正方形1:1 → 用TinyPNG.com免费压缩文件大小 → 上传更快、不影响画质" },
+      { img: "🚫", title: "主图5大禁忌（必看）", detail: "❌ 不能有水印（平台降权）\n❌ 不能有促销文字（违规）\n❌ 不能直接用供应商图（可能侵权）\n❌ 背景不能有其他物品\n✅ 白底、居中、清晰、真实" },
+    ],
   },
   {
-    id: 6,
-    tag: "🤝 货代篇",
-    tagColor: "bg-teal-100 text-teal-600",
+    id: 6, tag: "🤝 货代篇", tagColor: "bg-teal-100 text-teal-600",
     title: "《怎么找到靠谱货代？避开黑货代的5个套路》",
-    desc: "我在义乌见过太多宝妈被黑货代坑：货丢了、延误了、乱收费。这节课我教你识别好货代的3个标准，还有我用过的靠谱货代推荐。",
-    author: "小学生",
-    avatar: "👨‍💼",
-    duration: "20分钟",
-    type: "📖 图文详解",
-    free: false,
-    steps: ["先问：有没有贴标服务", "再问：丢件赔偿政策", "最后：先发5件试合作", "跑通再批量合作"],
+    desc: "在义乌见过太多宝妈被黑货代坑：货丢了、延误了、乱收费。识别好货代的3个标准在这里。",
+    duration: "20分钟", type: "📖 图文详解", free: false,
+    banner: ["🔍","→","✅","→","🧪","→","🤝"],
+    bannerLabels: ["找货代","","问3问题","","先发5件","","长期合作"],
+    steps: [
+      { img: "🔍", title: "第1步：怎么找货代", detail: "微信/抖音搜「义乌Ozon货代」或「义乌Shopee货代」→ 加微信询价 → 同时联系3-5家对比价格和服务" },
+      { img: "❓", title: "第2步：必问的3个问题", detail: "① 帮不帮贴平台标签？（不贴标的不用）\n② 丢件怎么赔偿？（要书面保证）\n③ 超重从多少克开始计费？（问清楚避免后期纠纷）" },
+      { img: "🚨", title: "黑货代的5个套路", detail: "① 先低价后乱加费\n② 故意称错重量多收钱\n③ 丢件说「正常损耗」不赔\n④ 贴标错误导致平台处罚\n⑤ 货代突然跑路（义乌真实案例）" },
+      { img: "🧪", title: "第3步：先发5件测合作", detail: "第一次合作先发5件 → 确认：货物完好/时效准确/贴标正确 → 确认靠谱再批量合作" },
+    ],
   },
   {
-    id: 7,
-    tag: "🛠️ 工具篇",
-    tagColor: "bg-indigo-100 text-indigo-600",
+    id: 7, tag: "🛠️ 工具篇", tagColor: "bg-indigo-100 text-indigo-600",
     title: "《全网对比：店小秘 vs 秒手 vs 芒果店长，新手宝妈到底用哪个？》",
-    desc: "小学生亲口告诉你：我把这三个工具都用了一遍，结论很简单——新手用秒手，多平台老手用店小秘，Crossly帮你选品算利润，秒手帮你上货，这才是省钱省力的黄金搭配。",
-    author: "小学生",
-    avatar: "👨‍💼",
-    duration: "25分钟",
-    type: "📖 图文详解",
-    free: true,
-    hot: true,
-    steps: ["秒手：Ozon新手专属，一键上货最傻瓜", "店小秘：多平台必备，有经验再用", "芒果店长：功能强但贵，月入过万再升级", "Crossly：选品+算利润，搭配任何上货工具用"],
-  }
+    desc: "把三个工具都研究了一遍，结论很简单——用Crossly选品，用秒手上货，这是新手黄金搭配。",
+    duration: "25分钟", type: "📖 图文详解", free: true, hot: true,
+    banner: ["🏆","🥈","🥉"],
+    bannerLabels: ["秒手·新手首选","店小秘·多平台","芒果·进阶用"],
+    steps: [
+      { img: "⚡", title: "🏆 秒手：新手首选（力荐）", detail: "专为Ozon设计，界面最简单。1688找好商品 → 复制链接给秒手 → 一键上架Ozon，信息自动填入。新手5分钟能学会" },
+      { img: "🗂️", title: "🥈 店小秘：多平台必备", detail: "支持Ozon+Shopee+Lazada+TikTok多平台管理，功能全但略复杂。建议：先用秒手跑通Ozon第一单，再升级到店小秘" },
+      { img: "🥭", title: "🥉 芒果店长：进阶用户", detail: "功能最强价格也最贵，有数据分析/库存/自动补货。月流水过万、SKU超100个再考虑，新手完全不需要" },
+      { img: "🎯", title: "💡 推荐搭配", detail: "✅ Crossly → 选品+算利润（免费）\n✅ 秒手 → 从1688一键上货到Ozon（免费）\n✅ 店小秘 → 做多平台后升级\n\n零成本起步，赚到钱再考虑付费工具" },
+    ],
+  },
 ];
 
 function CoursePage() {
@@ -833,33 +841,48 @@ function CoursePage() {
               </div>
             </button>
             {openId === course.id && (
-              <div className="px-4 pb-4 border-t border-gray-50">
-                <p className="text-xs text-gray-600 leading-relaxed mt-3 mb-3">{course.desc}</p>
-                <div className="bg-gray-50 rounded-xl p-3 mb-3">
-                  <p className="text-[10px] font-bold text-gray-500 mb-2">📋 你将学到</p>
-                  <div className="space-y-1">
-                    {course.steps.map((s, i) => (
-                      <div key={i} className="flex items-center gap-2 text-xs text-gray-700">
-                        <span className="w-4 h-4 rounded-full bg-orange-100 text-orange-600 text-[9px] font-bold flex items-center justify-center flex-shrink-0">{i+1}</span>
-                        {s}
+              <div className="border-t border-gray-50">
+                {/* 流程图横幅 */}
+                {course.banner && (
+                  <div className="flex items-center justify-center gap-1 bg-gray-50 px-4 py-2.5 overflow-x-auto">
+                    {course.banner.map((icon: string, i: number) => (
+                      <div key={i} className="flex flex-col items-center flex-shrink-0">
+                        <span className={`${icon === "→" || icon === "+" || icon === "=" || icon === "VS" ? "text-gray-300 text-sm" : "text-xl"}`}>{icon}</span>
+                        {course.bannerLabels?.[i] && <span className="text-[8px] text-gray-400 mt-0.5 whitespace-nowrap">{course.bannerLabels[i]}</span>}
                       </div>
                     ))}
                   </div>
-                </div>
-                {course.free ? (
-                  <button
-                    onClick={() => setOpenId(null)}
-                    className="w-full py-2 rounded-xl text-xs font-medium text-gray-400 border border-gray-100 hover:bg-gray-50 transition-colors">
-                    已读完 · 收起 ▲
-                  </button>
-                ) : (
-                  <div className="text-center">
-                    <p className="text-xs text-gray-400 mb-2">给 Crossly 充电 ¥9.9 解锁全部课程</p>
-                    <button className="w-full py-2.5 rounded-xl text-sm font-bold text-white bg-gray-800">
-                      🔋 充电解锁
-                    </button>
-                  </div>
                 )}
+                <div className="px-4 pb-4 pt-3 space-y-3">
+                  <p className="text-xs text-gray-500 leading-relaxed bg-orange-50 rounded-xl px-3 py-2.5 border-l-2 border-orange-300">
+                    💬 {course.desc}
+                  </p>
+                  {/* 图文步骤卡片 */}
+                  {course.steps.map((s: {img: string; title: string; detail: string}, i: number) => (
+                    <div key={i} className="flex gap-3 bg-white border border-gray-100 rounded-xl p-3 shadow-sm">
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-50 to-amber-50 border border-orange-100 flex items-center justify-center text-xl flex-shrink-0">
+                        {s.img}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-bold text-gray-900 mb-1">{s.title}</p>
+                        <p className="text-[11px] text-gray-500 leading-relaxed whitespace-pre-line">{s.detail}</p>
+                      </div>
+                    </div>
+                  ))}
+                  {course.free ? (
+                    <button onClick={() => setOpenId(null)}
+                      className="w-full py-2 rounded-xl text-xs font-medium text-gray-400 border border-gray-100 hover:bg-gray-50 transition-colors">
+                      已读完 · 收起 ▲
+                    </button>
+                  ) : (
+                    <div className="text-center">
+                      <p className="text-xs text-gray-400 mb-2">给 Crossly 充电 ¥9.9 解锁全部课程</p>
+                      <button className="w-full py-2.5 rounded-xl text-sm font-bold text-white bg-gray-800">
+                        🔋 充电解锁
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>
