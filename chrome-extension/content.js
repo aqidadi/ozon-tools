@@ -42,6 +42,15 @@ history.pushState = function(...args) { _origPush(...args); setTimeout(checkAndI
 history.replaceState = function(...args) { _origReplace(...args); setTimeout(checkAndInjectOzonPanel, 1000); };
 window.addEventListener("popstate", () => setTimeout(checkAndInjectOzonPanel, 1000));
 
+// 立即执行一次（处理直接打开页面的情况）
+if (location.href.includes("seller.ozon.ru")) {
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => setTimeout(checkAndInjectOzonPanel, 1000));
+  } else {
+    setTimeout(checkAndInjectOzonPanel, 1000);
+  }
+}
+
 // ═══════════════════════════════════════════════════
 // 工具函数
 // ═══════════════════════════════════════════════════

@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Crossly 全能管家",
-  "version": "1.9.2",
+  "version": "1.9.3",
   "description": "跨境小学生全能管家：1688采集+Ozon后台一键装修+仓库参数配置+俄语取名助手",
   "permissions": ["activeTab", "storage", "clipboardWrite", "scripting"],
   "host_permissions": [
