@@ -690,7 +690,7 @@ const COURSES = [
     author: "小学生",
     avatar: "👨‍💼",
     duration: "23分钟",
-    type: "🎬 短视频",
+    type: "📖 图文详解",
     free: true,
     hot: true,
     steps: ["1688下单填货代地址", "货代仓库收货贴标", "RETS/SLS物流发出", "买家签收你收钱"],
@@ -704,7 +704,7 @@ const COURSES = [
     author: "小学生",
     avatar: "👨‍💼",
     duration: "18分钟",
-    type: "🎙️ 语音课",
+    type: "📖 图文详解",
     free: true,
     hot: true,
     steps: ["从1688热搜词找方向", "对比3家看买家评价", "先拍5件测款不压货", "跑通后再加量"],
@@ -718,7 +718,7 @@ const COURSES = [
     author: "小学生",
     avatar: "👨‍💼",
     duration: "12分钟",
-    type: "🎙️ 语音课",
+    type: "📖 图文详解",
     free: true,
     steps: ["进价×3=最低保本价", "加上头程运费", "参考同款竞品报价", "利润<30%换个款"],
   },
@@ -731,7 +731,7 @@ const COURSES = [
     author: "小学生",
     avatar: "👨‍💼",
     duration: "15分钟",
-    type: "🎬 短视频",
+    type: "📖 图文详解",
     free: true,
     steps: ["新手首选Ozon（利润高）", "有视频能力选TikTok", "走量补仓选Shopee", "慢慢多平台铺开"],
   },
@@ -744,7 +744,7 @@ const COURSES = [
     author: "小学生",
     avatar: "👨‍💼",
     duration: "10分钟",
-    type: "🎬 短视频",
+    type: "📖 图文详解",
     free: true,
     steps: ["白色A4纸当背景", "手机开人像模式", "自然光靠窗拍", "用Crossly一键压缩上传"],
   },
@@ -757,7 +757,7 @@ const COURSES = [
     author: "小学生",
     avatar: "👨‍💼",
     duration: "20分钟",
-    type: "🎙️ 语音课",
+    type: "📖 图文详解",
     free: false,
     steps: ["先问：有没有贴标服务", "再问：丢件赔偿政策", "最后：先发5件试合作", "跑通再批量合作"],
   },
@@ -770,7 +770,7 @@ const COURSES = [
     author: "小学生",
     avatar: "👨‍💼",
     duration: "25分钟",
-    type: "🎬 短视频",
+    type: "📖 图文详解",
     free: true,
     hot: true,
     steps: ["秒手：Ozon新手专属，一键上货最傻瓜", "店小秘：多平台必备，有经验再用", "芒果店长：功能强但贵，月入过万再升级", "Crossly：选品+算利润，搭配任何上货工具用"],
@@ -847,7 +847,7 @@ function CoursePage() {
                 {course.free ? (
                   <button className="w-full py-2.5 rounded-xl text-sm font-bold text-white"
                     style={{ background: "linear-gradient(135deg, #ea580c, #dc2626)" }}>
-                    🎬 立即观看（完全免费）
+                    📖 查看图文教程（完全免费）
                   </button>
                 ) : (
                   <div className="text-center">
