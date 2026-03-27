@@ -253,63 +253,49 @@ function InviteModal({ onClose }: { onClose: () => void }) {
 // ── 升级弹窗 ──────────────────────────────────────────────
 function UpgradeModal({ onClose, user }: { onClose: () => void; user: { email: string } }) {
   const plans = [
-    { name: "月度 Pro", price: "¥9.9", period: "/月", tag: "推广价", months: 1 },
-    { name: "季度 Pro", price: "¥19.9", period: "/3月", tag: "省¥9.8", months: 3 },
-    { name: "年度 Pro", price: "¥69", period: "/年", tag: "最划算", months: 12 },
+    { emoji: "🧋", name: "喝杯奶茶", price: "¥9.9", period: "跑1天服务器", tag: "", highlight: false },
+    { emoji: "🍱", name: "一顿午饭", price: "¥19.9", period: "感谢最多 🙏", tag: "感谢最多", highlight: true },
+    { emoji: "💪", name: "一年支持", price: "¥69", period: "最强后盾", tag: "", highlight: false },
   ];
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-xs">
-        <div className="px-4 pt-4 pb-2 flex items-center justify-between">
-          <h2 className="text-sm font-bold text-gray-900 flex items-center gap-1.5">
-            <Crown size={14} className="text-yellow-500" />给 Crossly 充电 ⚡
-          </h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
-            <X size={16} />
-          </button>
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={onClose}>
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden" onClick={e => e.stopPropagation()}>
+        {/* 关闭 */}
+        <div className="flex justify-end px-4 pt-3">
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><X size={16} /></button>
         </div>
 
-        {/* 升级亮点 */}
-        <div className="mx-4 mb-3">
-          <p className="text-[10px] text-center text-gray-400 mb-2">给 Crossly 充电，解锁全部能量 ⚡</p>
-          <div className="grid grid-cols-2 gap-1.5">
-            {[
-              { icon: "♾️", text: "无限商品导入", sub: "免费只有100个" },
-              { icon: "🤖", text: "AI自动翻译标题", sub: "一键生成外文文案" },
-              { icon: "🖼️", text: "批量生成朋友圈海报", sub: "一键发给宝妈群" },
-              { icon: "📊", text: "利润计算器·不限次", sub: "每款都算清楚再发货" },
-              { icon: "🌏", text: "多平台一键同步", sub: "Ozon/Shopee/TikTok" },
-              { icon: "💌", text: "专属客服优先响应", sub: "有问题秒回" },
-            ].map(f => (
-              <div key={f.text} className="flex items-start gap-1.5 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl px-2.5 py-2">
-                <span className="text-base flex-shrink-0">{f.icon}</span>
-                <div>
-                  <p className="text-[11px] font-bold text-gray-800">{f.text}</p>
-                  <p className="text-[9px] text-gray-400">{f.sub}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+        {/* 标题区 */}
+        <div className="text-center px-6 pb-4">
+          <div className="text-4xl mb-2">🔋</div>
+          <h2 className="text-lg font-black text-gray-900 mb-1">给 Crossly 充个电？</h2>
+          <p className="text-xs text-gray-500 leading-relaxed">
+            所有功能永远免费开放。但服务器、AI翻译都需要成本。<br/>
+            <span className="text-pink-500 font-semibold">如果帮到了你，请支持我们活下去 ❤️</span>
+          </p>
         </div>
 
-        {/* 套餐列表 */}
-        <div className="px-4 pb-2 space-y-1.5">
+        {/* 三档套餐横排 */}
+        <div className="grid grid-cols-3 gap-2 px-4 mb-4">
           {plans.map(plan => (
-            <div key={plan.name} className={`border rounded-lg px-3 py-2 flex items-center justify-between ${plan.tag === "最划算" ? "border-blue-300 bg-blue-50" : "border-gray-200"}`}>
-              <div>
-                <span className="text-sm font-semibold text-gray-800">{plan.name}</span>
-                {plan.tag && <span className="ml-1.5 text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full">{plan.tag}</span>}
-              </div>
-              <div className="text-right">
-                <span className="text-sm font-bold text-gray-900">{plan.price}</span>
-                <span className="text-[10px] text-gray-400 ml-1">{plan.period}</span>
+            <div key={plan.name} className="relative">
+              {plan.highlight && (
+                <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 z-10">
+                  <span className="text-[9px] font-bold text-white bg-pink-500 px-2 py-0.5 rounded-full whitespace-nowrap">感谢最多</span>
+                </div>
+              )}
+              <div className={`rounded-2xl border-2 px-2 py-3 text-center ${plan.highlight ? "border-pink-400 bg-pink-50" : "border-gray-100 bg-gray-50"}`}>
+                <div className="text-2xl mb-1">{plan.emoji}</div>
+                <p className="text-[11px] text-gray-600 mb-1">{plan.name}</p>
+                <p className={`text-lg font-black ${plan.highlight ? "text-pink-500" : "text-gray-800"}`}>{plan.price}</p>
+                <p className="text-[9px] text-gray-400 mt-0.5">{plan.period}</p>
               </div>
             </div>
           ))}
         </div>
 
-        {/* 支付宝收款码 */}
+        {/* 支付区 */}
         <div className="mx-4 mb-3">
           <div className="bg-blue-50 border border-blue-100 rounded-xl p-3">
             <p className="text-xs font-semibold text-blue-700 mb-2 text-center">扫码付款 · 支付宝</p>
@@ -331,7 +317,7 @@ function UpgradeModal({ onClose, user }: { onClose: () => void; user: { email: s
             </div>
             <div className="bg-white rounded-lg px-3 py-2 space-y-1">
               <p className="text-[11px] text-gray-600 flex items-center gap-1">
-                <span className="text-blue-500 font-bold">1.</span> 扫码付款，备注填写你的邮箱
+                <span className="text-blue-500 font-bold">1.</span> 付款后，备注填写你的邮箱
               </p>
               <p className="text-[11px] text-gray-600 flex items-center gap-1">
                 <span className="text-blue-500 font-bold">2.</span> 邮箱：<strong className="text-gray-800 break-all">{user.email}</strong>
@@ -340,7 +326,7 @@ function UpgradeModal({ onClose, user }: { onClose: () => void; user: { email: s
                 <span className="text-blue-500 font-bold">3.</span> 付款截图发至 <strong className="text-blue-600">aqiliaobi@163.com</strong>
               </p>
               <p className="text-[11px] text-gray-600 flex items-center gap-1">
-                <span className="text-blue-500 font-bold">4.</span> 24小时内手动激活会员
+                <span className="text-blue-500 font-bold">4.</span> 24小时内手动激活，感谢支持 ❤️
               </p>
             </div>
           </div>
