@@ -321,17 +321,11 @@ function UpgradeModal({ onClose, user }: { onClose: () => void; user: { email: s
           <div className="bg-blue-50 border border-blue-100 rounded-xl p-3">
             <p className="text-xs font-semibold text-blue-700 mb-2 text-center">扫码付款 · 支付宝</p>
 
-            {/* 手机用户：截图扫码提示 */}
-            <div className="flex items-center gap-2 w-full bg-blue-500 text-white font-bold text-sm py-3 rounded-xl mb-3 justify-center">
-              <span className="text-lg">📸</span>
-              <span>截图保存 → 打开支付宝扫一扫</span>
-            </div>
-
             {/* 电脑用户：扫二维码 */}
-            <p className="text-[10px] text-center text-gray-400 mb-2">— 或者用电脑扫码 —</p>
+            <p className="text-[11px] text-center text-gray-500 font-medium mb-2">📱 手机用户：长按下方二维码图片 → 识别图中二维码</p>
             <div className="flex justify-center mb-2">
               <img src="/alipay-qr.jpg" alt="支付宝收款码"
-                className="w-36 h-36 object-contain rounded-lg border border-blue-200" />
+                className="w-48 h-48 object-contain rounded-lg border border-blue-200" />
             </div>
             <div className="bg-white rounded-lg px-3 py-2 space-y-1">
               <p className="text-[11px] text-gray-600 flex items-center gap-1">
