@@ -94,14 +94,8 @@
       <div id="collect-content"></div>
     </div>
 
-    <!-- 刊登 Tab -->
-    <div class="panel" id="panel-publish">
-      <div id="ozon-key-status" class="st-err">⚠️ 未配置 Ozon Key，去「我的」Tab 填写</div>
-      <div class="sec">当前已采集商品</div>
-      <div id="publish-product" class="tip">还没采集，先去「采集」Tab 抓一个</div>
-      <div id="publish-lock" class="lock-mask" style="display:none;">🔒 刊登功能需要会员 — <span style="text-decoration:underline;cursor:pointer;" id="goto-upgrade">去充电 ¥9.9</span></div>
-      <button class="btn btn-primary" id="btn-publish">🚀 一键刊登到 Ozon</button>
-    </div>
+    <!-- 刊登 Tab（内容由 JS 动态渲染） -->
+    <div class="panel" id="panel-publish"></div>
 
     <!-- 工具 Tab -->
     <div class="panel" id="panel-tools">

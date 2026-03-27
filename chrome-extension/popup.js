@@ -267,35 +267,102 @@ async function initCollectTab() {
 // ── 刊登 Tab ─────────────────────────────────────
 async function initPublishTab() {
   await loadState();
-  const statusEl = $("ozon-key-status");
-  if (_state.ozonClientId && _state.ozonApiKey) {
-    statusEl.textContent = `✅ Ozon 账号已配置 (ID: ${_state.ozonClientId})`;
-    statusEl.className = "st-ok";
-  } else {
-    statusEl.textContent = "⚠️ 未配置 Ozon Key，去「我的」Tab 填写";
-    statusEl.className = "st-err";
+  const panel = $("panel-publish");
+
+  // 加载保存的价格参数
+  const priceConf = await chrome.storage.local.get(["priceRate","priceShipping","priceMargin"]);
+  const savedRate = priceConf.priceRate || 12;
+  const savedShip = priceConf.priceShipping || 15;
+  const savedMargin = priceConf.priceMargin || 50;
+
+  const p = _state.lastProduct;
+  const cnyPrice = parseFloat(p?.price) || 0;
+
+  function calcRub(rate, ship, margin) {
+    if (!cnyPrice) return 999;
+    const cost = cnyPrice * rate + ship * rate;
+    return Math.ceil(cost * (1 + margin / 100) / 10) * 10;
   }
 
-  const productEl = $("publish-product");
-  if (_state.lastProduct?.title) {
-    productEl.innerHTML = `<strong>${_state.lastProduct.title.slice(0, 35)}...</strong><br>¥${_state.lastProduct.price||"?"} | 图片 ${_state.lastProduct.images?.length||0} 张`;
-  }
+  panel.innerHTML = `
+    ${_state.ozonClientId && _state.ozonApiKey
+      ? `<div class="tip success" style="margin-bottom:8px;">✅ Ozon 账号已配置 (ID: ${_state.ozonClientId})</div>`
+      : `<div class="tip warn" style="margin-bottom:8px;">⚠️ 未配置 Ozon Key，去「我的」Tab 填写</div>`}
 
-  // 会员锁
-  if (!isPro() && !_state.crosslyToken) {
-    $("publish-lock").style.display = "flex";
-    $("btn-publish").disabled = true;
-    $("btn-publish").style.opacity = "0.4";
-    $("goto-upgrade").addEventListener("click", () => chrome.tabs.create({ url: getSite() }));
+    <div class="sec">当前已采集商品</div>
+    <div id="pub-product" class="tip" style="background:white;border:1px solid #e2e8f0;margin-bottom:8px;">
+      ${p?.title
+        ? `<strong>${p.title.slice(0, 40)}...</strong><br>1688进价 <span id="cny-price" style="color:#ff6b35;font-weight:700;">¥${cnyPrice||"?"}</span> | 图片 ${p.images?.length||0} 张`
+        : `<span style="color:#94a3b8;">暂无商品，请先去「采集」Tab采集</span>`}
+    </div>
+
+    <div class="sec">💰 价格计算器</div>
+    <div style="background:white;border:1px solid #e2e8f0;border-radius:10px;padding:10px;margin-bottom:8px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px;">
+        <div>
+          <div style="font-size:9px;color:#64748b;margin-bottom:3px;">汇率 ¥/卢布</div>
+          <input id="inp-rate" type="number" value="${savedRate}" step="0.1" min="1" style="width:100%;padding:5px;border:1.5px solid #e2e8f0;border-radius:6px;font-size:12px;font-weight:700;text-align:center;" />
+        </div>
+        <div>
+          <div style="font-size:9px;color:#64748b;margin-bottom:3px;">头程运费 ¥/件</div>
+          <input id="inp-ship" type="number" value="${savedShip}" step="1" min="0" style="width:100%;padding:5px;border:1.5px solid #e2e8f0;border-radius:6px;font-size:12px;font-weight:700;text-align:center;" />
+        </div>
+        <div>
+          <div style="font-size:9px;color:#64748b;margin-bottom:3px;">利润率 %</div>
+          <input id="inp-margin" type="number" value="${savedMargin}" step="5" min="10" max="500" style="width:100%;padding:5px;border:1.5px solid #e2e8f0;border-radius:6px;font-size:12px;font-weight:700;text-align:center;" />
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,#f0fdf4,#dcfce7);border-radius:8px;padding:8px 10px;">
+        <div style="font-size:10px;color:#16a34a;">建议 Ozon 售价</div>
+        <div id="rub-price" style="font-size:20px;font-weight:900;color:#16a34a;">₽${calcRub(savedRate,savedShip,savedMargin)}</div>
+      </div>
+      <div id="price-breakdown" style="font-size:9px;color:#94a3b8;margin-top:5px;text-align:center;">
+        ${cnyPrice ? `进价 ¥${cnyPrice} × ${savedRate} + 运费¥${savedShip} × ${savedRate} = 成本 ₽${Math.ceil((cnyPrice*savedRate+savedShip*savedRate))} × ${100+savedMargin}% 加价` : "采集商品后显示计算明细"}
+      </div>
+    </div>
+
+    ${!isPro() ? `
+    <div id="publish-lock" style="position:relative;background:#f8fafc;border:2px dashed #cbd5e1;border-radius:10px;padding:14px;text-align:center;margin-bottom:8px;">
+      <div style="font-size:13px;font-weight:700;color:#64748b;">🔒 一键刊登需要会员</div>
+      <div style="font-size:11px;color:#94a3b8;margin:4px 0 8px;">免费用户可在网站批量导入后刊登</div>
+      <button id="goto-upgrade" style="padding:8px 20px;border:none;border-radius:8px;background:linear-gradient(135deg,#ff6b35,#f59e0b);color:white;font-weight:700;font-size:12px;cursor:pointer;">🔋 去充电解锁</button>
+    </div>` : ""}
+
+    <button class="btn btn-primary" id="btn-publish" style="font-size:14px;padding:13px;" ${!isPro() ? 'disabled style="opacity:0.4;"' : ''}>🚀 一键刊登到 Ozon</button>
+    <div id="pub-result"></div>
+  `;
+
+  // 实时计算
+  ["inp-rate","inp-ship","inp-margin"].forEach(id => {
+    $(id).addEventListener("input", () => {
+      const rate = parseFloat($("inp-rate").value) || 12;
+      const ship = parseFloat($("inp-ship").value) || 0;
+      const margin = parseFloat($("inp-margin").value) || 50;
+      const rub = calcRub(rate, ship, margin);
+      $("rub-price").textContent = "₽" + rub;
+      if (cnyPrice) {
+        $("price-breakdown").textContent = `进价 ¥${cnyPrice} × ${rate} + 运费¥${ship} × ${rate} = 成本 ₽${Math.ceil(cnyPrice*rate+ship*rate)} × ${100+margin}% 加价`;
+      }
+      // 自动保存
+      chrome.storage.local.set({ priceRate: rate, priceShipping: ship, priceMargin: margin });
+    });
+  });
+
+  if ($("goto-upgrade")) {
+    $("goto-upgrade").addEventListener("click", () => chrome.tabs.create({ url: getSite() + "/?upgrade=1" }));
   }
 
   $("btn-publish").addEventListener("click", async () => {
-    if (!_state.ozonClientId || !_state.ozonApiKey) { showToast("❌ 请先配置 Ozon 账号"); return; }
-    if (!_state.lastProduct?.title) { showToast("❌ 请先采集商品"); return; }
+    if (!_state.ozonClientId || !_state.ozonApiKey) { showToast("❌ 请先在「我的」Tab 配置 Ozon 账号"); return; }
+    if (!p?.title) { showToast("❌ 请先去「采集」Tab 采集商品"); return; }
     $("btn-publish").textContent = "⏳ 刊登中...";
     $("btn-publish").disabled = true;
+    const rate = parseFloat($("inp-rate").value) || 12;
+    const ship = parseFloat($("inp-ship").value) || 0;
+    const margin = parseFloat($("inp-margin").value) || 50;
+    const finalPrice = calcRub(rate, ship, margin);
     try {
-      let images = _state.lastProduct.images?.filter(u => u.startsWith("https://")) || [];
+      let images = p.images?.filter(u => u.startsWith("https://")) || [];
       if (images.length > 0) {
         try {
           const cr = await fetch(getSite() + "/api/img-cache", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({ urls: images.slice(0, 10) }) });
@@ -305,16 +372,22 @@ async function initPublishTab() {
       }
       const resp = await fetch(getSite() + "/api/ozon/publish", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ product: { ..._state.lastProduct, images }, ozonClientId: _state.ozonClientId, ozonApiKey: _state.ozonApiKey }),
+        body: JSON.stringify({
+          product: { ...p, images, sellPriceRub: finalPrice },
+          ozonClientId: _state.ozonClientId,
+          ozonApiKey: _state.ozonApiKey,
+        }),
       });
       const data = await resp.json();
       if (data.taskId || data.success) {
+        $("pub-result").innerHTML = `<div class="tip success" style="margin-top:6px;">✅ 刊登成功！售价 ₽${finalPrice}<br>task: ${data.taskId||""}</div>`;
         showToast("✅ 刊登成功！去 Ozon 后台查看");
-        $("publish-product").innerHTML += `<br><span style="color:#16a34a;font-size:10px;">✅ 已刊登 task: ${data.taskId}</span>`;
       } else {
-        showToast("❌ " + (data.error || "刊登失败"));
+        $("pub-result").innerHTML = `<div class="tip error" style="margin-top:6px;">❌ ${data.error||"刊登失败"}</div>`;
       }
-    } catch (e) { showToast("❌ " + e.message); }
+    } catch (e) {
+      $("pub-result").innerHTML = `<div class="tip error" style="margin-top:6px;">❌ ${e.message}</div>`;
+    }
     $("btn-publish").textContent = "🚀 一键刊登到 Ozon";
     $("btn-publish").disabled = false;
   });

@@ -174,7 +174,7 @@ export async function POST(req: NextRequest) {
       offer_id: product.offerId || `crossly_${Date.now()}`, // 卖家自定义SKU
       
       // 价格库存
-      price: String(product.price || product.sellPrice || 999),      // 售价（卢布）
+      price: String(product.sellPriceRub || product.price || product.sellPrice || 999),      // 售价（卢布）
       old_price: String(product.oldPrice || 0),     // 原价（可选）
       vat: "0",                                      // 税率0%（中国卖家）
       
