@@ -204,6 +204,8 @@ function createFAB(panelContent, headerTitle, headerSub) {
     const name = btn.dataset.cxName;
     if (action === "selectTemplate" && window.crosslySelectTemplate) crosslySelectTemplate(key);
     if (action === "copyBanner" && window.crosslyCopy) crosslyCopy("banner");
+    if (action === "downloadBanner" && window.crosslyDownloadBanner) crosslyDownloadBanner();
+    if (action === "autoUploadBanner" && window.crosslyAutoUploadBanner) crosslyAutoUploadBanner();
     if (action === "applyWarehouse" && window.crosslyApplyWarehouse) crosslyApplyWarehouse(key);
     if (action === "copyName" && window.crosslyCopyName) crosslyCopyName(name);
     if (action === "translateName" && window.crosslyTranslateName) crosslyTranslateName();
@@ -258,57 +260,114 @@ const SHOP_TEMPLATES = {
 };
 
 function initShopDesignPanel() {
+  const BANNER_API = "https://www.crossly.cn/api/ozon/banner";
+
   const content = `
     <div class="crossly-tip">
-      🎨 选好品类，一键生成装修文案和素材建议，直接复制到Ozon橱窗编辑器！
+      🎨 选好品类 → 自动生成横幅图片 + 文案 → 一键下载上传Ozon！
     </div>
 
-    <div class="crossly-section-title">选择你的主营品类</div>
+    <div class="crossly-section-title">① 选择主营品类</div>
     ${Object.entries(SHOP_TEMPLATES).map(([key, t]) => `
       <button class="crossly-btn crossly-btn-gray" data-cx-action="selectTemplate" data-cx-key="${key}">
         ${t.name}
-        <span style="margin-left:auto;font-size:10px;color:#94a3b8">点击选择</span>
       </button>
     `).join("")}
 
     <div id="crossly-template-result" style="display:none;">
       <hr class="crossly-divider">
-      <div class="crossly-section-title">📋 横幅文案（复制到Ozon横幅文字框）</div>
-      <div id="crossly-banner-text" class="crossly-tip" style="cursor:pointer;border:1.5px dashed #e2e8f0;" data-cx-action="copyBanner">
-        点击上方品类生成文案...
+
+      <div class="crossly-section-title">② 横幅图片（2832×600，符合Ozon规格）</div>
+      <div id="crossly-banner-preview" style="border-radius:8px;overflow:hidden;margin-bottom:8px;background:#f1f5f9;height:80px;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:12px;">
+        生成中...
+      </div>
+      <button class="crossly-btn crossly-btn-orange" data-cx-action="downloadBanner">
+        ⬇️ 下载横幅图片（直接上传Ozon）
+      </button>
+      <button class="crossly-btn crossly-btn-primary" data-cx-action="autoUploadBanner">
+        🚀 自动上传到当前横幅位置
+      </button>
+
+      <hr class="crossly-divider">
+      <div class="crossly-section-title">③ 横幅文案（点击复制）</div>
+      <div id="crossly-banner-text" class="crossly-tip" style="cursor:pointer;border:1.5px dashed #6366f1;color:#1e2d5a;font-weight:600;" data-cx-action="copyBanner">
+        -
       </div>
 
-      <div class="crossly-section-title">🎠 滑块分类建议</div>
-      <div id="crossly-slider-text" class="crossly-tip">-</div>
-
-      <div class="crossly-section-title">🏪 店铺名建议（俄语）</div>
+      <div class="crossly-section-title">🏪 推荐俄语店名</div>
       <div id="crossly-name-suggestions" class="crossly-tip">-</div>
-
-      <div class="crossly-section-title">🎨 推荐色调</div>
-      <div id="crossly-color-chip" style="height:28px;border-radius:8px;margin-bottom:6px;"></div>
     </div>
   `;
 
-  createFAB(content, "Crossly 一键装修", "小学生标准 · 选品类即出方案");
+  createFAB(content, "Crossly 一键装修", "图片+文案+自动上传，全包了");
 
-  // 注入全局函数
-  window.crosslySelectTemplate = (key) => {
+  let currentCategory = "toy";
+  let bannerBlobUrl = null;
+
+  window.crosslySelectTemplate = async (key) => {
+    currentCategory = key;
     const t = SHOP_TEMPLATES[key];
     document.getElementById("crossly-template-result").style.display = "block";
     document.getElementById("crossly-banner-text").textContent = t.bannerRu;
     document.getElementById("crossly-banner-text").dataset.text = t.bannerRu;
-    document.getElementById("crossly-slider-text").innerHTML =
-      t.sliderItems.map((s, i) => `${i+1}. ${s}`).join("<br>");
     document.getElementById("crossly-name-suggestions").innerHTML =
       t.storeNameSuggestions.map(n => `• ${n}`).join("<br>");
-    document.getElementById("crossly-color-chip").style.background = t.color;
-    showToast(`✅ 已加载「${t.name}」装修方案`);
+
+    // 加载预览图
+    const preview = document.getElementById("crossly-banner-preview");
+    preview.innerHTML = "⏳ 生成横幅中...";
+    try {
+      const url = `${BANNER_API}?category=${key}`;
+      const resp = await fetch(url);
+      const blob = await resp.blob();
+      if (bannerBlobUrl) URL.revokeObjectURL(bannerBlobUrl);
+      bannerBlobUrl = URL.createObjectURL(blob);
+      preview.innerHTML = `<img src="${bannerBlobUrl}" style="width:100%;height:auto;border-radius:6px;" />`;
+      showToast(`✅ 「${t.name}」横幅已生成！`);
+    } catch {
+      preview.innerHTML = "❌ 图片生成失败，请检查网络";
+    }
   };
 
   window.crosslyCopy = (type) => {
     if (type === "banner") {
       const text = document.getElementById("crossly-banner-text").dataset.text || "";
       navigator.clipboard.writeText(text).then(() => showToast("✅ 已复制横幅文案！"));
+    }
+  };
+
+  window.crosslyDownloadBanner = () => {
+    if (!bannerBlobUrl) { showToast("❌ 请先选择品类"); return; }
+    const a = document.createElement("a");
+    a.href = bannerBlobUrl;
+    a.download = `crossly-banner-${currentCategory}.png`;
+    a.click();
+    showToast("✅ 下载中！保存后去Ozon点「请上传图片」上传");
+  };
+
+  window.crosslyAutoUploadBanner = async () => {
+    if (!bannerBlobUrl) { showToast("❌ 请先选择品类生成图片"); return; }
+
+    // 找到 Ozon 的文件上传 input
+    const fileInput = document.querySelector('input[type="file"][accept*="image"], input[type="file"]');
+    if (!fileInput) {
+      showToast("❌ 未找到上传按钮，请先点Ozon的「请上传图片」区域");
+      return;
+    }
+
+    try {
+      showToast("⏳ 正在自动上传...");
+      const resp = await fetch(bannerBlobUrl);
+      const blob = await resp.blob();
+      const file = new File([blob], `crossly-banner-${currentCategory}.png`, { type: "image/png" });
+      const dt = new DataTransfer();
+      dt.items.add(file);
+      fileInput.files = dt.files;
+      fileInput.dispatchEvent(new Event("change", { bubbles: true }));
+      fileInput.dispatchEvent(new Event("input", { bubbles: true }));
+      showToast("✅ 图片已注入上传框！如未上传成功请手动点确认");
+    } catch (e) {
+      showToast("❌ 自动上传失败，请用「下载」后手动上传");
     }
   };
 }
