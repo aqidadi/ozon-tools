@@ -29,7 +29,39 @@ $("btn-open-crossly").addEventListener("click", async () => {
   chrome.tabs.create({ url: siteUrl || SITE_DEFAULT });
 });
 $("btn-open-guide").addEventListener("click", () => {
-  chrome.tabs.create({ url: (SITE_DEFAULT) + "/?tab=guide" });
+  chrome.tabs.create({ url: SITE_DEFAULT + "/?tab=guide" });
+});
+
+// 检测是否在 Ozon 后台，有则显示装修启动按钮
+(async () => {
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (tab?.url?.includes("seller.ozon.ru")) {
+    $("ozon-launcher").style.display = "block";
+  }
+})();
+
+$("btn-launch-decorator").addEventListener("click", async () => {
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (!tab?.url?.includes("seller.ozon.ru")) {
+    showToast("❌ 请先打开 Ozon 后台页面");
+    return;
+  }
+  try {
+    const [result] = await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      func: () => typeof window.crosslyLaunch === "function" ? window.crosslyLaunch() : "not_loaded",
+    });
+    if (result?.result === "not_loaded") {
+      showToast("❌ 请刷新 Ozon 页面后再试");
+    } else if (result?.result === false) {
+      showToast("❌ 请在 Ozon 后台页面使用");
+    } else {
+      showToast("✅ 装修助手已启动！看右下角📦按钮");
+      window.close();
+    }
+  } catch (e) {
+    showToast("❌ 启动失败，请刷新页面重试");
+  }
 });
 
 // ── 采集 Tab ─────────────────────────────────────

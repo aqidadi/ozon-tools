@@ -6,33 +6,32 @@
 // ═══════════════════════════════════════════════════
 let _crosslyPanelInjected = false;
 
-function checkAndInjectOzonPanel() {
+function getTargetFn() {
   const url = location.href;
-  if (!url.includes("seller.ozon.ru")) return;
+  if (url.includes("showcase") || url.includes("constructor") || url.includes("commercial")) return initShopDesignPanel;
+  if (url.includes("warehouse") || url.includes("delivery") || url.includes("logistic") || url.includes("supply")) return initWarehousePanel;
+  if (url.includes("profile") || url.includes("settings") || url.includes("seller-info") || url.includes("company")) return initStoreNamePanel;
+  return initShopDesignPanel;
+}
 
-  const path = url;
-  let targetFn = null;
-
-  if (path.includes("showcase") || path.includes("constructor") || path.includes("commercial")) {
-    targetFn = initShopDesignPanel;
-  } else if (path.includes("warehouse") || path.includes("delivery") || path.includes("logistic") || path.includes("supply")) {
-    targetFn = initWarehousePanel;
-  } else if (path.includes("profile") || path.includes("settings") || path.includes("seller-info") || path.includes("company")) {
-    targetFn = initStoreNamePanel;
-  } else {
-    targetFn = initShopDesignPanel; // 兜底
-  }
-
-  // 移除旧面板再重建
+// 暴露给 popup.js 调用的启动函数
+window.crosslyLaunch = function() {
+  if (!location.href.includes("seller.ozon.ru")) return false;
   document.getElementById("crossly-fab")?.remove();
   document.getElementById("crossly-panel")?.remove();
   document.getElementById("crossly-toast")?.remove();
   _crosslyPanelInjected = false;
+  _crosslyPanelInjected = true;
+  getTargetFn()();
+  return true;
+};
 
-  if (!_crosslyPanelInjected) {
-    _crosslyPanelInjected = true;
-    setTimeout(targetFn, 800);
-  }
+function checkAndInjectOzonPanel() {
+  // 不再自动注入，只在 URL 变化时重置注入状态
+  _crosslyPanelInjected = false;
+  document.getElementById("crossly-fab")?.remove();
+  document.getElementById("crossly-panel")?.remove();
+  document.getElementById("crossly-toast")?.remove();
 }
 
 // 监听 History API（pushState/replaceState）
@@ -42,14 +41,8 @@ history.pushState = function(...args) { _origPush(...args); setTimeout(checkAndI
 history.replaceState = function(...args) { _origReplace(...args); setTimeout(checkAndInjectOzonPanel, 1000); };
 window.addEventListener("popstate", () => setTimeout(checkAndInjectOzonPanel, 1000));
 
-// 立即执行一次（处理直接打开页面的情况）
-if (location.href.includes("seller.ozon.ru")) {
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", () => setTimeout(checkAndInjectOzonPanel, 1000));
-  } else {
-    setTimeout(checkAndInjectOzonPanel, 1000);
-  }
-}
+// 不自动注入——等用户在弹窗点「启动装修助手」按钮再触发
+// popup.js 通过 chrome.scripting.executeScript 调用 window.crosslyLaunch()
 
 // ═══════════════════════════════════════════════════
 // 工具函数
