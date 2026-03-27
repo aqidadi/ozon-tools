@@ -559,6 +559,125 @@ function ComingSoonPage({ tab }: { tab: string }) {
 }
 
 // ────────────────────────────────────────────────────────────
+// Chrome 插件安装教程弹窗
+// ────────────────────────────────────────────────────────────
+const INSTALL_STEPS = [
+  {
+    step: 1,
+    icon: "⬇️",
+    title: "点击下载插件压缩包",
+    desc: "点下面的橙色按钮，浏览器会自动下载一个 .zip 文件到你电脑的「下载」文件夹",
+    tip: "💡 下载完不要直接双击打开，先找到它在哪",
+    action: true,
+  },
+  {
+    step: 2,
+    icon: "📂",
+    title: "解压缩这个文件",
+    desc: "找到刚下载的 crossly-extension-v1.8.3.zip，右键点它 → 选「解压缩」或「Extract Here」，会生成一个文件夹",
+    tip: "💡 Windows用户：右键→解压到当前文件夹；Mac用户：双击自动解压",
+  },
+  {
+    step: 3,
+    icon: "🌐",
+    title: "打开 Chrome 扩展管理页",
+    desc: "在 Chrome 浏览器地址栏输入：chrome://extensions 然后按回车",
+    tip: "💡 或者点浏览器右上角「⋮」→ 更多工具 → 扩展程序",
+    copy: "chrome://extensions",
+  },
+  {
+    step: 4,
+    icon: "🔧",
+    title: "开启「开发者模式」",
+    desc: "在扩展管理页右上角，找到「开发者模式」开关，点一下打开它（变成蓝色就对了）",
+    tip: "💡 不开这个就没法手动安装插件，必须打开",
+  },
+  {
+    step: 5,
+    icon: "📥",
+    title: "加载解压后的文件夹",
+    desc: "点页面左上角出现的「加载已解压的扩展程序」按钮，在弹出的窗口里选择刚才解压出来的文件夹",
+    tip: "💡 选的是「文件夹」不是里面的文件！找到文件夹点确定就行",
+  },
+  {
+    step: 6,
+    icon: "✅",
+    title: "安装完成！",
+    desc: "扩展列表里出现「Crossly 跨境选品工具」就成功了！去 1688 打开任意商品页，点浏览器右上角的 Crossly 图标开始使用",
+    tip: "🎉 遇到问题？截图发给我们：aqiliaobi@163.com 马上帮你解决",
+  },
+];
+
+function ExtensionInstallModal({ onClose }: { onClose: () => void }) {
+  const [copied, setCopied] = useState(false);
+  const handleCopy = () => {
+    navigator.clipboard.writeText("chrome://extensions");
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+  return (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm" onClick={onClose}>
+      <div className="bg-white rounded-t-3xl sm:rounded-3xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl" onClick={e => e.stopPropagation()}>
+        {/* Header */}
+        <div className="sticky top-0 bg-white rounded-t-3xl border-b border-gray-100 px-5 py-4 flex items-center justify-between z-10">
+          <div>
+            <h2 className="font-black text-gray-900 text-base">🧩 Chrome 插件安装教程</h2>
+            <p className="text-xs text-gray-400 mt-0.5">5分钟搞定，真的不难！</p>
+          </div>
+          <button onClick={onClose} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200">✕</button>
+        </div>
+
+        <div className="px-5 py-4 space-y-4">
+          {/* 下载按钮 */}
+          <a
+            href="https://github.com/aqidadi/ozon-tools/raw/main/crossly-extension-v1.8.3.zip"
+            target="_blank" rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl text-white font-black text-sm shadow-lg transition-all hover:scale-[1.02]"
+            style={{ background: "linear-gradient(135deg, #ea580c, #dc2626)" }}>
+            ⬇️ 第一步：点这里下载插件（免费）
+          </a>
+
+          {/* 步骤列表 */}
+          <div className="space-y-3">
+            {INSTALL_STEPS.map((s) => (
+              <div key={s.step} className={`rounded-2xl border p-4 ${s.step === 6 ? "bg-green-50 border-green-200" : "bg-gray-50 border-gray-100"}`}>
+                <div className="flex items-start gap-3">
+                  <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-black flex-shrink-0 mt-0.5 ${s.step === 6 ? "bg-green-500 text-white" : "bg-indigo-600 text-white"}`}>
+                    {s.step}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-base">{s.icon}</span>
+                      <p className="font-bold text-gray-900 text-sm">{s.title}</p>
+                    </div>
+                    <p className="text-xs text-gray-600 leading-relaxed mb-2">{s.desc}</p>
+                    {s.copy && (
+                      <button onClick={handleCopy}
+                        className="flex items-center gap-2 bg-gray-800 text-white text-xs font-mono px-3 py-1.5 rounded-lg mb-2 hover:bg-gray-700 transition-colors">
+                        <span>{s.copy}</span>
+                        <span className="text-gray-400">{copied ? "✓ 已复制" : "点击复制"}</span>
+                      </button>
+                    )}
+                    <p className="text-[11px] text-indigo-600 bg-indigo-50 rounded-lg px-2.5 py-1.5 leading-relaxed">{s.tip}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* 底部帮助 */}
+          <div className="bg-orange-50 border border-orange-100 rounded-2xl p-4 text-center">
+            <p className="text-xs font-bold text-orange-700 mb-1">🙋 安装遇到问题？</p>
+            <p className="text-[11px] text-orange-600">截图发给我们，5分钟内回复帮你搞定</p>
+            <p className="text-[11px] text-orange-500 font-mono mt-1">aqiliaobi@163.com</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ────────────────────────────────────────────────────────────
 // 统帅私房课页面
 // ────────────────────────────────────────────────────────────
 const COURSES = [
@@ -740,9 +859,11 @@ function CoursePage() {
 
 function LandingPage({ onStart }: { onStart: () => void }) {
   const { user } = useAuth();
+  const [showInstall, setShowInstall] = useState(false);
 
   return (
     <div className="space-y-5 pb-8">
+    {showInstall && <ExtensionInstallModal onClose={() => setShowInstall(false)} />}
 
       {/* ── Hero 全幅深色 ── */}
       <div className="-mx-6 -mt-6 relative overflow-hidden text-center"
@@ -782,15 +903,14 @@ function LandingPage({ onStart }: { onStart: () => void }) {
           </div>
           {/* 插件下载 */}
           <div className="mt-4 flex items-center justify-center gap-2">
-            <a
-              href="https://github.com/aqidadi/ozon-tools/raw/main/crossly-extension-v1.8.3.zip"
-              target="_blank" rel="noopener noreferrer"
+            <button
+              onClick={() => setShowInstall(true)}
               className="flex items-center gap-2 bg-white/15 hover:bg-white/25 border border-white/20 text-white text-xs font-semibold px-4 py-2 rounded-xl transition-all"
             >
               <span>🧩</span>
-              <span>下载 Chrome 插件 v1.8.3</span>
-              <span className="text-white/50">↓</span>
-            </a>
+              <span>安装 Chrome 插件 v1.8.3</span>
+              <span className="text-white/50 text-[10px]">查看教程 →</span>
+            </button>
             <span className="text-white/30 text-[10px]">从1688一键搬运商品</span>
           </div>
         </div>
@@ -1049,11 +1169,11 @@ function LandingPage({ onStart }: { onStart: () => void }) {
         </button>
         <p className="text-[10px] text-gray-300 mt-2">无需注册 · 无需信用卡 · 随时退出</p>
         <div className="mt-3">
-          <a href="https://github.com/aqidadi/ozon-tools/raw/main/crossly-extension-v1.8.3.zip"
-            target="_blank" rel="noopener noreferrer"
+          <button
+            onClick={() => setShowInstall(true)}
             className="inline-flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-semibold px-4 py-2 rounded-xl transition-all">
-            🧩 下载 Chrome 插件 v1.8.3 · 从1688一键搬运商品
-          </a>
+            🧩 安装 Chrome 插件 v1.8.3 · 查看安装教程 →
+          </button>
         </div>
       </div>
 
