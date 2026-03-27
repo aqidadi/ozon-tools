@@ -305,8 +305,60 @@ async function initCollectTab() {
         } else {
           await chrome.storage.local.set({ lastProduct: data });
           $("scrape-result").style.display = "block";
-          $("scrape-result").innerHTML = "✅ 采集成功！<br><strong>" + data.title.slice(0,35) + "...</strong><br>图片 " + (data.images?.length||0) + " 张 | 价格 ¥" + (data.price||"?") + "<br><span style='color:#16a34a;font-size:10px;'>→ 去「刊登」Tab 一键发到Ozon</span>";
-          showToast("✅ 采集成功！去「🚀刊登」Tab 发布");
+          $("scrape-result").innerHTML = `
+            <div style="font-weight:700;color:#16a34a;margin-bottom:6px;">✅ 采集成功！</div>
+            <div style="font-size:11px;color:#374151;margin-bottom:4px;"><strong>中文标题：</strong></div>
+            <div id="title-zh" style="font-size:11px;background:#f8fafc;border-radius:6px;padding:6px 8px;margin-bottom:6px;line-height:1.5;">${data.title}</div>
+            <div style="font-size:11px;color:#374151;margin-bottom:4px;"><strong>俄文标题：</strong><span id="ru-status" style="color:#f59e0b;font-size:10px;">翻译中...</span></div>
+            <div id="title-ru" style="font-size:11px;background:#f0f4ff;border:1px dashed #6366f1;border-radius:6px;padding:6px 8px;margin-bottom:6px;line-height:1.5;cursor:pointer;" title="点击复制">-</div>
+            <div style="display:flex;gap:6px;margin-bottom:6px;">
+              <button id="btn-copy-zh" style="flex:1;padding:5px;border:none;border-radius:6px;background:#f1f5f9;font-size:11px;font-weight:700;cursor:pointer;">📋 复制中文</button>
+              <button id="btn-copy-ru" style="flex:1;padding:5px;border:none;border-radius:6px;background:#e0e7ff;font-size:11px;font-weight:700;cursor:pointer;">📋 复制俄文</button>
+            </div>
+            <div style="font-size:10px;color:#94a3b8;">图片 ${data.images?.length||0} 张 | 价格 ¥${data.price||"?"} | <span style="color:#16a34a;">→ 刊登Tab发Ozon</span></div>
+          `;
+          showToast("✅ 采集成功！正在翻译...");
+
+          // 绑定复制按钮
+          document.getElementById("btn-copy-zh").addEventListener("click", () => {
+            navigator.clipboard.writeText(data.title).then(() => showToast("✅ 中文标题已复制"));
+          });
+          document.getElementById("title-ru").addEventListener("click", () => {
+            const ru = document.getElementById("title-ru").textContent;
+            if (ru && ru !== "-") navigator.clipboard.writeText(ru).then(() => showToast("✅ 俄文标题已复制"));
+          });
+          document.getElementById("btn-copy-ru").addEventListener("click", () => {
+            const ru = document.getElementById("title-ru").textContent;
+            if (ru && ru !== "-") navigator.clipboard.writeText(ru).then(() => showToast("✅ 俄文标题已复制"));
+          });
+
+          // 调翻译接口
+          const { siteUrl: sUrl } = await chrome.storage.local.get("siteUrl");
+          const site = sUrl || "https://www.crossly.cn";
+          try {
+            const resp = await fetch(site + "/api/faq", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                question: "把下面这个中文商品标题翻译成俄语，直接输出俄语标题，不超过100字符，不要解释：" + data.title
+              }),
+            });
+            const json = await resp.json();
+            const ruTitle = (json.answer || "").trim();
+            if (ruTitle) {
+              document.getElementById("title-ru").textContent = ruTitle;
+              document.getElementById("ru-status").textContent = "✅ 翻译完成（点击复制）";
+              document.getElementById("ru-status").style.color = "#16a34a";
+              // 保存俄文标题
+              await chrome.storage.local.set({ lastProduct: { ...data, titleRu: ruTitle } });
+            } else {
+              document.getElementById("ru-status").textContent = "❌ 翻译失败";
+              document.getElementById("ru-status").style.color = "#dc2626";
+            }
+          } catch {
+            document.getElementById("ru-status").textContent = "❌ 网络错误";
+            document.getElementById("ru-status").style.color = "#dc2626";
+          }
         }
       } catch (e) {
         $("scrape-result").style.display = "block";
