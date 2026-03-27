@@ -85,22 +85,23 @@ const DEFAULT_SETTINGS: Settings = {
   packagingCost: 2,
 };
 
-type Tab = "landing" | "products" | "ozon" | "hot" | "picker" | "guide" | "tools" | "mintools" | "clock" | "monitor" | "analytics" | "settings" | "batch";
+type Tab = "landing" | "products" | "ozon" | "hot" | "picker" | "guide" | "tools" | "mintools" | "clock" | "monitor" | "analytics" | "settings" | "batch" | "course";
 
 const NAV_ITEMS = [
-  { id: "landing",   label: "首页",     icon: Globe,        color: "blue" },
-  { id: "guide",     label: "🔥 新手指南", icon: BookOpen,  color: "red", badge: "免费教学" },
-  { id: "hot",       label: "爆品榜单", icon: Flame,        color: "red" },
-  { id: "batch",     label: "批量导入", icon: DatabaseZap,  color: "purple" },
-  { id: "products",  label: "选品列表", icon: Package,      color: "blue" },
-  { id: "ozon",      label: "Ozon刊登", icon: Zap,          color: "orange", badge: "核心" },
-  { id: "picker",    label: "选品参考", icon: TrendingUp,   color: "orange" },
-  { id: "tools",     label: "工具导航", icon: Zap,          color: "green" },
-  { id: "mintools",  label: "实用工具", icon: Wrench,       color: "teal" },
-  { id: "clock",     label: "世界时间", icon: Clock,        color: "cyan" },
-  { id: "settings",  label: "参数设置", icon: Settings2,    color: "gray" },
-  { id: "monitor",   label: "价格监控", icon: Bell,         color: "yellow", badge: "预约内测" },
-  { id: "analytics", label: "竞品分析", icon: BarChart2,    color: "pink",   badge: "预约内测" },
+  { id: "guide",     label: "🔥 新手指南", icon: BookOpen,    color: "red",    badge: "必看·免费" },
+  { id: "course",    label: "📚 统帅私房课", icon: BookOpen,   color: "orange", badge: "独家" },
+  { id: "landing",   label: "首页",        icon: Globe,        color: "blue" },
+  { id: "hot",       label: "爆品榜单",    icon: Flame,        color: "red" },
+  { id: "picker",    label: "选品参考",    icon: TrendingUp,   color: "orange" },
+  { id: "batch",     label: "批量导入",    icon: DatabaseZap,  color: "purple" },
+  { id: "products",  label: "选品列表",    icon: Package,      color: "blue" },
+  { id: "ozon",      label: "Ozon刊登",    icon: Zap,          color: "orange", badge: "核心" },
+  { id: "tools",     label: "工具导航",    icon: Zap,          color: "green" },
+  { id: "mintools",  label: "实用工具",    icon: Wrench,       color: "teal" },
+  { id: "clock",     label: "世界时间",    icon: Clock,        color: "cyan" },
+  { id: "settings",  label: "参数设置",    icon: Settings2,    color: "gray" },
+  { id: "monitor",   label: "价格监控",    icon: Bell,         color: "yellow", badge: "预约内测" },
+  { id: "analytics", label: "竞品分析",    icon: BarChart2,    color: "pink",   badge: "预约内测" },
 ] as { id: Tab; label: string; icon: React.ElementType; color: string; badge?: string }[];
 
 // 深色侧边栏下，所有激活态统一用白色高亮
@@ -387,6 +388,7 @@ export default function Home() {
           {tab === "hot" && <HotPage />}
           {tab === "picker" && <PickerPage />}
           {tab === "guide" && <GuidePage />}
+          {tab === "course" && <CoursePage />}
           {tab === "tools" && <ToolsPage />}
           {tab === "mintools" && <MiniToolsPage />}
           {tab === "clock" && <ClockPage />}
@@ -556,6 +558,186 @@ function ComingSoonPage({ tab }: { tab: string }) {
   );
 }
 
+// ────────────────────────────────────────────────────────────
+// 统帅私房课页面
+// ────────────────────────────────────────────────────────────
+const COURSES = [
+  {
+    id: 1,
+    tag: "📦 发货篇",
+    tagColor: "bg-orange-100 text-orange-600",
+    title: "《义乌统帅带你跑遍北苑仓库：发货最后一公里》",
+    desc: "我在义乌北苑，仓库就在脚下。这节课我带你从1688下单→货代收货→贴标→发往全球，全程手把手，你在家就像站在义乌一样。",
+    author: "义乌统帅",
+    avatar: "👨‍💼",
+    duration: "23分钟",
+    type: "🎬 短视频",
+    free: true,
+    hot: true,
+    steps: ["1688下单填货代地址", "货代仓库收货贴标", "RETS/SLS物流发出", "买家签收你收钱"],
+  },
+  {
+    id: 2,
+    tag: "🔍 选品篇",
+    tagColor: "bg-blue-100 text-blue-600",
+    title: "《不懂货的新手，如何在义乌1小时选出3款爆品》",
+    desc: "我在义乌每天逛市场，帮你踩坑。毛绒/棉花娃娃/家居哪个好卖？货代老板娘告诉我的秘密，今天全部说给你听。",
+    author: "义乌统帅",
+    avatar: "👨‍💼",
+    duration: "18分钟",
+    type: "🎙️ 语音课",
+    free: true,
+    hot: true,
+    steps: ["从1688热搜词找方向", "对比3家看买家评价", "先拍5件测款不压货", "跑通后再加量"],
+  },
+  {
+    id: 3,
+    tag: "💰 定价篇",
+    tagColor: "bg-green-100 text-green-600",
+    title: "《宝妈必看：第一件商品定多少钱才不亏？》",
+    desc: "很多新手第一单都亏了——不是货不好，是价格没算对。我给你一个傻瓜公式：进价×3 + 运费 = 保本线，看这节课搞定定价恐惧症。",
+    author: "义乌统帅",
+    avatar: "👨‍💼",
+    duration: "12分钟",
+    type: "🎙️ 语音课",
+    free: true,
+    steps: ["进价×3=最低保本价", "加上头程运费", "参考同款竞品报价", "利润<30%换个款"],
+  },
+  {
+    id: 4,
+    tag: "🌍 平台篇",
+    tagColor: "bg-purple-100 text-purple-600",
+    title: "《Ozon vs Shopee vs TikTok Shop：新手到底选哪个？》",
+    desc: "三个平台我都做过，优缺点我清楚。俄罗斯单价高但路途远，东南亚走量但价格战；不同阶段选不同平台，这节课帮你做决定。",
+    author: "义乌统帅",
+    avatar: "👨‍💼",
+    duration: "15分钟",
+    type: "🎬 短视频",
+    free: true,
+    steps: ["新手首选Ozon（利润高）", "有视频能力选TikTok", "走量补仓选Shopee", "慢慢多平台铺开"],
+  },
+  {
+    id: 5,
+    tag: "📸 图片篇",
+    tagColor: "bg-pink-100 text-pink-600",
+    title: "《用手机拍出爆款主图：不需要摄影基础》",
+    desc: "1688的图片能直接发吗？答案：不能！我教你用手机5分钟拍一张比供应商更好看的主图，白底背景、光线、角度，全套白话教学。",
+    author: "义乌统帅",
+    avatar: "👨‍💼",
+    duration: "10分钟",
+    type: "🎬 短视频",
+    free: true,
+    steps: ["白色A4纸当背景", "手机开人像模式", "自然光靠窗拍", "用Crossly一键压缩上传"],
+  },
+  {
+    id: 6,
+    tag: "🤝 货代篇",
+    tagColor: "bg-teal-100 text-teal-600",
+    title: "《怎么找到靠谱货代？避开黑货代的5个套路》",
+    desc: "我在义乌见过太多宝妈被黑货代坑：货丢了、延误了、乱收费。这节课我教你识别好货代的3个标准，还有我用过的靠谱货代推荐。",
+    author: "义乌统帅",
+    avatar: "👨‍💼",
+    duration: "20分钟",
+    type: "🎙️ 语音课",
+    free: false,
+    steps: ["先问：有没有贴标服务", "再问：丢件赔偿政策", "最后：先发5件试合作", "跑通再批量合作"],
+  },
+];
+
+function CoursePage() {
+  const [openId, setOpenId] = useState<number | null>(null);
+  return (
+    <div className="max-w-2xl mx-auto">
+      {/* Header */}
+      <div className="-mx-6 -mt-6 mb-6 px-6 py-8 text-white text-center"
+        style={{ background: "linear-gradient(135deg, #ea580c 0%, #dc2626 100%)" }}>
+        <div className="text-4xl mb-2">📚</div>
+        <h1 className="text-xl font-black mb-1">统帅私房课</h1>
+        <p className="text-sm text-orange-100 leading-relaxed">
+          我在义乌北苑，仓库就在脚下<br/>
+          <span className="font-semibold text-white">你在家，就像和娘家人一起做生意</span>
+        </p>
+        <div className="flex justify-center gap-4 mt-4 text-xs text-orange-200">
+          <span>🎬 6节课</span>
+          <span>·</span>
+          <span>🆓 5节免费</span>
+          <span>·</span>
+          <span>📍 义乌北苑实地录制</span>
+        </div>
+      </div>
+
+      {/* 老师介绍 */}
+      <div className="bg-orange-50 border border-orange-100 rounded-2xl p-4 mb-4 flex items-center gap-3">
+        <div className="w-12 h-12 rounded-full bg-orange-200 flex items-center justify-center text-2xl flex-shrink-0">👨‍💼</div>
+        <div>
+          <p className="font-black text-gray-900 text-sm">义乌统帅</p>
+          <p className="text-xs text-gray-500 mt-0.5">常驻义乌北苑 · 跨境老兵 · 帮2000+宝妈开启第一单</p>
+          <p className="text-xs text-orange-600 mt-1 font-medium">「我不卖课，我只是不想你们踩我踩过的坑」</p>
+        </div>
+      </div>
+
+      {/* 课程列表 */}
+      <div className="space-y-3">
+        {COURSES.map(course => (
+          <div key={course.id} className="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm">
+            <button className="w-full text-left px-4 py-3.5" onClick={() => setOpenId(openId === course.id ? null : course.id)}>
+              <div className="flex items-start gap-3">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1 flex-wrap">
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${course.tagColor}`}>{course.tag}</span>
+                    <span className="text-[10px] text-gray-400">{course.type}</span>
+                    <span className="text-[10px] text-gray-400">⏱ {course.duration}</span>
+                    {course.hot && <span className="text-[10px] bg-red-500 text-white px-1.5 py-0.5 rounded-full font-bold">🔥 热门</span>}
+                    {course.free
+                      ? <span className="text-[10px] bg-green-100 text-green-600 px-1.5 py-0.5 rounded-full font-bold">🆓 免费</span>
+                      : <span className="text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-full font-bold">给Crossly充电后解锁</span>}
+                  </div>
+                  <p className="text-sm font-bold text-gray-900 leading-snug">{course.title}</p>
+                </div>
+                <span className="text-gray-400 text-sm mt-1 flex-shrink-0">{openId === course.id ? "▲" : "▼"}</span>
+              </div>
+            </button>
+            {openId === course.id && (
+              <div className="px-4 pb-4 border-t border-gray-50">
+                <p className="text-xs text-gray-600 leading-relaxed mt-3 mb-3">{course.desc}</p>
+                <div className="bg-gray-50 rounded-xl p-3 mb-3">
+                  <p className="text-[10px] font-bold text-gray-500 mb-2">📋 你将学到</p>
+                  <div className="space-y-1">
+                    {course.steps.map((s, i) => (
+                      <div key={i} className="flex items-center gap-2 text-xs text-gray-700">
+                        <span className="w-4 h-4 rounded-full bg-orange-100 text-orange-600 text-[9px] font-bold flex items-center justify-center flex-shrink-0">{i+1}</span>
+                        {s}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                {course.free ? (
+                  <button className="w-full py-2.5 rounded-xl text-sm font-bold text-white"
+                    style={{ background: "linear-gradient(135deg, #ea580c, #dc2626)" }}>
+                    🎬 立即观看（完全免费）
+                  </button>
+                ) : (
+                  <div className="text-center">
+                    <p className="text-xs text-gray-400 mb-2">给 Crossly 充电 ¥9.9 解锁全部课程</p>
+                    <button className="w-full py-2.5 rounded-xl text-sm font-bold text-white bg-gray-800">
+                      🔋 充电解锁
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <div className="text-center mt-6 text-xs text-gray-400">
+        <p>📍 义乌统帅常驻义乌北苑实地录制</p>
+        <p className="mt-1">更多课程陆续更新中 · 永远不收学费 · 真正帮你赚到钱</p>
+      </div>
+    </div>
+  );
+}
+
 function LandingPage({ onStart }: { onStart: () => void }) {
   const { user } = useAuth();
 
@@ -700,6 +882,56 @@ function LandingPage({ onStart }: { onStart: () => void }) {
             </div>
           ))}
         </div>
+      </div>
+
+      {/* ── 爆款库看板 ── */}
+      <div>
+        <h2 className="text-center text-base font-black text-gray-900 mb-1">🏆 统帅爆款库（全球）</h2>
+        <p className="text-center text-xs text-gray-400 mb-3">真实在售商品 · AI已生成外语标题 · 点击复制搬运</p>
+        <div className="columns-2 gap-2 space-y-2">
+          {[
+            { img: "🧸", name: "超大奶龙毛绒玩偶 60cm", nameEn: "Giant Nailong Plush Toy 60cm", price: 28, suggestRub: 1290, suggestUsd: 14.9, hot: true },
+            { img: "🐱", name: "治愈系猫咪抱枕 45cm", nameEn: "Healing Cat Plush Pillow 45cm", price: 18, suggestRub: 890, suggestUsd: 9.9, hot: true },
+            { img: "🐊", name: "鳄鱼长条抱枕 120cm", nameEn: "Crocodile Long Body Pillow 120cm", price: 32, suggestRub: 1490, suggestUsd: 16.9, hot: false },
+            { img: "🦛", name: "卡皮巴拉水豚玩偶 35cm", nameEn: "Capybara Stuffed Animal 35cm", price: 22, suggestRub: 1090, suggestUsd: 11.9, hot: true },
+            { img: "💄", name: "旋转睫毛夹 定型持久", nameEn: "Rotating Eyelash Curler Long-lasting", price: 8, suggestRub: 490, suggestUsd: 5.9, hot: true },
+            { img: "🪄", name: "气垫梳 防静电按摩梳", nameEn: "Air Cushion Massage Comb Anti-static", price: 6, suggestRub: 390, suggestUsd: 4.9, hot: false },
+            { img: "📦", name: "桌面收纳盒 透明叠加", nameEn: "Desktop Storage Box Clear Stackable", price: 12, suggestRub: 590, suggestUsd: 6.9, hot: false },
+            { img: "🧲", name: "磁吸手机支架 360旋转", nameEn: "Magnetic Phone Holder 360° Rotation", price: 15, suggestRub: 790, suggestUsd: 8.9, hot: true },
+            { img: "🐾", name: "猫咪隧道玩具 折叠", nameEn: "Cat Tunnel Toy Foldable", price: 20, suggestRub: 990, suggestUsd: 10.9, hot: true },
+            { img: "🌙", name: "星空投影小夜灯 USB", nameEn: "Star Projector Night Light USB", price: 25, suggestRub: 1190, suggestUsd: 12.9, hot: false },
+            { img: "🎎", name: "棉花娃娃素体 20cm", nameEn: "Cotton Doll Body Base 20cm", price: 16, suggestRub: 790, suggestUsd: 8.9, hot: true },
+            { img: "✨", name: "UV树脂DIY材料包", nameEn: "UV Resin DIY Craft Kit", price: 19, suggestRub: 890, suggestUsd: 9.9, hot: false },
+          ].map((item, idx) => (
+            <div key={idx} className="break-inside-avoid bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm mb-2">
+              <div className="bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center text-5xl py-6">
+                {item.img}
+              </div>
+              <div className="p-3">
+                {item.hot && <span className="text-[9px] bg-red-500 text-white px-1.5 py-0.5 rounded-full font-bold mr-1">🔥 热卖</span>}
+                <p className="text-xs font-bold text-gray-900 mt-1 leading-snug">{item.name}</p>
+                <p className="text-[10px] text-blue-500 mt-0.5 leading-snug truncate">🌍 {item.nameEn}</p>
+                <div className="mt-2 space-y-0.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] text-gray-400">进价</span>
+                    <span className="text-xs font-bold text-gray-700">¥{item.price}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] text-gray-400">建议售价</span>
+                    <span className="text-[10px] font-bold text-indigo-600">₽{item.suggestRub} / ${item.suggestUsd}</span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => navigator.clipboard.writeText(item.name)}
+                  className="w-full mt-2 py-1.5 rounded-lg text-[10px] font-bold text-white"
+                  style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6)" }}>
+                  复制标题 → 去1688搬运
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+        <p className="text-center text-[10px] text-gray-300 mt-2">更多爆款持续更新 · 由义乌统帅团队精选</p>
       </div>
 
       {/* 广告位2 */}
