@@ -203,6 +203,7 @@ function createFAB(panelContent, headerTitle, headerSub) {
     const key = btn.dataset.cxKey;
     const name = btn.dataset.cxName;
     if (action === "selectTemplate" && window.crosslySelectTemplate) crosslySelectTemplate(key);
+    if (action === "selectSize" && window.crosslySelectSize) crosslySelectSize(btn.dataset.cxIndex);
     if (action === "copyBanner" && window.crosslyCopy) crosslyCopy("banner");
     if (action === "downloadBanner" && window.crosslyDownloadBanner) crosslyDownloadBanner();
     if (action === "autoUploadBanner" && window.crosslyAutoUploadBanner) crosslyAutoUploadBanner();
@@ -259,11 +260,18 @@ const SHOP_TEMPLATES = {
   },
 };
 
+// Ozon 各槽位尺寸
+const OZON_SIZES = [
+  { label: "横幅大图 2832×600", w: 2832, h: 600 },
+  { label: "横幅小图 686×290",  w: 686,  h: 290 },
+  { label: "方形头像 200×200",  w: 200,  h: 200 },
+];
+
 function initShopDesignPanel() {
 
   const content = `
     <div class="crossly-tip">
-      🎨 选好品类 → 本地生成横幅图 → 下载后上传Ozon！
+      🎨 选品类 → 选尺寸 → 下载图片 → 上传Ozon！
     </div>
 
     <div class="crossly-section-title">① 选择主营品类</div>
@@ -275,28 +283,49 @@ function initShopDesignPanel() {
 
     <div id="crossly-template-result" style="display:none;">
       <hr class="crossly-divider">
-      <div class="crossly-section-title">② 横幅预览（2832×600）</div>
-      <canvas id="crossly-banner-canvas" style="width:100%;border-radius:8px;margin-bottom:8px;"></canvas>
+      <div class="crossly-section-title">② 选择图片尺寸</div>
+      <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px;">
+        ${OZON_SIZES.map((s, i) => `
+          <button class="crossly-btn crossly-btn-gray" style="flex:1;min-width:80px;font-size:10px;padding:6px 4px;text-align:center;"
+            data-cx-action="selectSize" data-cx-index="${i}">
+            ${s.label}
+          </button>
+        `).join("")}
+      </div>
+
+      <div class="crossly-section-title">③ 预览</div>
+      <canvas id="crossly-banner-canvas" style="width:100%;border-radius:8px;margin-bottom:8px;display:block;"></canvas>
+      <div id="crossly-size-info" class="crossly-tip" style="font-size:10px;margin-bottom:6px;"></div>
       <button class="crossly-btn crossly-btn-orange" data-cx-action="downloadBanner">
-        ⬇️ 下载图片（去Ozon点「请上传图片」）
+        ⬇️ 下载 JPEG（≤500Kb，直接上传Ozon）
       </button>
       <button class="crossly-btn crossly-btn-primary" data-cx-action="autoUploadBanner">
         🚀 自动注入上传框
       </button>
 
       <hr class="crossly-divider">
-      <div class="crossly-section-title">③ 横幅文案（点击复制）</div>
+      <div class="crossly-section-title">文案（点击复制）</div>
       <div id="crossly-banner-text" class="crossly-tip" style="cursor:pointer;border:1.5px dashed #6366f1;color:#1e2d5a;font-weight:600;" data-cx-action="copyBanner">-</div>
-
-      <div class="crossly-section-title">🏪 推荐俄语店名</div>
+      <div class="crossly-section-title">推荐俄语店名</div>
       <div id="crossly-name-suggestions" class="crossly-tip">-</div>
     </div>
   `;
 
-  createFAB(content, "Crossly 一键装修", "图片+文案+自动上传，全包了");
+  createFAB(content, "Crossly 一键装修", "图片+文案+自动上传");
 
   let currentCategory = "toy";
-  let bannerBlobUrl = null;
+  let currentSize = OZON_SIZES[1]; // 默认 686×290
+
+  function redraw() {
+    const t = SHOP_TEMPLATES[currentCategory];
+    drawBanner(currentCategory, t, currentSize.w, currentSize.h);
+    // 估算文件大小（JPEG quality 0.85）
+    const canvas = document.getElementById("crossly-banner-canvas");
+    const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+    const kb = Math.round((dataUrl.length * 3 / 4) / 1024);
+    const sizeEl = document.getElementById("crossly-size-info");
+    if (sizeEl) sizeEl.textContent = `📐 ${currentSize.w}×${currentSize.h} px｜预计 ${kb}Kb（Ozon限500Kb）${kb > 500 ? " ⚠️ 超限，已自动降质量" : " ✅"}`;
+  }
 
   window.crosslySelectTemplate = (key) => {
     currentCategory = key;
@@ -306,54 +335,72 @@ function initShopDesignPanel() {
     document.getElementById("crossly-banner-text").dataset.text = t.bannerRu;
     document.getElementById("crossly-name-suggestions").innerHTML =
       t.storeNameSuggestions.map(n => `• ${n}`).join("<br>");
+    redraw();
+    showToast(`✅ 「${t.name}」已生成！`);
+  };
 
-    // 用 Canvas 本地生成横幅图（不依赖服务器）
-    generateBannerCanvas(key, t);
-    showToast(`✅ 「${t.name}」横幅已生成！`);
+  window.crosslySelectSize = (idx) => {
+    currentSize = OZON_SIZES[parseInt(idx)];
+    redraw();
   };
 
   window.crosslyCopy = (type) => {
     if (type === "banner") {
       const text = document.getElementById("crossly-banner-text").dataset.text || "";
-      navigator.clipboard.writeText(text).then(() => showToast("✅ 已复制横幅文案！"));
+      navigator.clipboard.writeText(text).then(() => showToast("✅ 已复制文案！"));
     }
   };
 
   window.crosslyDownloadBanner = () => {
     const canvas = document.getElementById("crossly-banner-canvas");
-    if (!canvas || !canvas.width) { showToast("❌ 请先选择品类"); return; }
+    if (!canvas?.width) { showToast("❌ 请先选择品类"); return; }
+    // 自动调整质量确保 ≤500Kb
+    let quality = 0.88;
+    let dataUrl = canvas.toDataURL("image/jpeg", quality);
+    while (dataUrl.length * 3 / 4 > 500 * 1024 && quality > 0.3) {
+      quality -= 0.05;
+      dataUrl = canvas.toDataURL("image/jpeg", quality);
+    }
     const a = document.createElement("a");
-    a.href = canvas.toDataURL("image/png");
-    a.download = `crossly-banner-${currentCategory}.png`;
+    a.href = dataUrl;
+    a.download = `crossly-${currentCategory}-${currentSize.w}x${currentSize.h}.jpg`;
     a.click();
-    showToast("✅ 下载中！保存后去Ozon上传");
+    showToast(`✅ 下载 JPEG！(${currentSize.w}×${currentSize.h})`);
   };
 
-  window.crosslyAutoUploadBanner = async () => {
+  window.crosslyAutoUploadBanner = () => {
     const canvas = document.getElementById("crossly-banner-canvas");
-    if (!canvas || !canvas.width) { showToast("❌ 请先选择品类"); return; }
+    if (!canvas?.width) { showToast("❌ 请先选择品类"); return; }
     const fileInput = document.querySelector('input[type="file"]');
-    if (!fileInput) {
-      showToast("❌ 请先点Ozon的「请上传图片」区域，再点此按钮");
-      return;
+    if (!fileInput) { showToast("❌ 请先点Ozon「请上传图片」再点此按钮"); return; }
+    let quality = 0.88;
+    let dataUrl = canvas.toDataURL("image/jpeg", quality);
+    while (dataUrl.length * 3 / 4 > 500 * 1024 && quality > 0.3) {
+      quality -= 0.05;
+      dataUrl = canvas.toDataURL("image/jpeg", quality);
     }
-    canvas.toBlob(async (blob) => {
-      const file = new File([blob], `crossly-banner-${currentCategory}.png`, { type: "image/png" });
+    fetch(dataUrl).then(r => r.blob()).then(blob => {
+      const file = new File([blob], `crossly-${currentCategory}.jpg`, { type: "image/jpeg" });
       const dt = new DataTransfer();
       dt.items.add(file);
       fileInput.files = dt.files;
       fileInput.dispatchEvent(new Event("change", { bubbles: true }));
       fileInput.dispatchEvent(new Event("input", { bubbles: true }));
       showToast("✅ 已注入！如未生效请用「下载」手动上传");
-    }, "image/png");
+    });
+  };
+
+  // 默认选 686×290
+  window.crosslySelectSize = (idx) => {
+    currentSize = OZON_SIZES[parseInt(idx)];
+    if (document.getElementById("crossly-banner-canvas")?.width) redraw();
   };
 }
 
-// ── Canvas 本地生成横幅图 ──────────────────────────
-function generateBannerCanvas(key, tpl) {
+// ── Canvas 绘制横幅 ────────────────────────────────
+function drawBanner(key, tpl, W, H) {
   const canvas = document.getElementById("crossly-banner-canvas");
   if (!canvas) return;
-  const W = 2832, H = 600;
   canvas.width = W;
   canvas.height = H;
   const ctx = canvas.getContext("2d");
@@ -365,7 +412,6 @@ function generateBannerCanvas(key, tpl) {
     beauty:  ["#6b21a8", "#ec4899"],
     general: ["#b45309", "#f59e0b"],
   };
-
   const [c1, c2] = COLORS[key] || COLORS.general;
 
   // 背景渐变
@@ -375,53 +421,48 @@ function generateBannerCanvas(key, tpl) {
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, W, H);
 
-  // 半透明装饰圆
-  ctx.globalAlpha = 0.08;
+  // 装饰圆（半透明）
+  ctx.globalAlpha = 0.1;
   ctx.fillStyle = "#ffffff";
-  ctx.beginPath(); ctx.arc(180, 300, 320, 0, Math.PI * 2); ctx.fill();
-  ctx.beginPath(); ctx.arc(W - 180, 300, 280, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(W * 0.08, H * 0.5, H * 0.6, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(W * 0.92, H * 0.5, H * 0.55, 0, Math.PI * 2); ctx.fill();
   ctx.globalAlpha = 1;
 
-  // 左侧竖条装饰
-  ctx.fillStyle = "rgba(255,255,255,0.35)";
-  ctx.beginPath(); ctx.roundRect(80, 160, 6, 280, 3); ctx.fill();
-  ctx.fillStyle = "rgba(255,255,255,0.18)";
-  ctx.beginPath(); ctx.roundRect(100, 200, 3, 200, 1.5); ctx.fill();
+  const scale = H / 600; // 按高度缩放字体
 
-  // 右侧大 Emoji
-  ctx.font = "200px serif";
+  // Emoji（右侧）
+  ctx.font = `${Math.round(180 * scale)}px serif`;
   ctx.textAlign = "center";
-  ctx.fillText(tpl.emoji || "🛒", W - 220, 390);
-
-  // 品牌小标签
-  ctx.fillStyle = "rgba(255,255,255,0.2)";
-  ctx.beginPath(); ctx.roundRect(130, 148, 200, 38, 19); ctx.fill();
   ctx.fillStyle = "rgba(255,255,255,0.9)";
-  ctx.font = "bold 20px Arial, sans-serif";
-  ctx.textAlign = "center";
-  ctx.fillText("Crossly · 义乌直发", 230, 172);
+  ctx.fillText(tpl.emoji || "🛒", W - H * 0.38, H * 0.68);
 
   // 主标题
   ctx.fillStyle = "#ffffff";
   ctx.textAlign = "left";
-  ctx.font = "bold 90px Arial Black, Arial, sans-serif";
-  ctx.fillText(tpl.bannerRu || tpl.name, 150, 320);
+  ctx.font = `900 ${Math.round(78 * scale)}px "Arial Black", Arial, sans-serif`;
+  const title = tpl.bannerRu?.split("\n")[0] || tpl.name;
+  // 截断防溢出
+  const maxW = W * 0.68;
+  let fontSize = Math.round(78 * scale);
+  ctx.font = `900 ${fontSize}px "Arial Black", Arial, sans-serif`;
+  while (ctx.measureText(title).width > maxW && fontSize > 20) {
+    fontSize -= 2;
+    ctx.font = `900 ${fontSize}px "Arial Black", Arial, sans-serif`;
+  }
+  ctx.fillText(title, H * 0.26, H * 0.54);
 
-  // 副标题（取斜杠/★分隔的第二行）
+  // 副标题
   const subtitle = tpl.bannerRu?.split("\n")[1] || "";
-  ctx.font = "44px Arial, sans-serif";
+  ctx.font = `${Math.round(36 * scale)}px Arial, sans-serif`;
   ctx.globalAlpha = 0.85;
-  ctx.fillText(subtitle, 150, 400);
+  ctx.fillText(subtitle, H * 0.26, H * 0.75);
   ctx.globalAlpha = 1;
 
-  // 底部波浪装饰
-  ctx.fillStyle = "rgba(255,255,255,0.06)";
-  ctx.beginPath();
-  ctx.moveTo(0, 550);
-  ctx.quadraticCurveTo(W / 4, 520, W / 2, 550);
-  ctx.quadraticCurveTo(W * 3 / 4, 580, W, 550);
-  ctx.lineTo(W, H); ctx.lineTo(0, H);
-  ctx.closePath(); ctx.fill();
+  // 品牌水印
+  ctx.font = `bold ${Math.round(18 * scale)}px Arial, sans-serif`;
+  ctx.fillStyle = "rgba(255,255,255,0.5)";
+  ctx.textAlign = "right";
+  ctx.fillText("crossly.cn", W - 20, H - 14);
 }
 
 // ═══════════════════════════════════════════════════
