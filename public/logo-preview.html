@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crossly Logo - 方案B升级版</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#0f172a; min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:32px 16px; font-family:"PingFang SC","Microsoft YaHei",sans-serif; gap:32px; }
+h1 { color:white; font-size:18px; font-weight:900; }
+.row { display:flex; gap:32px; align-items:flex-end; flex-wrap:wrap; justify-content:center; }
+.card { text-align:center; }
+canvas { border-radius:20px; display:block; box-shadow:0 8px 40px rgba(0,0,0,0.5); }
+.label { color:#94a3b8; font-size:12px; margin-top:10px; }
+.btn { margin-top:24px; background:#6366f1; color:white; border:none; padding:12px 32px; border-radius:12px; font-size:14px; font-weight:700; cursor:pointer; }
+</style>
+</head>
+<body>
+<h1>📦 方案B升级版 · 包裹 + $₽</h1>
+<div class="row">
+  <div class="card">
+    <canvas id="logo512" width="512" height="512"></canvas>
+    <div class="label">512×512 · 完整版</div>
+  </div>
+  <div class="card">
+    <canvas id="logo128" width="128" height="128"></canvas>
+    <div class="label">128×128 · App图标</div>
+  </div>
+  <div class="card">
+    <canvas id="logo64" width="64" height="64"></canvas>
+    <div class="label">64×64 · Favicon</div>
+  </div>
+</div>
+<button class="btn" onclick="downloadAll()">⬇️ 下载所有尺寸 PNG</button>
+
+<script>
+function drawLogo(canvas) {
+  const S = canvas.width;
+  const ctx = canvas.getContext('2d');
+  const R = S * 0.2; // 圆角
+
+  // ── 圆角矩形裁剪 ──
+  function rr(x,y,w,h,r){
+    ctx.beginPath();
+    ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y);
+    ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+    ctx.lineTo(x+w,y+h-r);
+    ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+    ctx.lineTo(x+r,y+h);
+    ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+    ctx.lineTo(x,y+r);
+    ctx.quadraticCurveTo(x,y,x+r,y);
+    ctx.closePath();
+  }
+
+  // ── 背景渐变（橙红→品紫→深蓝） ──
+  ctx.save();
+  rr(0,0,S,S,R); ctx.clip();
+
+  const bg = ctx.createLinearGradient(0, 0, S, S);
+  bg.addColorStop(0,   '#ff6b35');  // 暖橙
+  bg.addColorStop(0.38,'#ea4c89');  // 玫红
+  bg.addColorStop(0.72,'#9b3fcf');  // 品紫
+  bg.addColorStop(1,   '#2d1b69');  // 深紫蓝
+  ctx.fillStyle = bg;
+  ctx.fillRect(0,0,S,S);
+
+  // ── 光晕（增加质感） ──
+  const glow = ctx.createRadialGradient(S*0.3,S*0.25,0, S*0.3,S*0.25,S*0.55);
+  glow.addColorStop(0,'rgba(255,200,100,0.18)');
+  glow.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle = glow;
+  ctx.fillRect(0,0,S,S);
+
+  // ── 包裹箱体 ──
+  const bx = S*0.15, by = S*0.36, bw = S*0.70, bh = S*0.46;
+  const lw = S*0.055;
+
+  ctx.strokeStyle = 'rgba(255,255,255,0.93)';
+  ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+
+  // 箱体外框
+  ctx.lineWidth = lw;
+  rr(bx, by, bw, bh, S*0.04);
+  ctx.stroke();
+
+  // 箱盖
+  const lidH = S*0.12;
+  ctx.lineWidth = lw;
+  rr(bx - S*0.025, by - lidH, bw + S*0.05, lidH + S*0.01, S*0.035);
+  ctx.stroke();
+
+  // 蝴蝶结横线
+  ctx.lineWidth = lw * 0.65;
+  ctx.beginPath();
+  ctx.moveTo(S*0.5 - S*0.09, by - lidH*0.5);
+  ctx.lineTo(S*0.5 + S*0.09, by - lidH*0.5);
+  ctx.stroke();
+
+  // 箱体竖线（中缝）
+  ctx.lineWidth = lw * 0.55;
+  ctx.beginPath();
+  ctx.moveTo(S*0.5, by + S*0.01);
+  ctx.lineTo(S*0.5, by + bh - S*0.01);
+  ctx.stroke();
+
+  // 箱体横线（腰带）
+  ctx.beginPath();
+  ctx.moveTo(bx + S*0.02, by + bh*0.48);
+  ctx.lineTo(bx + bw - S*0.02, by + bh*0.48);
+  ctx.stroke();
+
+  // ── 货币符号 $₽ ──
+  // 整体居中在箱体内
+  const moneyY = by + bh * 0.46;  // 垂直中心
+  const fontSize = S * 0.22;
+
+  ctx.font = `900 ${fontSize}px "Arial Black","PingFang SC",sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+
+  // 外层描边（让符号在渐变背景上更清晰）
+  ctx.strokeStyle = 'rgba(120,40,0,0.35)';
+  ctx.lineWidth = S * 0.025;
+  ctx.lineJoin = 'round';
+
+  // $ 偏左
+  const dollarX = S * 0.385;
+  const rubleX  = S * 0.615;
+
+  // 亮黄色渐变
+  const moneyGrad = ctx.createLinearGradient(0, moneyY - fontSize*0.6, 0, moneyY + fontSize*0.6);
+  moneyGrad.addColorStop(0, '#fff176');   // 浅柠黄
+  moneyGrad.addColorStop(0.45,'#ffd700'); // 金黄
+  moneyGrad.addColorStop(1,  '#ffaa00');  // 深琥珀
+
+  // 描边
+  ctx.strokeText('$', dollarX, moneyY);
+  ctx.strokeText('₽', rubleX,  moneyY);
+
+  // 填充
+  ctx.fillStyle = moneyGrad;
+  ctx.fillText('$', dollarX, moneyY);
+  ctx.fillText('₽', rubleX,  moneyY);
+
+  // 小星星点缀（右上角）
+  function star(x, y, r, color) {
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    for(let i=0;i<5;i++){
+      const a = (i*4*Math.PI/5) - Math.PI/2;
+      const a2 = a + 2*Math.PI/5;
+      if(i===0) ctx.moveTo(x+Math.cos(a)*r, y+Math.sin(a)*r);
+      else ctx.lineTo(x+Math.cos(a)*r, y+Math.sin(a)*r);
+      ctx.lineTo(x+Math.cos(a2)*r*0.4, y+Math.sin(a2)*r*0.4);
+    }
+    ctx.closePath(); ctx.fill();
+  }
+
+  if(S >= 128) {
+    star(S*0.78, S*0.18, S*0.045, '#ffd700');
+    star(S*0.88, S*0.30, S*0.028, '#fff176');
+    star(S*0.14, S*0.22, S*0.030, '#ffd700');
+  }
+
+  ctx.restore();
+}
+
+['logo512','logo128','logo64'].forEach(id => {
+  drawLogo(document.getElementById(id));
+});
+
+function downloadAll() {
+  ['logo512','logo128','logo64'].forEach(id => {
+    const cv = document.getElementById(id);
+    const a = document.createElement('a');
+    a.href = cv.toDataURL('image/png');
+    a.download = `crossly-logo-${cv.width}.png`;
+    a.click();
+  });
+}
+</script>
+</body>
+</html>
