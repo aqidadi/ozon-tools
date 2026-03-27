@@ -761,6 +761,20 @@ const COURSES = [
     free: false,
     steps: ["先问：有没有贴标服务", "再问：丢件赔偿政策", "最后：先发5件试合作", "跑通再批量合作"],
   },
+  {
+    id: 7,
+    tag: "🛠️ 工具篇",
+    tagColor: "bg-indigo-100 text-indigo-600",
+    title: "《全网对比：店小秘 vs 秒手 vs 芒果店长，新手宝妈到底用哪个？》",
+    desc: "统帅亲口告诉你：我把这三个工具都用了一遍，结论很简单——新手用秒手，多平台老手用店小秘，Crossly帮你选品算利润，秒手帮你上货，这才是省钱省力的黄金搭配。",
+    author: "义乌统帅",
+    avatar: "👨‍💼",
+    duration: "25分钟",
+    type: "🎬 短视频",
+    free: true,
+    hot: true,
+    steps: ["秒手：Ozon新手专属，一键上货最傻瓜", "店小秘：多平台必备，有经验再用", "芒果店长：功能强但贵，月入过万再升级", "Crossly：选品+算利润，搭配任何上货工具用"],
+  }
 ];
 
 function CoursePage() {
