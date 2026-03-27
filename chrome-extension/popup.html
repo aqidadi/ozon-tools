@@ -122,28 +122,8 @@
       </div>
     </div>
 
-    <!-- 我的 Tab -->
-    <div class="panel" id="panel-account">
-      <div id="login-section">
-        <div class="sec">Crossly 账号</div>
-        <div id="login-status" class="tip">未登录 — 登录后解锁无限采集+刊登+装修</div>
-        <button class="btn btn-primary" id="btn-login">🔑 登录 / 注册 Crossly</button>
-        <button class="btn btn-gold" id="btn-upgrade">🔋 给Crossly充电（解锁会员）</button>
-      </div>
-
-      <hr class="divider">
-      <div class="sec">Ozon 卖家账号 <span style="font-size:9px;background:#fef3c7;color:#92400e;border-radius:10px;padding:1px 6px;">刊登必填</span></div>
-      <input class="input" id="input-client-id" placeholder="Client-Id（数字，如：4301277）" />
-      <input class="input" id="input-api-key" placeholder="Api-Key（uuid格式）" />
-      <button class="btn btn-green" id="btn-save-ozon">✅ 保存 Ozon 账号</button>
-
-      <hr class="divider">
-      <div class="sec">高级设置</div>
-      <input class="input" id="input-site" placeholder="Crossly网站地址（默认不用改）" />
-      <button class="btn btn-gray" id="btn-save-site">保存网站地址</button>
-
-      <div class="tip" style="font-size:10px;margin-top:4px;">🔒 所有信息只存本地浏览器，不上传服务器</div>
-    </div>
+    <!-- 我的 Tab（内容由 JS 动态渲染） -->
+    <div class="panel" id="panel-account"></div>
 
   </div>
 

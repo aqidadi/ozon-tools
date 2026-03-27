@@ -348,57 +348,147 @@ async function initPublishTab() {
 })();
 
 // ── 我的 Tab ─────────────────────────────────────
+const SUPABASE_URL = "https://kovjebkuvfhbijiqtdjt.supabase.co";
+const SUPABASE_ANON = "sb_publishable_i9a7VUriUM_HmMehiOh4nw_qnjO-Sfk";
+
+async function supabaseAuth(email, password, isSignup) {
+  const endpoint = isSignup
+    ? `${SUPABASE_URL}/auth/v1/signup`
+    : `${SUPABASE_URL}/auth/v1/token?grant_type=password`;
+  const resp = await fetch(endpoint, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "apikey": SUPABASE_ANON },
+    body: JSON.stringify({ email, password }),
+  });
+  return resp.json();
+}
+
 async function initAccountTab() {
   await loadState();
+  const panel = $("panel-account");
 
-  // 登录状态
-  const loginStatus = $("login-status");
   if (_state.crosslyUser) {
-    loginStatus.textContent = `已登录：${_state.crosslyUser} ${isPro() ? "💪 会员" : "（免费版）"}`;
-    loginStatus.className = "tip success";
-    $("btn-login").textContent = "退出登录";
-    $("btn-login").className = "btn btn-gray";
-  }
-
-  $("btn-login").addEventListener("click", async () => {
-    if (_state.crosslyUser) {
+    // 已登录状态
+    panel.innerHTML = `
+      <div class="tip success" style="margin-bottom:8px;">✅ 已登录：${_state.crosslyUser}</div>
+      <div class="tip" style="margin-bottom:8px;">${isPro() ? "💪 <strong>会员</strong>：无限采集+刊登+装修" : "免费版：每月50次采集，升级解锁全功能"}</div>
+      ${!isPro() ? `<button class="btn btn-gold" id="btn-upgrade2">🔋 给Crossly充电（解锁会员）</button>` : ""}
+      <hr class="divider">
+      <div class="sec">Ozon 卖家账号 <span style="font-size:9px;background:#fef3c7;color:#92400e;border-radius:10px;padding:1px 6px;">刊登必填</span></div>
+      <input class="input" id="input-client-id" placeholder="Client-Id（数字，如：4301277）" />
+      <input class="input" id="input-api-key" placeholder="Api-Key（uuid格式）" />
+      <button class="btn btn-green" id="btn-save-ozon">✅ 保存 Ozon 账号</button>
+      <hr class="divider">
+      <button class="btn btn-gray" id="btn-logout">退出登录</button>
+      <div class="tip" style="font-size:10px;margin-top:4px;">🔒 账号信息只存本地，不上传服务器</div>
+    `;
+    if (!isPro() && $("btn-upgrade2")) {
+      $("btn-upgrade2").addEventListener("click", () => chrome.tabs.create({ url: getSite() + "/?upgrade=1" }));
+    }
+    if (_state.ozonClientId) $("input-client-id").value = _state.ozonClientId;
+    if (_state.ozonApiKey) $("input-api-key").value = _state.ozonApiKey;
+    $("btn-save-ozon").addEventListener("click", async () => {
+      const cid = $("input-client-id").value.trim();
+      const akey = $("input-api-key").value.trim();
+      await chrome.storage.local.set({ ozonClientId: cid, ozonApiKey: akey });
+      _state.ozonClientId = cid; _state.ozonApiKey = akey;
+      showToast("✅ Ozon 账号已保存！");
+    });
+    $("btn-logout").addEventListener("click", async () => {
       await chrome.storage.local.remove(["crosslyToken", "crosslyUser", "crosslyPro"]);
-      showToast("已退出登录");
-      window.close();
-    } else {
-      // 跳到网站首页，用户在页面右上角点「登录」
-      chrome.tabs.create({ url: getSite() + "/?login=1" });
-    }
-  });
+      showToast("已退出");
+      setTimeout(() => { initAccountTab(); updateHeader(); }, 300);
+    });
 
-  $("btn-upgrade").addEventListener("click", () => chrome.tabs.create({ url: getSite() + "/?upgrade=1" }));
+  } else {
+    // 未登录：内嵌登录表单
+    let isSignup = false;
+    panel.innerHTML = `
+      <div class="tip warn" style="margin-bottom:8px;">🔑 登录后解锁无限采集+刊登+装修助手</div>
+      <div style="display:flex;gap:0;margin-bottom:10px;border-radius:8px;overflow:hidden;border:1.5px solid #e2e8f0;">
+        <button id="tab-login-btn" style="flex:1;padding:8px;border:none;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;font-weight:700;font-size:12px;cursor:pointer;">登录</button>
+        <button id="tab-signup-btn" style="flex:1;padding:8px;border:none;background:#f1f5f9;color:#64748b;font-weight:700;font-size:12px;cursor:pointer;">注册</button>
+      </div>
+      <input class="input" id="auth-email" type="email" placeholder="邮箱地址" autocomplete="email" />
+      <input class="input" id="auth-password" type="password" placeholder="密码（6位以上）" autocomplete="current-password" />
+      <button class="btn btn-primary" id="btn-auth-submit">🔑 登录</button>
+      <div id="auth-error" style="display:none;font-size:11px;color:#dc2626;background:#fee2e2;border-radius:6px;padding:6px 8px;margin-bottom:6px;"></div>
+      <hr class="divider">
+      <div class="sec">Ozon 卖家账号 <span style="font-size:9px;background:#fef3c7;color:#92400e;border-radius:10px;padding:1px 6px;">刊登必填</span></div>
+      <input class="input" id="input-client-id" placeholder="Client-Id（数字，如：4301277）" />
+      <input class="input" id="input-api-key" placeholder="Api-Key（uuid格式）" />
+      <button class="btn btn-green" id="btn-save-ozon">✅ 保存 Ozon 账号</button>
+      <div class="tip" style="font-size:10px;margin-top:4px;">🔒 账号信息只存本地，不上传服务器</div>
+    `;
 
-  // Ozon 账号
-  if (_state.ozonClientId) $("input-client-id").value = _state.ozonClientId;
-  if (_state.ozonApiKey) $("input-api-key").value = _state.ozonApiKey;
-  if (_state.siteUrl) $("input-site").value = _state.siteUrl;
+    if (_state.ozonClientId) $("input-client-id").value = _state.ozonClientId;
+    if (_state.ozonApiKey) $("input-api-key").value = _state.ozonApiKey;
 
-  $("btn-save-ozon").addEventListener("click", async () => {
-    const cid = $("input-client-id").value.trim();
-    const akey = $("input-api-key").value.trim();
-    await chrome.storage.local.set({ ozonClientId: cid, ozonApiKey: akey });
-    _state.ozonClientId = cid; _state.ozonApiKey = akey;
-    // 同步到当前页面 localStorage
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    if (tab?.url?.includes("crossly.cn") || tab?.url?.includes("localhost")) {
-      await chrome.scripting.executeScript({
-        target: { tabId: tab.id },
-        func: (c, a) => { localStorage.setItem("crossly_ozon_client_id", c); localStorage.setItem("crossly_ozon_api_key", a); },
-        args: [cid, akey],
-      });
-    }
-    showToast("✅ Ozon 账号已保存！");
-  });
+    // 切换登录/注册
+    $("tab-login-btn").addEventListener("click", () => {
+      isSignup = false;
+      $("tab-login-btn").style.background = "linear-gradient(135deg,#6366f1,#8b5cf6)";
+      $("tab-login-btn").style.color = "white";
+      $("tab-signup-btn").style.background = "#f1f5f9";
+      $("tab-signup-btn").style.color = "#64748b";
+      $("btn-auth-submit").textContent = "🔑 登录";
+    });
+    $("tab-signup-btn").addEventListener("click", () => {
+      isSignup = true;
+      $("tab-signup-btn").style.background = "linear-gradient(135deg,#6366f1,#8b5cf6)";
+      $("tab-signup-btn").style.color = "white";
+      $("tab-login-btn").style.background = "#f1f5f9";
+      $("tab-login-btn").style.color = "#64748b";
+      $("btn-auth-submit").textContent = "📝 注册账号";
+    });
 
-  $("btn-save-site").addEventListener("click", async () => {
-    const site = $("input-site").value.trim();
-    if (site) { await chrome.storage.local.set({ siteUrl: site }); showToast("✅ 已保存"); }
-  });
+    $("btn-auth-submit").addEventListener("click", async () => {
+      const email = $("auth-email").value.trim();
+      const password = $("auth-password").value.trim();
+      if (!email || !password) { showToast("❌ 请填写邮箱和密码"); return; }
+      $("btn-auth-submit").textContent = "⏳ 处理中...";
+      $("btn-auth-submit").disabled = true;
+      $("auth-error").style.display = "none";
+      try {
+        const data = await supabaseAuth(email, password, isSignup);
+        if (data.access_token) {
+          const user = data.user?.email || email;
+          await chrome.storage.local.set({
+            crosslyToken: data.access_token,
+            crosslyUser: user,
+            crosslyPro: false, // 默认免费，充电后再升级
+          });
+          _state.crosslyToken = data.access_token;
+          _state.crosslyUser = user;
+          _state.crosslyPro = false;
+          showToast("✅ " + (isSignup ? "注册成功！" : "登录成功！"));
+          updateHeader();
+          setTimeout(() => initAccountTab(), 300);
+        } else {
+          const msg = data.error_description || data.msg || data.message || (isSignup ? "注册失败，邮箱可能已注册" : "邮箱或密码错误");
+          $("auth-error").style.display = "block";
+          $("auth-error").textContent = "❌ " + msg;
+        }
+      } catch (e) {
+        $("auth-error").style.display = "block";
+        $("auth-error").textContent = "❌ 网络错误：" + e.message;
+      }
+      $("btn-auth-submit").textContent = isSignup ? "📝 注册账号" : "🔑 登录";
+      $("btn-auth-submit").disabled = false;
+    });
+
+    // 回车提交
+    [$("auth-email"), $("auth-password")].forEach(el => {
+      el.addEventListener("keydown", e => { if (e.key === "Enter") $("btn-auth-submit").click(); });
+    });
+
+    $("btn-save-ozon").addEventListener("click", async () => {
+      const cid = $("input-client-id").value.trim();
+      const akey = $("input-api-key").value.trim();
+      await chrome.storage.local.set({ ozonClientId: cid, ozonApiKey: akey });
+      showToast("✅ Ozon 账号已保存！");
+    });
+  }
 }
 
 // 初始化
