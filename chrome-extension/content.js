@@ -6,7 +6,13 @@
 // ═══════════════════════════════════════════════════
 const url = location.href;
 const isOzonSeller = url.includes("seller.ozon.ru");
-const isShopDesign = isOzonSeller && (url.includes("/showcase") || url.includes("commercial-space") || url.includes("store-design") || url.includes("shop-design"));
+const isShopDesign = isOzonSeller && (
+  url.includes("/showcase") ||
+  url.includes("constructor") ||
+  url.includes("commercial-space") ||
+  url.includes("store-design") ||
+  url.includes("shop-design")
+);
 const isWarehouse  = isOzonSeller && (url.includes("/warehouse") || url.includes("/supply") || url.includes("delivery-method") || url.includes("logistic"));
 const isStoreName  = isOzonSeller && (url.includes("/profile") || url.includes("/settings") || url.includes("seller-info") || url.includes("company"));
 const is1688       = url.includes("1688.com");
@@ -483,26 +489,17 @@ window.__crosslyGetData = scanProductData;
 function init() {
   // Ozon Seller 后台
   if (isOzonSeller) {
-    // 稍等页面渲染完成
     setTimeout(() => {
-      if (isShopDesign) {
+      const path = location.pathname + location.href;
+      if (path.includes("showcase") || path.includes("constructor") || path.includes("commercial")) {
         initShopDesignPanel();
-      } else if (isWarehouse) {
+      } else if (path.includes("warehouse") || path.includes("delivery") || path.includes("logistic") || path.includes("supply")) {
         initWarehousePanel();
-      } else if (isStoreName) {
+      } else if (path.includes("profile") || path.includes("settings") || path.includes("seller-info") || path.includes("company")) {
         initStoreNamePanel();
       } else {
-        // 其他 Ozon Seller 页面：显示通用助手
-        // 检测 URL 包含 showcase/product/warehouse 等关键词
-        const path = location.pathname;
-        if (path.includes("showcase") || path.includes("commercial")) {
-          initShopDesignPanel();
-        } else if (path.includes("warehouse") || path.includes("delivery") || path.includes("logistic")) {
-          initWarehousePanel();
-        } else {
-          // 默认显示取名助手（大多数情况是设置页）
-          initStoreNamePanel();
-        }
+        // 兜底：所有其他 Ozon Seller 页面都显示装修面板
+        initShopDesignPanel();
       }
     }, 1500);
     return;
