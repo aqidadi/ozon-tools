@@ -401,11 +401,11 @@ async function initAccountTab() {
       try {
         const { crosslyUserId, crosslyToken } = await chrome.storage.local.get(["crosslyUserId","crosslyToken"]);
         const resp = await fetch(
-          `${SUPABASE_URL}/rest/v1/profiles?id=eq.${crosslyUserId}&select=is_pro,quota`,
+          `${SUPABASE_URL}/rest/v1/profiles?id=eq.${crosslyUserId}&select=plan,quota`,
           { headers: { "apikey": SUPABASE_ANON, "Authorization": `Bearer ${crosslyToken}` } }
         );
         const profiles = await resp.json();
-        const isPro = !!profiles?.[0]?.is_pro;
+        const isPro = profiles?.[0]?.plan === "pro";
         await chrome.storage.local.set({ crosslyPro: isPro });
         _state.crosslyPro = isPro;
         updateHeader();
@@ -483,11 +483,11 @@ async function initAccountTab() {
           let isPro = false;
           try {
             const profileResp = await fetch(
-              `${SUPABASE_URL}/rest/v1/profiles?id=eq.${userId}&select=is_pro,quota`,
+              `${SUPABASE_URL}/rest/v1/profiles?id=eq.${userId}&select=plan,quota`,
               { headers: { "apikey": SUPABASE_ANON, "Authorization": `Bearer ${data.access_token}` } }
             );
             const profiles = await profileResp.json();
-            if (profiles?.[0]?.is_pro) isPro = true;
+            if (profiles?.[0]?.plan === "pro") isPro = true;
           } catch {}
 
           await chrome.storage.local.set({
