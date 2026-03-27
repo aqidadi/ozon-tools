@@ -5,92 +5,47 @@
   <title>Crossly 全能管家</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      width: 360px;
-      font-family: -apple-system, "PingFang SC", sans-serif;
-      background: #f8fafc;
-      color: #1e293b;
-    }
-    .header {
-      background: linear-gradient(135deg, #ff6b35, #9b3fcf);
-      color: white;
-      padding: 14px 16px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .header-logo { font-size: 28px; }
-    .header-text h1 { font-size: 15px; font-weight: 800; }
-    .header-text p  { font-size: 10px; opacity: 0.8; margin-top: 2px; }
-    .tabs {
-      display: flex;
-      background: white;
-      border-bottom: 2px solid #f1f5f9;
-    }
-    .tab {
-      flex: 1; padding: 9px 4px; font-size: 11px; font-weight: 700;
-      border: none; background: none; cursor: pointer; color: #94a3b8;
-      border-bottom: 2px solid transparent; margin-bottom: -2px;
-      transition: color 0.15s;
-    }
+    body { width: 360px; font-family: -apple-system, "PingFang SC", sans-serif; background: #f8fafc; color: #1e293b; }
+    .header { background: linear-gradient(135deg,#ff6b35,#9b3fcf); color: white; padding: 12px 14px; display: flex; align-items: center; gap: 10px; }
+    .header-logo { font-size: 26px; }
+    .header-text h1 { font-size: 14px; font-weight: 800; }
+    .header-text p { font-size: 10px; opacity: 0.8; margin-top: 1px; }
+    .header-right { margin-left: auto; text-align: right; }
+    .user-badge { font-size: 10px; background: rgba(255,255,255,0.2); border-radius: 12px; padding: 3px 8px; cursor: pointer; }
+    .user-badge.pro { background: linear-gradient(135deg,#f59e0b,#ef4444); }
+    .quota { font-size: 9px; opacity: 0.75; margin-top: 2px; }
+    .tabs { display: flex; background: white; border-bottom: 2px solid #f1f5f9; }
+    .tab { flex: 1; padding: 8px 2px; font-size: 10px; font-weight: 700; border: none; background: none; cursor: pointer; color: #94a3b8; border-bottom: 2px solid transparent; margin-bottom: -2px; }
     .tab.active { color: #ff6b35; border-bottom-color: #ff6b35; }
-    .body { padding: 12px 14px; }
+    .body { padding: 11px 13px; max-height: 480px; overflow-y: auto; }
     .panel { display: none; }
     .panel.active { display: block; }
-    .tip {
-      font-size: 11px; color: #64748b; background: #f0f4ff;
-      border-radius: 8px; padding: 8px 10px; margin-bottom: 10px; line-height: 1.6;
-    }
-    .section-title {
-      font-size: 10px; font-weight: 800; color: #94a3b8;
-      letter-spacing: 0.8px; text-transform: uppercase; margin: 10px 0 5px;
-    }
-    .btn {
-      width: 100%; padding: 10px 14px; border-radius: 10px; border: none;
-      font-size: 13px; font-weight: 700; cursor: pointer; margin-bottom: 8px;
-      transition: opacity 0.15s; text-align: left;
-    }
-    .btn:hover { opacity: 0.88; }
+    .tip { font-size: 11px; color: #64748b; background: #f0f4ff; border-radius: 8px; padding: 8px 10px; margin-bottom: 8px; line-height: 1.5; }
+    .tip.warn { background: #fff7ed; color: #92400e; }
+    .tip.success { background: #d1fae5; color: #065f46; }
+    .tip.error { background: #fee2e2; color: #991b1b; }
+    .sec { font-size: 10px; font-weight: 800; color: #94a3b8; letter-spacing: .8px; text-transform: uppercase; margin: 8px 0 4px; }
+    .btn { width: 100%; padding: 9px 12px; border-radius: 10px; border: none; font-size: 12px; font-weight: 700; cursor: pointer; margin-bottom: 7px; text-align: left; display: flex; align-items: center; gap: 6px; transition: opacity .15s; }
+    .btn:hover { opacity: .88; }
     .btn-primary { background: linear-gradient(135deg,#6366f1,#8b5cf6); color: white; }
     .btn-orange  { background: linear-gradient(135deg,#ff6b35,#ea4c89); color: white; }
     .btn-green   { background: linear-gradient(135deg,#16a34a,#22c55e); color: white; }
     .btn-blue    { background: linear-gradient(135deg,#2563eb,#60a5fa); color: white; }
     .btn-gray    { background: #f1f5f9; color: #374151; }
-    .input {
-      width: 100%; border: 1.5px solid #e2e8f0; border-radius: 8px;
-      padding: 8px 10px; font-size: 12px; margin-bottom: 8px; outline: none;
-    }
+    .btn-gold    { background: linear-gradient(135deg,#f59e0b,#ef4444); color: white; }
+    .btn .badge  { font-size: 9px; background: rgba(255,255,255,0.25); border-radius: 10px; padding: 1px 6px; margin-left: auto; }
+    .input { width: 100%; border: 1.5px solid #e2e8f0; border-radius: 8px; padding: 7px 10px; font-size: 12px; margin-bottom: 7px; outline: none; }
     .input:focus { border-color: #6366f1; }
-    .badge {
-      display: inline-block; font-size: 9px; font-weight: 800;
-      padding: 2px 7px; border-radius: 20px; margin-left: 5px;
-      background: #fef3c7; color: #92400e; vertical-align: middle;
-    }
-    .badge.red { background: #fee2e2; color: #991b1b; }
-    .badge.green { background: #d1fae5; color: #065f46; }
-    .divider { border: none; border-top: 1px solid #f1f5f9; margin: 10px 0; }
-    .step {
-      display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px;
-    }
-    .step-num {
-      min-width: 20px; height: 20px; border-radius: 50%;
-      background: linear-gradient(135deg,#ff6b35,#9b3fcf);
-      color: white; font-size: 10px; font-weight: 800;
-      display: flex; align-items: center; justify-content: center;
-    }
+    .divider { border: none; border-top: 1px solid #f1f5f9; margin: 8px 0; }
+    .step { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 7px; }
+    .step-num { min-width: 18px; height: 18px; border-radius: 50%; background: linear-gradient(135deg,#ff6b35,#9b3fcf); color: white; font-size: 9px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
     .step-text { font-size: 11px; color: #374151; line-height: 1.5; }
-    .toast {
-      position: fixed; bottom: 12px; left: 50%;
-      transform: translateX(-50%);
-      background: #1e293b; color: white;
-      padding: 7px 14px; border-radius: 8px; font-size: 12px;
-      opacity: 0; transition: opacity 0.3s; pointer-events: none;
-      white-space: nowrap; z-index: 9999;
-    }
+    .lock-mask { display: flex; align-items: center; gap: 6px; background: #fef3c7; border-radius: 8px; padding: 8px 10px; margin-bottom: 7px; font-size: 11px; color: #92400e; font-weight: 600; }
+    .toast { position: fixed; bottom: 10px; left: 50%; transform: translateX(-50%); background: #1e293b; color: white; padding: 6px 14px; border-radius: 8px; font-size: 12px; opacity: 0; transition: opacity .3s; pointer-events: none; white-space: nowrap; z-index: 9999; }
     .toast.show { opacity: 1; }
-    #ozon-status { font-size: 11px; padding: 6px 10px; border-radius: 8px; margin-bottom: 8px; }
-    .status-ok { background: #d1fae5; color: #065f46; }
-    .status-err { background: #fee2e2; color: #991b1b; }
+    #ozon-key-status { font-size: 11px; padding: 6px 10px; border-radius: 8px; margin-bottom: 7px; }
+    .st-ok { background: #d1fae5; color: #065f46; }
+    .st-err { background: #fee2e2; color: #991b1b; }
   </style>
 </head>
 <body>
@@ -98,7 +53,11 @@
     <div class="header-logo">📦</div>
     <div class="header-text">
       <h1>Crossly 全能管家</h1>
-      <p>让跨境像微商一样简单 · 小学生都会用</p>
+      <p>让跨境像微商一样简单</p>
+    </div>
+    <div class="header-right">
+      <div class="user-badge" id="user-badge">未登录</div>
+      <div class="quota" id="user-quota">免费采集 50次/月</div>
     </div>
   </div>
 
@@ -106,74 +65,86 @@
     <button class="tab active" data-tab="guide">🗺️ 向导</button>
     <button class="tab" data-tab="collect">🔍 采集</button>
     <button class="tab" data-tab="publish">🚀 刊登</button>
-    <button class="tab" data-tab="account">⚙️ 账号</button>
+    <button class="tab" data-tab="tools">🛠️ 工具</button>
+    <button class="tab" data-tab="account">👤 我的</button>
   </div>
 
   <div class="body">
 
     <!-- 向导 Tab -->
     <div class="panel active" id="panel-guide">
-      <div class="tip">👋 第一次用？跟着步骤走，10分钟就会！</div>
-      <div class="step">
-        <div class="step-num">1</div>
-        <div class="step-text"><strong>采集商品</strong> — 打开义乌购商品页，点「采集」Tab 抓取数据</div>
-      </div>
-      <div class="step">
-        <div class="step-num">2</div>
-        <div class="step-text"><strong>自动翻译</strong> — 标题/描述自动翻译成外语，无需手动</div>
-      </div>
-      <div class="step">
-        <div class="step-num">3</div>
-        <div class="step-text"><strong>一键刊登</strong> — 点「刊登」Tab，填好利润，发到Ozon</div>
-      </div>
-      <div class="step">
-        <div class="step-num">4</div>
-        <div class="step-text"><strong>店铺装修</strong> — 去 <strong>Ozon 商店设计页</strong>，右下角出现「📦」按钮，点开即可一键装修</div>
-      </div>
+      <div class="tip">👋 第一次用？3步开始赚钱！</div>
+      <div class="step"><div class="step-num">1</div><div class="step-text"><strong>采集商品</strong> — 打开1688/义乌购商品详情页，点「采集」Tab</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-text"><strong>看翻译</strong> — 采集后自动显示中文+俄文标题，一键复制</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-text"><strong>一键刊登</strong> — 点「刊登」Tab，发到Ozon（需会员）</div></div>
       <hr class="divider">
       <button class="btn btn-orange" id="btn-open-crossly">🌐 打开 Crossly 网站</button>
-      <button class="btn btn-gray" id="btn-open-guide">📖 查看小白保姆教程</button>
-      <div id="ozon-launcher" style="display:none;margin-top:4px;">
-        <hr style="border:none;border-top:1px solid #f1f5f9;margin:10px 0;">
-        <div style="font-size:11px;font-weight:700;color:#ff6b35;margin-bottom:6px;">🏪 检测到 Ozon 后台</div>
-        <button class="btn btn-orange" id="btn-launch-decorator">🎨 启动装修助手（点开右下角📦面板）</button>
-        <div style="font-size:10px;color:#94a3b8;margin-top:4px;">含图库10张·自动选类目·一键下载JPEG</div>
+      <button class="btn btn-gray" id="btn-open-guide">📖 小白保姆教程（免费）</button>
+      <div id="ozon-launcher" style="display:none;">
+        <hr class="divider">
+        <div style="font-size:11px;font-weight:700;color:#ff6b35;margin-bottom:5px;">🏪 检测到 Ozon 后台</div>
+        <button class="btn btn-orange" id="btn-launch-decorator">🎨 启动装修助手<span class="badge">会员</span></button>
+        <div style="font-size:10px;color:#94a3b8;margin-bottom:4px;">图库10张·自动选类目·一键下载上传</div>
       </div>
     </div>
 
     <!-- 采集 Tab -->
     <div class="panel" id="panel-collect">
-      <div id="collect-status" class="tip">检测当前页面中...</div>
-      <div id="collect-content">
-        <div class="tip">请打开义乌购商品详情页，然后点击采集按钮</div>
-        <button class="btn btn-blue" id="btn-open-yiwugo">打开义乌购 →</button>
-      </div>
+      <div id="collect-status" class="tip">检测当前页面...</div>
+      <div id="collect-content"></div>
     </div>
 
     <!-- 刊登 Tab -->
     <div class="panel" id="panel-publish">
-      <div class="section-title">Ozon 账号</div>
-      <div id="ozon-status" class="status-err">⚠️ 未配置 Ozon Key，请先去「账号」Tab 填写</div>
-      <div class="section-title">当前商品</div>
-      <div id="publish-product" class="tip">暂无已采集商品，请先在采集页抓取</div>
+      <div id="ozon-key-status" class="st-err">⚠️ 未配置 Ozon Key，去「我的」Tab 填写</div>
+      <div class="sec">当前已采集商品</div>
+      <div id="publish-product" class="tip">还没采集，先去「采集」Tab 抓一个</div>
+      <div id="publish-lock" class="lock-mask" style="display:none;">🔒 刊登功能需要会员 — <span style="text-decoration:underline;cursor:pointer;" id="goto-upgrade">去充电 ¥9.9</span></div>
       <button class="btn btn-primary" id="btn-publish">🚀 一键刊登到 Ozon</button>
     </div>
 
-    <!-- 账号 Tab -->
-    <div class="panel" id="panel-account">
-      <div class="section-title">Crossly 网站</div>
-      <input class="input" id="input-site" placeholder="https://www.crossly.cn" />
+    <!-- 工具 Tab -->
+    <div class="panel" id="panel-tools">
+      <div class="sec">Ozon 店铺工具</div>
+      <button class="btn btn-orange" id="btn-launch-decorator2">🎨 启动装修助手<span class="badge">会员</span></button>
+      <button class="btn btn-blue" id="btn-open-ozon">🏪 打开 Ozon 卖家后台</button>
 
-      <div class="section-title">Ozon 卖家账号 <span class="badge">必填</span></div>
-      <input class="input" id="input-client-id" placeholder="Client-Id（数字）" />
-      <input class="input" id="input-api-key" placeholder="Api-Key（uuid格式）" />
-      <button class="btn btn-green" id="btn-save-account">✅ 保存账号信息</button>
+      <div class="sec">翻译工具</div>
+      <div style="display:flex;gap:6px;margin-bottom:7px;">
+        <textarea id="translate-input" style="flex:1;border:1.5px solid #e2e8f0;border-radius:8px;padding:7px;font-size:11px;resize:none;height:60px;outline:none;" placeholder="输入中文..."></textarea>
+      </div>
+      <button class="btn btn-primary" id="btn-translate">🤖 AI翻译成俄语</button>
+      <div id="translate-result" style="display:none;" class="tip"></div>
 
-      <hr class="divider">
-      <div class="tip" style="font-size:10px;">
-        🔒 账号信息只存在你的浏览器本地，不会上传到任何服务器
+      <div class="sec">快捷搜索</div>
+      <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:7px;">
+        ${["毛绒玩具","棉花娃娃","盲盒","动漫摆件","积木","宠物玩具","磁吸支架","发夹头饰"].map(k=>`<button onclick="chrome.tabs.create({url:'https://s.1688.com/selloffer/offer_search.htm?keywords='+encodeURIComponent('${k}')})" style="padding:4px 8px;border:none;border-radius:12px;background:#f1f5f9;font-size:10px;cursor:pointer;">${k}</button>`).join("")}
       </div>
     </div>
+
+    <!-- 我的 Tab -->
+    <div class="panel" id="panel-account">
+      <div id="login-section">
+        <div class="sec">Crossly 账号</div>
+        <div id="login-status" class="tip">未登录 — 登录后解锁无限采集+刊登+装修</div>
+        <button class="btn btn-primary" id="btn-login">🔑 登录 / 注册 Crossly</button>
+        <button class="btn btn-gold" id="btn-upgrade">🔋 给Crossly充电（解锁会员）</button>
+      </div>
+
+      <hr class="divider">
+      <div class="sec">Ozon 卖家账号 <span style="font-size:9px;background:#fef3c7;color:#92400e;border-radius:10px;padding:1px 6px;">刊登必填</span></div>
+      <input class="input" id="input-client-id" placeholder="Client-Id（数字，如：4301277）" />
+      <input class="input" id="input-api-key" placeholder="Api-Key（uuid格式）" />
+      <button class="btn btn-green" id="btn-save-ozon">✅ 保存 Ozon 账号</button>
+
+      <hr class="divider">
+      <div class="sec">高级设置</div>
+      <input class="input" id="input-site" placeholder="Crossly网站地址（默认不用改）" />
+      <button class="btn btn-gray" id="btn-save-site">保存网站地址</button>
+
+      <div class="tip" style="font-size:10px;margin-top:4px;">🔒 所有信息只存本地浏览器，不上传服务器</div>
+    </div>
+
   </div>
 
   <div class="toast" id="toast"></div>
