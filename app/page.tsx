@@ -1013,13 +1013,13 @@ function LandingPage({ onStart }: { onStart: () => void }) {
             </button>
             <span className="text-white/30 text-xs">无需信用卡</span>
           </div>
-          {/* 插件小提示 */}
-          <div className="mt-3 flex items-center justify-center">
+          {/* 插件入口 */}
+          <div className="mt-4 flex items-center justify-center">
             <button onClick={() => setShowInstall(true)}
-              className="flex items-center gap-1.5 text-white/40 hover:text-white/70 text-[11px] transition-colors">
-              <span>🧩</span>
-              <span>有Chrome插件？从1688一键搬运更快</span>
-              <span className="text-white/30">→</span>
+              className="flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/40 text-white/80 hover:text-white text-xs font-medium px-4 py-2.5 rounded-full transition-all">
+              <span className="text-base">🧩</span>
+              <span>安装Chrome插件，从1688一键搬运商品</span>
+              <span className="text-white/50 text-sm">→</span>
             </button>
           </div>
         </div>
