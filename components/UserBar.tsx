@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { AuthModal } from "@/components/AuthModal";
-import { LogOut, Crown, Copy, Check, ExternalLink, User, Camera, Pencil, X, Loader2 } from "lucide-react";
+import { LogOut, Crown, Copy, Check, User, Camera, Pencil, X, Loader2 } from "lucide-react";
 
 function formatExpiry(expiresAt?: string): string {
   if (!expiresAt) return "永久有效";
