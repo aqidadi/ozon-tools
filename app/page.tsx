@@ -646,7 +646,7 @@ const INSTALL_STEPS = [
     step: 2,
     icon: "📂",
     title: "解压缩这个文件",
-    desc: "找到刚下载的 crossly-extension-v2.1.2.zip，右键点它 → 选「解压缩」或「Extract Here」，会生成一个文件夹",
+    desc: "找到刚下载的 crossly-extension-v2.1.3.zip，右键点它 → 选「解压缩」或「Extract Here」，会生成一个文件夹",
     tip: "💡 Windows用户：右键→解压到当前文件夹；Mac用户：双击自动解压",
   },
   {
@@ -702,17 +702,17 @@ function ExtensionInstallModal({ onClose }: { onClose: () => void }) {
         <div className="px-5 py-4 space-y-4">
           {/* 下载按钮 */}
           <div className="space-y-2">
-            <p className="text-xs text-gray-500 text-center font-medium">v2.1.2 最新版 · 选择你的系统下载</p>
+            <p className="text-xs text-gray-500 text-center font-medium">v2.1.3 最新版 · 选择你的系统下载</p>
             <div className="grid grid-cols-2 gap-2">
               <a
-                href="https://github.com/aqidadi/ozon-tools/raw/main/crossly-extension-v2.1.2.zip"
+                href="https://github.com/aqidadi/ozon-tools/raw/main/crossly-extension-v2.1.3.zip"
                 target="_blank" rel="noopener noreferrer"
                 className="flex items-center justify-center gap-2 py-3.5 rounded-2xl text-white font-black text-sm shadow-lg transition-all hover:scale-[1.02]"
                 style={{ background: "linear-gradient(135deg, #0078d4, #005a9e)" }}>
                 🪟 Windows 下载
               </a>
               <a
-                href="https://github.com/aqidadi/ozon-tools/raw/main/crossly-extension-v2.1.2.zip"
+                href="https://github.com/aqidadi/ozon-tools/raw/main/crossly-extension-v2.1.3.zip"
                 target="_blank" rel="noopener noreferrer"
                 className="flex items-center justify-center gap-2 py-3.5 rounded-2xl text-white font-black text-sm shadow-lg transition-all hover:scale-[1.02]"
                 style={{ background: "linear-gradient(135deg, #555555, #222222)" }}>
@@ -1144,38 +1144,6 @@ function LandingPage({ onStart }: { onStart: () => void }) {
             <p className="text-[10px] text-gray-400 mt-0.5">{d.sub}</p>
           </div>
         ))}
-      </div>
-
-      {/* ── 邀请激励 ── */}
-      <div className="rounded-2xl overflow-hidden border border-indigo-100"
-        style={{ background: "linear-gradient(135deg, #eef2ff 0%, #faf5ff 100%)" }}>
-        <div className="px-4 py-4 flex items-center gap-3">
-          <div className="text-3xl flex-shrink-0">🎁</div>
-          <div className="flex-1 min-w-0">
-            <p className="font-black text-gray-900 text-sm mb-0.5">邀请好友，一起做跨境</p>
-            <p className="text-xs text-gray-500 leading-relaxed">你的好友注册 Crossly，你们<span className="text-indigo-600 font-bold">各得50次AI翻译额度</span>——越多人用，你们都赚得越多</p>
-          </div>
-          <button onClick={() => {
-            const link = `${window.location.origin}?ref=${user?.id || "friend"}`;
-            navigator.clipboard.writeText(link);
-            alert("✅ 邀请链接已复制！分享给宝妈群吧～");
-          }} className="flex-shrink-0 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-2 rounded-xl transition-colors">
-            复制邀请链接
-          </button>
-        </div>
-        <div className="grid grid-cols-3 divide-x divide-indigo-100 border-t border-indigo-100 bg-white/50">
-          {[
-            { num: "50次", label: "AI翻译额度", sub: "你和好友各得" },
-            { num: "无上限", label: "邀请人数", sub: "邀多少得多少" },
-            { num: "永久有效", label: "奖励不过期", sub: "赚到就是你的" },
-          ].map(d => (
-            <div key={d.label} className="text-center py-2.5">
-              <p className="text-sm font-black text-indigo-600">{d.num}</p>
-              <p className="text-[10px] font-bold text-gray-700">{d.label}</p>
-              <p className="text-[9px] text-gray-400">{d.sub}</p>
-            </div>
-          ))}
-        </div>
       </div>
 
       {/* ── 全球平台对比 ── */}

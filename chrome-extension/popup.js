@@ -32,7 +32,7 @@ async function loadState() {
 }
 
 function getSite() { return _state.siteUrl || SITE_DEFAULT; }
-function isPro() { return !!_state.crosslyPro; }
+function isPro() { return true; }
 function getFreeLeft() {
   const today = new Date().toDateString();
   if (_state.freeResetDate !== today) return 50; // 每月重置（用日期简化）
