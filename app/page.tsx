@@ -1097,14 +1097,26 @@ function LandingPage({ onStart }: { onStart: () => void }) {
             </button>
             <span className="text-white/30 text-xs">无需信用卡</span>
           </div>
-          {/* 插件入口 */}
-          <div className="mt-4 flex items-center justify-center">
-            <button onClick={() => setShowInstall(true)}
-              className="flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/40 text-white/80 hover:text-white text-xs font-medium px-4 py-2.5 rounded-full transition-all">
-              <span className="text-base">🧩</span>
-              <span>安装Chrome插件，从1688一键搬运商品</span>
-              <span className="text-white/50 text-sm">→</span>
-            </button>
+          {/* 插件下载 */}
+          <div className="mt-5 space-y-2">
+            <p className="text-center text-white/60 text-xs font-medium tracking-wide">🧩 Chrome 插件 · v2.1.3 · <span className="text-green-300 font-bold">完全免费</span></p>
+            <div className="grid grid-cols-2 gap-2 max-w-xs mx-auto">
+              <a href="https://github.com/aqidadi/ozon-tools/raw/main/crossly-extension-v2.1.3.zip"
+                target="_blank" rel="noopener noreferrer"
+                className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-white font-bold text-xs shadow-lg transition-all hover:scale-[1.03]"
+                style={{ background: "linear-gradient(135deg,#0078d4,#005a9e)" }}>
+                🪟 Windows 下载
+              </a>
+              <a href="https://github.com/aqidadi/ozon-tools/raw/main/crossly-extension-v2.1.3.zip"
+                target="_blank" rel="noopener noreferrer"
+                className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-white font-bold text-xs shadow-lg transition-all hover:scale-[1.03]"
+                style={{ background: "linear-gradient(135deg,#555,#222)" }}>
+                🍎 Mac 下载
+              </a>
+            </div>
+            <p className="text-center">
+              <button onClick={() => setShowInstall(true)} className="text-white/40 text-[10px] underline hover:text-white/70 transition-colors">查看安装教程</button>
+            </p>
           </div>
         </div>
       </div>
