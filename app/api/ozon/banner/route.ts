@@ -125,7 +125,7 @@ export async function GET(req: NextRequest) {
       .resize(W, H)
       .toBuffer();
 
-    return new NextResponse(pngBuffer, {
+    return new NextResponse(new Uint8Array(pngBuffer), {
       status: 200,
       headers: {
         "Content-Type": "image/png",
