@@ -646,7 +646,7 @@ const INSTALL_STEPS = [
     step: 2,
     icon: "📂",
     title: "解压缩这个文件",
-    desc: "找到刚下载的 crossly-extension-v1.8.3.zip，右键点它 → 选「解压缩」或「Extract Here」，会生成一个文件夹",
+    desc: "找到刚下载的 crossly-extension-v2.1.2.zip，右键点它 → 选「解压缩」或「Extract Here」，会生成一个文件夹",
     tip: "💡 Windows用户：右键→解压到当前文件夹；Mac用户：双击自动解压",
   },
   {
@@ -701,13 +701,25 @@ function ExtensionInstallModal({ onClose }: { onClose: () => void }) {
 
         <div className="px-5 py-4 space-y-4">
           {/* 下载按钮 */}
-          <a
-            href="https://github.com/aqidadi/ozon-tools/raw/main/crossly-extension-v1.8.3.zip"
-            target="_blank" rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl text-white font-black text-sm shadow-lg transition-all hover:scale-[1.02]"
-            style={{ background: "linear-gradient(135deg, #ea580c, #dc2626)" }}>
-            ⬇️ 第一步：点这里下载插件（免费）
-          </a>
+          <div className="space-y-2">
+            <p className="text-xs text-gray-500 text-center font-medium">v2.1.2 最新版 · 选择你的系统下载</p>
+            <div className="grid grid-cols-2 gap-2">
+              <a
+                href="https://github.com/aqidadi/ozon-tools/raw/main/crossly-extension-v2.1.2.zip"
+                target="_blank" rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 py-3.5 rounded-2xl text-white font-black text-sm shadow-lg transition-all hover:scale-[1.02]"
+                style={{ background: "linear-gradient(135deg, #0078d4, #005a9e)" }}>
+                🪟 Windows 下载
+              </a>
+              <a
+                href="https://github.com/aqidadi/ozon-tools/raw/main/crossly-extension-v2.1.2.zip"
+                target="_blank" rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 py-3.5 rounded-2xl text-white font-black text-sm shadow-lg transition-all hover:scale-[1.02]"
+                style={{ background: "linear-gradient(135deg, #555555, #222222)" }}>
+                🍎 Mac 下载
+              </a>
+            </div>
+          </div>
 
           {/* 步骤列表 */}
           <div className="space-y-3">
