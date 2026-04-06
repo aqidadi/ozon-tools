@@ -1117,6 +1117,7 @@ function LandingPage({ onStart }: { onStart: () => void }) {
             <p className="text-center">
               <button onClick={() => setShowInstall(true)} className="text-white/40 text-[10px] underline hover:text-white/70 transition-colors">查看安装教程</button>
             </p>
+            <p className="text-center text-[10px] text-yellow-300/70">⚠️ 插件功能尚未全部开发完成，含部分 bug，使用中如遇问题请见谅</p>
           </div>
         </div>
       </div>
