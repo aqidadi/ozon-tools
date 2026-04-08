@@ -440,6 +440,191 @@ function FBACalc() {
 
 // ─── 主页面 ────────────────────────────────────────────
 
+// ─── Ozon 上品模板 ───────────────────────────────────────
+const OZON_CATS = [
+  {
+    id: "plush", emoji: "🧸", zh: "毛绒玩具", ru: "Мягкие игрушки",
+    path: "Детские товары > Игрушки > Мягкие игрушки",
+    defaults: {
+      name: "Мягкая плюшевая игрушка Мишка, 30 см, белый",
+      sku: "PLU-001", brand: "Нет бренда", color: "Белый / 白色",
+      size: "30 см", material: "Плюш / 毛绒",
+      desc: "Мягкая плюшевая игрушка из высококачественного гипоаллергенного плюша. Наполнитель — холофайбер, безопасный для детей от 3 лет. Приятная на ощупь, идеально подходит для сна, игры и в качестве подарка. Доступны разные размеры и цвета.",
+      l: "320", w: "220", h: "220", wt: "400",
+    },
+    tags: ["мягкая игрушка","плюшевая игрушка","игрушка медведь","игрушка кролик","игрушка кот","игрушка собака","игрушка панда","игрушка единорог","игрушка для детей","подарок ребёнку","мягкий медвежонок","плюш","детская игрушка","аниме игрушка","мягкий котик","игрушка обнимашка","подарок на день рождения","антистресс игрушка","мягкая кукла","декор комнаты","мягкий зверь","игрушка 30 см","игрушка 50 см","плюшевый заяц","подарок девочке","подарок мальчику","мягкий дракон","коллекционная игрушка","мягкая игрушка большая","гипоаллергенная игрушка"],
+  },
+  {
+    id: "phone", emoji: "📱", zh: "手机壳", ru: "Чехол для телефона",
+    path: "Электроника > Аксессуары для телефонов > Чехлы",
+    defaults: {
+      name: "Силиконовый прозрачный чехол для iPhone 15, противоударный",
+      sku: "CASE-001", brand: "Нет бренда", color: "Прозрачный / 透明",
+      size: "iPhone 15", material: "Силикон / 硅胶",
+      desc: "Надёжный силиконовый чехол с защитой от ударов и царапин. Тонкий профиль не утяжеляет телефон. Точные вырезы для кнопок, камеры и разъёмов. Материал — высококачественный TPU, не желтеет со временем.",
+      l: "165", w: "85", h: "12", wt: "60",
+    },
+    tags: ["чехол для телефона","силиконовый чехол","прозрачный чехол","чехол iPhone","чехол Samsung","чехол Xiaomi","защитный чехол","чехол книжка","противоударный чехол","чехол с рисунком","чехол аниме","мягкий чехол","накладка на телефон","чехол с принтом","чехол для девушки","тонкий чехол","матовый чехол","цветной чехол","чехол кошелёк","чехол для карт","магнитный чехол","чехол с ремешком","дизайнерский чехол","чехол Huawei","чехол OPPO","чехол Redmi","защита от падений","чехол зеркало","чехол с подставкой","TPU чехол"],
+  },
+  {
+    id: "digital", emoji: "🔌", zh: "数码配件", ru: "Цифровые аксессуары",
+    path: "Электроника > Аксессуары > Кабели и зарядные устройства",
+    defaults: {
+      name: "Кабель USB Type-C, быстрая зарядка 120 Вт, нейлон, 1 м",
+      sku: "CBL-001", brand: "Нет бренда", color: "Чёрный / 黑色",
+      size: "1 м", material: "Нейлон / 尼龙编织",
+      desc: "Прочный нейлоновый кабель для быстрой зарядки 120 Вт и передачи данных. Усиленные коннекторы выдерживают более 20 000 изгибов. Совместим с большинством устройств USB-C. Встроенный чип защиты от перегрева и перегрузки.",
+      l: "150", w: "80", h: "15", wt: "50",
+    },
+    tags: ["USB кабель","кабель для зарядки","беспроводная зарядка","наушники TWS","bluetooth наушники","powerbank","внешний аккумулятор","кардридер","USB хаб","переходник","кабель Type-C","Lightning кабель","зарядное устройство","быстрая зарядка","USB-C адаптер","аккумулятор для телефона","держатель для телефона","автодержатель","аксессуары для гаджетов","кабель 2 м","кабель 3 м","зарядка 65 Вт","зарядка 120 Вт","шнур плетёный","защита кабеля","аксессуары Android","магнитный кабель","Type-C на Lightning","USB хаб 4 порта","сетевой адаптер"],
+  },
+  {
+    id: "clothes", emoji: "👕", zh: "服装", ru: "Одежда",
+    path: "Одежда, обувь и аксессуары > Женская одежда > Футболки",
+    defaults: {
+      name: "Футболка женская оверсайз с принтом аниме, хлопок, унисекс",
+      sku: "TEE-001", brand: "Нет бренда", color: "Белый / 白色",
+      size: "S / M / L / XL / XXL", material: "Хлопок 100% / 纯棉",
+      desc: "Стильная футболка оверсайз из мягкого 100% хлопка. Воздухопроницаемый материал, приятный на ощупь. Принт нанесён методом прямой цифровой печати, не выцветает после стирки. Универсальный унисекс крой подходит как женщинам, так и мужчинам.",
+      l: "350", w: "280", h: "20", wt: "250",
+    },
+    tags: ["футболка","толстовка","худи","кофта","платье","брюки","куртка","ветровка","спортивный костюм","одежда оверсайз","стильная одежда","одежда аниме","летняя одежда","зимняя одежда","женская одежда","мужская одежда","детская одежда","хлопковая одежда","повседневная одежда","модная одежда","одежда с принтом","корейский стиль","японский стиль","уличный стиль","одежда унисекс","мягкая ткань","цветная одежда","новая коллекция","оверсайз футболка","принт аниме"],
+  },
+  {
+    id: "home", emoji: "🏠", zh: "家居", ru: "Товары для дома",
+    path: "Дом и сад > Интерьер > Декоративные подушки",
+    defaults: {
+      name: "Декоративная подушка с принтом аниме, 45×45 см, хлопок",
+      sku: "PIL-001", brand: "Нет бренда", color: "Бежевый / 米色",
+      size: "45×45 см", material: "Хлопок / 棉布",
+      desc: "Мягкая декоративная подушка с ярким принтом. Наволочка на молнии, съёмная для стирки. Наполнитель — силиконизированное волокно, сохраняет форму. Украсит диван, кресло или кровать.",
+      l: "480", w: "480", h: "150", wt: "600",
+    },
+    tags: ["декоративная подушка","плед","одеяло","постельное бельё","полотенце","органайзер","подставка","светильник","ночник","диффузор","аромасвечи","декор дома","интерьерная игрушка","вазон","рамка для фото","коврик","занавески","корзина","контейнер для хранения","крючок","полка","зеркало","часы настенные","гирлянда","домашний текстиль","кухонные аксессуары","уют дома","скандинавский стиль","японский декор","аниме декор"],
+  },
+  {
+    id: "beauty", emoji: "💄", zh: "美妆护肤", ru: "Косметика и уход",
+    path: "Красота и здоровье > Уход за лицом > Кремы",
+    defaults: {
+      name: "Увлажняющий крем для лица с гиалуроновой кислотой, 50 мл",
+      sku: "CRM-001", brand: "Нет бренда", color: "—",
+      size: "50 мл", material: "—",
+      desc: "Лёгкий увлажняющий крем с гиалуроновой кислотой для глубокого увлажнения кожи. Подходит для всех типов кожи, в том числе чувствительной. Без парабенов и искусственных красителей. Быстро впитывается, не оставляет жирного блеска. Эффект заметен уже после первого применения.",
+      l: "70", w: "70", h: "90", wt: "120",
+    },
+    tags: ["крем для лица","сыворотка","тональный крем","помада","тушь для ресниц","тени для век","консилер","хайлайтер","румяна","маска для лица","патч под глаза","уходовая косметика","корейская косметика","японская косметика","натуральная косметика","увлажняющий крем","SPF крем","ночной крем","дневной крем","эссенция","тонер","мицеллярная вода","пенка для умывания","скраб для лица","бальзам для губ","карандаш для глаз","лак для ногтей","блеск для губ","набор косметики","гиалуроновая кислота"],
+  },
+];
+
+function OzonTemplate() {
+  const [cat, setCat] = useState("plush");
+  const [form, setForm] = useState<Record<string,string>>({});
+  const [copied, setCopied] = useState(false);
+  const [tagsCopied, setTagsCopied] = useState(false);
+
+  const selected = OZON_CATS.find(c => c.id === cat)!;
+  const val = (key: string) => form[`${cat}_${key}`] ?? selected.defaults[key as keyof typeof selected.defaults] ?? "";
+  const set = (key: string, v: string) => setForm(f => ({...f, [`${cat}_${key}`]: v}));
+
+  const FIELDS: {key: string; zh: string; ru: string; rows?: number}[] = [
+    { key: "name",     zh: "商品名称",       ru: "Название товара",       rows: 2 },
+    { key: "sku",      zh: "货号",           ru: "Артикул" },
+    { key: "brand",    zh: "品牌",           ru: "Бренд" },
+    { key: "color",    zh: "颜色",           ru: "Цвет" },
+    { key: "size",     zh: "尺寸/规格",      ru: "Размер / Комплектация" },
+    { key: "material", zh: "材质",           ru: "Материал" },
+    { key: "desc",     zh: "商品描述",       ru: "Описание",              rows: 4 },
+    { key: "l",        zh: "包装长度 (mm)",  ru: "Длина упаковки (мм)" },
+    { key: "w",        zh: "包装宽度 (mm)",  ru: "Ширина упаковки (мм)" },
+    { key: "h",        zh: "包装高度 (mm)",  ru: "Высота упаковки (мм)" },
+    { key: "wt",       zh: "含包装重量 (g)", ru: "Вес с упаковкой (г)" },
+  ];
+
+  const copyAll = () => {
+    const lines = [
+      `=== Ozon 上品模板：${selected.zh} / ${selected.ru} ===`,
+      `类目 / Категория: ${selected.path}`,
+      "",
+      ...FIELDS.map(f => `【${f.zh} / ${f.ru}】\n${val(f.key)}`),
+      "",
+      `【标签 / Теги (${selected.tags.length}个)】`,
+      selected.tags.join(", "),
+    ].join("\n");
+    navigator.clipboard.writeText(lines);
+    setCopied(true); setTimeout(() => setCopied(false), 2000);
+  };
+
+  const copyTags = () => {
+    navigator.clipboard.writeText(selected.tags.join("\n"));
+    setTagsCopied(true); setTimeout(() => setTagsCopied(false), 2000);
+  };
+
+  const inputCls = "w-full border border-gray-200 rounded-xl px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300";
+
+  return (
+    <div className="space-y-3">
+      {/* Category tabs */}
+      <div className="flex flex-wrap gap-1.5">
+        {OZON_CATS.map(c => (
+          <button key={c.id} onClick={() => setCat(c.id)}
+            className={`px-2.5 py-1.5 rounded-xl text-xs font-medium transition-all ${cat === c.id ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}>
+            {c.emoji} {c.zh}
+          </button>
+        ))}
+      </div>
+
+      {/* Category path */}
+      <div className="text-xs text-gray-400 bg-gray-50 rounded-lg px-3 py-2 font-mono">
+        📂 {selected.path}
+      </div>
+
+      {/* Fields */}
+      <div className="space-y-2">
+        {FIELDS.map(f => (
+          <div key={f.key}>
+            <label className="text-xs font-medium mb-1 flex items-center gap-1.5">
+              <span className="text-gray-700">{f.zh}</span>
+              <span className="text-gray-300">/</span>
+              <span className="text-blue-500">{f.ru}</span>
+            </label>
+            {f.rows ? (
+              <textarea value={val(f.key)} onChange={e => set(f.key, e.target.value)} rows={f.rows}
+                className={`${inputCls} resize-none`} />
+            ) : (
+              <input value={val(f.key)} onChange={e => set(f.key, e.target.value)} className={inputCls} />
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Tags */}
+      <div>
+        <div className="flex items-center justify-between mb-2">
+          <label className="text-xs font-medium text-gray-700">
+            #主题标签 / Теги <span className="text-blue-500">({selected.tags.length}个)</span>
+          </label>
+          <button onClick={copyTags}
+            className={`text-xs px-2.5 py-1 rounded-lg font-medium transition-all ${tagsCopied ? "bg-green-100 text-green-600" : "bg-blue-50 text-blue-600 hover:bg-blue-100"}`}>
+            {tagsCopied ? "✅ 已复制" : "复制标签"}
+          </button>
+        </div>
+        <div className="flex flex-wrap gap-1.5">
+          {selected.tags.map((tag, i) => (
+            <span key={i} className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded-full text-xs">#{tag}</span>
+          ))}
+        </div>
+      </div>
+
+      {/* Copy all */}
+      <button onClick={copyAll}
+        className="w-full py-2.5 rounded-xl text-sm font-semibold text-white transition-all"
+        style={{background:"linear-gradient(135deg,#3b82f6,#6366f1)"}}>
+        {copied ? "✅ 已复制全部内容" : "📋 复制完整模板"}
+      </button>
+    </div>
+  );
+}
+
 const TOOLS = [
   { id: "currency", emoji: "💱", title: "汇率换算", desc: "13种货币实时换算", tag: "实时", component: <CurrencyConverter /> },
   { id: "translate", emoji: "🌐", title: "文字翻译", desc: "中文→俄/英/泰等8种语言", tag: "实时", component: <Translator /> },
@@ -449,6 +634,7 @@ const TOOLS = [
   { id: "fba", emoji: "📦", title: "FBA费用估算", desc: "亚马逊美国站快速测算", tag: "内置", component: <FBACalc /> },
   { id: "imgru", emoji: "🖼️", title: "图片俄化", desc: "一键加俄文+适配Ozon尺寸", tag: "新功能", component: <ImageRussify /> },
   { id: "imgconv", emoji: "🔄", title: "图片格式转换", desc: "批量转JPG/PNG/WebP/AVIF", tag: "新功能", component: <ImageConverter /> },
+  { id: "ozontemplate", emoji: "📋", title: "Ozon上品模板", desc: "6大类目字段+30个标签", tag: "实用", component: <OzonTemplate /> },
 ];
 
 const TAG_COLORS: Record<string,string> = {
@@ -457,6 +643,7 @@ const TAG_COLORS: Record<string,string> = {
   "免费": "bg-gray-100 text-gray-600",
   "独家": "bg-purple-100 text-purple-700",
   "新功能": "bg-orange-100 text-orange-700",
+  "实用": "bg-blue-100 text-blue-700",
 };
 
 // ─── 批量图片格式转换 ────────────────────────────────────
