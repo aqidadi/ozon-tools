@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 
 // ─── 各工具组件 ────────────────────────────────────────
 
@@ -51,10 +51,12 @@ function CurrencyConverter() {
 
 function ProfitCalc() {
   const [cost, setCost] = useState("25");
-  const [sell, setSell] = useState("8.99");
   const [ship, setShip] = useState("2.5");
   const [comm, setComm] = useState("15");
-  const [rate, setRate] = useState("12");
+  const [targetMargin, setTargetMargin] = useState("30");
+  const [rate, setRate] = useState<number | null>(null);
+  const [rateLoading, setRateLoading] = useState(false);
+  const [rateError, setRateError] = useState(false);
   const [currency, setCurrency] = useState("USD");
   const CURRENCIES = [
     { code: "USD", symbol: "$", name: "美元" },
@@ -69,50 +71,112 @@ function ProfitCalc() {
     { code: "GBP", symbol: "£", name: "英镑" },
   ];
   const cur = CURRENCIES.find(c => c.code === currency) || CURRENCIES[0];
-  const p = parseFloat(cost)||0, s = parseFloat(sell)||0, sh = parseFloat(ship)||0, c = parseFloat(comm)||0, r = parseFloat(rate)||1;
-  const sellCny = s * r;
-  const commAmt = sellCny * c / 100;
+
+  const fetchRate = useCallback(async (cur: string) => {
+    setRateLoading(true); setRateError(false);
+    try {
+      const r = await fetch("/api/rates");
+      const d = await r.json();
+      const rates = d.rates || {};
+      const cnyCnyRate = rates["CNY"] ?? 1;
+      const currRate = rates[cur] ?? 1;
+      setRate(cnyCnyRate / currRate);
+    } catch {
+      setRateError(true);
+    }
+    setRateLoading(false);
+  }, []);
+
+  useEffect(() => { fetchRate(currency); }, [currency, fetchRate]);
+
+  const p = parseFloat(cost) || 0;
+  const sh = parseFloat(ship) || 0;
+  const c = (parseFloat(comm) || 0) / 100;
+  const m = (parseFloat(targetMargin) || 0) / 100;
+  const r = rate || 1;
+
+  // Recommended sell price: sell_cny = (cost + ship) / (1 - comm% - margin%)
+  const denom = 1 - c - m;
+  const valid = denom > 0.01 && r > 0;
+  const sellCny = valid ? (p + sh) / denom : 0;
+  const sellForeign = valid ? sellCny / r : 0;
+  const commAmt = sellCny * c;
   const profit = sellCny - p - sh - commAmt;
-  const margin = sellCny > 0 ? (profit / sellCny * 100).toFixed(1) : "0";
-  const color = profit > 0 ? "text-green-600" : "text-red-500";
+  const actualMargin = sellCny > 0 ? (profit / sellCny * 100).toFixed(1) : "0";
+
+  const inputCls = "w-full border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300";
+
   return (
     <div className="space-y-3">
       {/* 货币选择 */}
       <div>
         <label className="text-xs text-gray-500 mb-1 block">售价货币</label>
         <div className="flex flex-wrap gap-1.5">
-          {CURRENCIES.map(c => (
-            <button key={c.code} onClick={() => setCurrency(c.code)}
-              className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${currency === c.code ? "bg-indigo-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}>
-              {c.symbol} {c.code}
+          {CURRENCIES.map(cc => (
+            <button key={cc.code} onClick={() => setCurrency(cc.code)}
+              className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${currency === cc.code ? "bg-indigo-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}>
+              {cc.symbol} {cc.code}
             </button>
           ))}
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-2">
-        {[
-          [`进货价(¥)`, cost, setCost],
-          [`售价(${cur.symbol})`, sell, setSell],
-          ["运费(¥)", ship, setShip],
-          ["平台佣金(%)", comm, setComm],
-          [`汇率(1${cur.symbol}=?¥)`, rate, setRate],
-        ].map(([label, val, setter]) => (
-          <div key={label as string}>
-            <label className="text-xs text-gray-500 mb-1 block">{label as string}</label>
-            <input value={val as string} onChange={e=>(setter as any)(e.target.value)} type="number"
-              className="w-full border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300" />
-          </div>
-        ))}
+
+      {/* 汇率显示（自动获取） */}
+      <div className="flex items-center justify-between bg-indigo-50 rounded-xl px-3 py-2">
+        <span className="text-xs text-indigo-600 font-medium">
+          实时汇率：1 {cur.symbol} =
+          {rateLoading ? " 获取中..." : rateError ? " 获取失败" : ` ¥${r.toFixed(4)}`}
+        </span>
+        <button onClick={() => fetchRate(currency)} disabled={rateLoading}
+          className="text-xs text-indigo-500 hover:text-indigo-700 disabled:opacity-40 transition-colors">
+          🔄 刷新
+        </button>
       </div>
-      <div className="bg-gray-50 rounded-xl p-3 space-y-1.5 text-xs">
-        <div className="flex justify-between text-gray-500"><span>售价折合人民币</span><span>¥{sellCny.toFixed(2)}</span></div>
-        <div className="flex justify-between text-gray-500"><span>平台佣金</span><span>-¥{commAmt.toFixed(2)}</span></div>
-        <div className="flex justify-between text-gray-500"><span>运费</span><span>-¥{sh.toFixed(2)}</span></div>
-        <div className="flex justify-between text-gray-500"><span>进货成本</span><span>-¥{p.toFixed(2)}</span></div>
-        <div className={`flex justify-between font-bold text-sm pt-1 border-t border-gray-200 ${color}`}>
-          <span>净利润</span><span>¥{profit.toFixed(2)} ({margin}%)</span>
+
+      {/* 输入项 */}
+      <div className="grid grid-cols-2 gap-2">
+        <div>
+          <label className="text-xs text-gray-500 mb-1 block">进货价 (¥)</label>
+          <input value={cost} onChange={e => setCost(e.target.value)} type="number" className={inputCls} />
+        </div>
+        <div>
+          <label className="text-xs text-gray-500 mb-1 block">运费 (¥)</label>
+          <input value={ship} onChange={e => setShip(e.target.value)} type="number" className={inputCls} />
+        </div>
+        <div>
+          <label className="text-xs text-gray-500 mb-1 block">平台佣金 (%)</label>
+          <input value={comm} onChange={e => setComm(e.target.value)} type="number" className={inputCls} />
+        </div>
+        <div>
+          <label className="text-xs text-gray-500 mb-1 block">目标利润率 (%)</label>
+          <input value={targetMargin} onChange={e => setTargetMargin(e.target.value)} type="number" className={inputCls} />
         </div>
       </div>
+
+      {/* 推荐售价 */}
+      {valid ? (
+        <div className="bg-gradient-to-r from-indigo-500 to-purple-500 rounded-xl p-3 text-white text-center">
+          <p className="text-xs opacity-80 mb-0.5">推荐售价</p>
+          <p className="text-2xl font-bold">{cur.symbol}{sellForeign.toFixed(2)}</p>
+          <p className="text-xs opacity-70 mt-0.5">≈ ¥{sellCny.toFixed(2)}</p>
+        </div>
+      ) : (
+        <div className="bg-red-50 border border-red-100 rounded-xl p-3 text-center text-xs text-red-500">
+          佣金 + 利润率不能超过 100%，请调整参数
+        </div>
+      )}
+
+      {/* 明细 */}
+      {valid && (
+        <div className="bg-gray-50 rounded-xl p-3 space-y-1.5 text-xs">
+          <div className="flex justify-between text-gray-500"><span>进货成本</span><span>-¥{p.toFixed(2)}</span></div>
+          <div className="flex justify-between text-gray-500"><span>运费</span><span>-¥{sh.toFixed(2)}</span></div>
+          <div className="flex justify-between text-gray-500"><span>平台佣金</span><span>-¥{commAmt.toFixed(2)}</span></div>
+          <div className="flex justify-between font-bold text-sm pt-1 border-t border-gray-200 text-green-600">
+            <span>净利润</span><span>¥{profit.toFixed(2)} ({actualMargin}%)</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
