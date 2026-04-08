@@ -117,117 +117,67 @@ function ProfitCalc() {
   );
 }
 
-function UnitConverter() {
-  const [val, setVal] = useState("1");
-  const [type, setType] = useState("weight");
-  const [from, setFrom] = useState("kg");
-  const [to, setTo] = useState("lb");
-  const UNITS: Record<string, Record<string, number>> = {
-    weight: { kg: 1, g: 0.001, lb: 0.453592, oz: 0.0283495, t: 1000 },
-    length: { m: 1, cm: 0.01, mm: 0.001, inch: 0.0254, ft: 0.3048, yard: 0.9144 },
-    area: { "m²": 1, "cm²": 0.0001, "ft²": 0.092903, "inch²": 0.00064516 },
-  };
-  const types = Object.keys(UNITS);
-  const units = Object.keys(UNITS[type]);
-  const result = ((parseFloat(val)||0) * UNITS[type][from] / UNITS[type][to]).toFixed(6).replace(/\.?0+$/, "");
-  return (
-    <div className="space-y-3">
-      <div className="flex gap-1">
-        {types.map(t=>(
-          <button key={t} onClick={()=>{setType(t);setFrom(Object.keys(UNITS[t])[0]);setTo(Object.keys(UNITS[t])[1]);}}
-            className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-all ${type===t?"bg-indigo-600 text-white":"bg-gray-100 text-gray-600 hover:bg-gray-200"}`}>
-            {{weight:"重量",length:"长度",area:"面积"}[t]}
-          </button>
-        ))}
-      </div>
-      <div className="flex gap-2 items-center">
-        <input value={val} onChange={e=>setVal(e.target.value)} type="number"
-          className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300" />
-        <select value={from} onChange={e=>setFrom(e.target.value)}
-          className="border border-gray-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-none">
-          {units.map(u=><option key={u}>{u}</option>)}
-        </select>
-        <span className="text-gray-400">→</span>
-        <select value={to} onChange={e=>setTo(e.target.value)}
-          className="border border-gray-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-none">
-          {units.map(u=><option key={u}>{u}</option>)}
-        </select>
-      </div>
-      <div className="bg-indigo-50 rounded-xl p-3 text-center">
-        <span className="text-sm text-gray-500">{val} {from} = </span>
-        <span className="text-lg font-bold text-indigo-700">{result} {to}</span>
-      </div>
-    </div>
-  );
-}
-
-function EmojiPicker() {
-  const [search, setSearch] = useState("");
-  const [copied, setCopied] = useState<string|null>(null);
-  const EMOJIS = [
-    {cat:"常用", items:["✅","❌","⭐","🔥","💯","📦","🚀","💰","🎁","📸","🔑","💡","❤️","👍","😊","🎯","💎","🏆","✨","🌟"]},
-    {cat:"物品", items:["📱","💻","⌚","🎮","🎧","📷","🖥️","⌨️","🖱️","🔋","💾","📺","📻","🔭","🔬","⚙️","🔧","🔨","🪛","🗂️"]},
-    {cat:"运输", items:["✈️","🚢","🚂","🚚","🏭","📦","🏗️","⛵","🚁","🛸","🚠","🛳️","🚀","🛩️","🚤","⚓","🗺️","🌍","🌏","🌎"]},
-    {cat:"节日", items:["🎄","🎃","🎆","🎇","🧨","🎉","🎊","🎋","🎍","🎎","🎏","🎐","🎑","🧧","🎀","🎁","🏮","🧸","🪅","🎠"]},
-    {cat:"标记", items:["🔴","🟠","🟡","🟢","🔵","🟣","⚫","⚪","🟤","🔶","🔷","🔸","🔹","🔺","🔻","💠","🔘","🔲","🔳","▪️"]},
-  ];
-  const allItems = EMOJIS.flatMap(g=>g.items);
-  const filtered = search ? allItems.filter(e=>e.includes(search)) : null;
-  const copy = (e:string) => { navigator.clipboard.writeText(e); setCopied(e); setTimeout(()=>setCopied(null),1500); };
-  return (
-    <div className="space-y-3">
-      <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="搜索 emoji..."
-        className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300" />
-      {copied && <div className="text-center text-xs text-green-600 font-medium">✅ 已复制 {copied}</div>}
-      <div className="space-y-2 max-h-52 overflow-y-auto">
-        {(filtered ? [{cat:"搜索结果",items:filtered}] : EMOJIS).map(g=>(
-          <div key={g.cat}>
-            <p className="text-xs text-gray-400 mb-1">{g.cat}</p>
-            <div className="flex flex-wrap gap-1">
-              {g.items.map(e=>(
-                <button key={e} onClick={()=>copy(e)}
-                  className={`text-xl hover:bg-indigo-50 rounded-lg p-1 transition-all ${copied===e?"bg-green-50 scale-125":""}`}>
-                  {e}
-                </button>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function TextTools() {
+function Translator() {
   const [text, setText] = useState("");
-  const [mode, setMode] = useState("upper");
-  const transforms: Record<string,()=>string> = {
-    upper: ()=>text.toUpperCase(),
-    lower: ()=>text.toLowerCase(),
-    title: ()=>text.replace(/\b\w/g,c=>c.toUpperCase()),
-    count: ()=>`字数: ${text.length} | 词数: ${text.trim().split(/\s+/).filter(Boolean).length} | 行数: ${text.split("\n").length}`,
-    trim: ()=>text.trim().replace(/\s+/g," "),
+  const [to, setTo] = useState("ru");
+  const [result, setResult] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const LANGS = [
+    { code: "ru", label: "俄语", flag: "🇷🇺" },
+    { code: "en", label: "英语", flag: "🇺🇸" },
+    { code: "th", label: "泰语", flag: "🇹🇭" },
+    { code: "vi", label: "越南语", flag: "🇻🇳" },
+    { code: "id", label: "印尼语", flag: "🇮🇩" },
+    { code: "ms", label: "马来语", flag: "🇲🇾" },
+    { code: "es", label: "西班牙语", flag: "🇪🇸" },
+    { code: "ar", label: "阿拉伯语", flag: "🇸🇦" },
+  ];
+  const translate = async () => {
+    if (!text.trim()) return;
+    setLoading(true); setResult(""); setCopied(false);
+    try {
+      const res = await fetch("/api/translate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: text.trim(), to, from: "zh" }),
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      setResult(data.result || data.text || "");
+    } catch (e: unknown) {
+      setResult("翻译失败，请稍后重试");
+    }
+    setLoading(false);
   };
-  const result = transforms[mode]?.() ?? text;
+  const copy = () => { navigator.clipboard.writeText(result); setCopied(true); setTimeout(() => setCopied(false), 1500); };
   return (
     <div className="space-y-3">
-      <div className="flex gap-1 flex-wrap">
-        {[["upper","全大写"],["lower","全小写"],["title","首字母大写"],["count","字数统计"],["trim","去空格"]].map(([m,l])=>(
-          <button key={m} onClick={()=>setMode(m)}
-            className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${mode===m?"bg-indigo-600 text-white":"bg-gray-100 text-gray-600 hover:bg-gray-200"}`}>
-            {l}
+      <div className="flex flex-wrap gap-1">
+        {LANGS.map(l => (
+          <button key={l.code} onClick={() => { setTo(l.code); setResult(""); }}
+            className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${to === l.code ? "bg-indigo-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}>
+            {l.flag} {l.label}
           </button>
         ))}
       </div>
-      <textarea value={text} onChange={e=>setText(e.target.value)} rows={3} placeholder="输入文字..."
-        className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 resize-none" />
-      {text && (
-        <div className="bg-gray-50 rounded-xl p-3">
-          <div className="flex justify-between items-start">
-            <p className="text-sm text-gray-700 flex-1">{result}</p>
-            <button onClick={()=>navigator.clipboard.writeText(result)}
-              className="ml-2 text-xs text-indigo-600 hover:underline flex-shrink-0">复制</button>
+      <textarea value={text} onChange={e => setText(e.target.value)} rows={3}
+        placeholder="输入中文，翻译成目标语言（适合写商品标题/描述）"
+        className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-indigo-300" />
+      <button onClick={translate} disabled={loading || !text.trim()}
+        className="w-full py-2.5 rounded-xl text-sm font-semibold text-white disabled:opacity-50 transition-all flex items-center justify-center gap-2"
+        style={{ background: "linear-gradient(135deg,#6366f1,#8b5cf6)" }}>
+        {loading ? <><span className="animate-spin inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full" /> 翻译中...</> : "🌐 立即翻译"}
+      </button>
+      {result && (
+        <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-3 space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-indigo-700">{LANGS.find(l => l.code === to)?.flag} 翻译结果</span>
+            <button onClick={copy} className={`text-xs px-3 py-1 rounded-lg font-medium transition-all ${copied ? "bg-green-100 text-green-600" : "bg-indigo-600 text-white hover:bg-indigo-700"}`}>
+              {copied ? "✅ 已复制" : "复制"}
+            </button>
           </div>
+          <p className="text-sm text-gray-800 leading-relaxed">{result}</p>
         </div>
       )}
     </div>
@@ -428,16 +378,14 @@ function FBACalc() {
 
 const TOOLS = [
   { id: "currency", emoji: "💱", title: "汇率换算", desc: "13种货币实时换算", tag: "实时", component: <CurrencyConverter /> },
+  { id: "translate", emoji: "🌐", title: "文字翻译", desc: "中文→俄/英/泰等8种语言", tag: "实时", component: <Translator /> },
   { id: "profit", emoji: "💰", title: "利润计算器", desc: "含运费佣金汇率", tag: "内置", component: <ProfitCalc /> },
-  { id: "unit", emoji: "📏", title: "单位换算", desc: "重量/长度/面积互换", tag: "免费", component: <UnitConverter /> },
-  { id: "emoji", emoji: "😊", title: "Emoji大全", desc: "一键复制，Listing必备", tag: "免费", component: <EmojiPicker /> },
-  { id: "text", emoji: "📝", title: "文字工具", desc: "大小写/字数/去空格", tag: "免费", component: <TextTools /> },
   { id: "holiday", emoji: "📅", title: "节日日历", desc: "欧美/俄罗斯重要节日", tag: "内置", component: <HolidayCalendar /> },
   { id: "ai", emoji: "🤖", title: "AI文案生成", desc: "DeepSeek驱动，真实生成", tag: "独家", component: <AIPrompts /> },
   { id: "fba", emoji: "📦", title: "FBA费用估算", desc: "亚马逊美国站快速测算", tag: "内置", component: <FBACalc /> },
   { id: "bulk", emoji: "🔗", title: "批量链接采集", desc: "粘贴1688链接批量导入", tag: "新功能", component: <BulkImport /> },
   { id: "imgru", emoji: "🖼️", title: "图片俄化", desc: "一键加俄文+适配Ozon尺寸", tag: "新功能", component: <ImageRussify /> },
-  { id: "imgconv", emoji: "🔄", title: "图片格式转换", desc: "批量转JPG/PNG/WebP", tag: "新功能", component: <ImageConverter /> },
+  { id: "imgconv", emoji: "🔄", title: "图片格式转换", desc: "批量转JPG/PNG/WebP/AVIF", tag: "新功能", component: <ImageConverter /> },
 ];
 
 const TAG_COLORS: Record<string,string> = {
@@ -799,7 +747,8 @@ function ImageConverter() {
 // ─── 图片俄化工具 ─────────────────────────────────────
 function ImageRussify() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [imgUrl, setImgUrl] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [ruText, setRuText] = useState("");
   const [fontSize, setFontSize] = useState(48);
   const [position, setPosition] = useState<"top"|"bottom"|"center">("bottom");
@@ -810,8 +759,14 @@ function ImageRussify() {
   const [loading, setLoading] = useState(false);
   const [preview, setPreview] = useState("");
 
+  const handleFile = (f: File) => {
+    if (!f.type.startsWith("image/")) return;
+    setUploadedFile(f);
+    setPreview("");
+  };
+
   const generate = async () => {
-    if (!imgUrl && !preview) return;
+    if (!uploadedFile && !preview) return;
     setLoading(true);
 
     const canvas = canvasRef.current!;
@@ -821,7 +776,6 @@ function ImageRussify() {
     const ctx = canvas.getContext("2d")!;
 
     const img = new Image();
-    img.crossOrigin = "anonymous";
     img.onload = () => {
       // 居中裁切填满画布
       const scale = Math.max(sz / img.width, sz / img.height);
@@ -875,9 +829,13 @@ function ImageRussify() {
     };
     img.onerror = () => {
       setLoading(false);
-      alert("图片加载失败，请确认URL可访问（1688图片需通过代理）");
+      alert("图片加载失败");
     };
-    img.src = imgUrl ? `/api/imgproxy?url=${encodeURIComponent(imgUrl)}` : preview;
+    if (uploadedFile) {
+      img.src = URL.createObjectURL(uploadedFile);
+    } else {
+      img.src = preview;
+    }
   };
 
   const download = () => {
@@ -890,12 +848,25 @@ function ImageRussify() {
   return (
     <div className="space-y-3">
       <div>
-        <label className="text-xs font-medium text-gray-600 mb-1 block">图片URL（支持1688/阿里图片）</label>
-        <div className="flex gap-2">
-          <input value={imgUrl} onChange={e=>setImgUrl(e.target.value)}
-            placeholder="https://cbu01.alicdn.com/..."
-            className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-purple-300" />
+        <label className="text-xs font-medium text-gray-600 mb-1 block">上传图片</label>
+        <div
+          onClick={() => fileInputRef.current?.click()}
+          onDragOver={e => e.preventDefault()}
+          onDrop={e => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) handleFile(f); }}
+          className="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center cursor-pointer hover:border-purple-400 transition-colors"
+        >
+          {uploadedFile ? (
+            <p className="text-xs text-gray-700 font-medium">📷 {uploadedFile.name}</p>
+          ) : (
+            <>
+              <p className="text-2xl mb-1">🖼️</p>
+              <p className="text-xs text-gray-500">点击或拖拽上传图片</p>
+              <p className="text-xs text-gray-400">支持 JPG / PNG / WebP</p>
+            </>
+          )}
         </div>
+        <input ref={fileInputRef} type="file" accept="image/*" className="hidden"
+          onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
       </div>
 
       <div>
@@ -946,7 +917,7 @@ function ImageRussify() {
         </div>
       </div>
 
-      <button onClick={generate} disabled={loading || (!imgUrl && !preview)}
+      <button onClick={generate} disabled={loading || (!uploadedFile && !preview)}
         className="w-full py-2.5 rounded-xl text-sm font-semibold text-white disabled:opacity-50 transition-all"
         style={{background:"linear-gradient(135deg,#8b5cf6,#6366f1)"}}>
         {loading ? "生成中..." : "🎨 生成预览"}
