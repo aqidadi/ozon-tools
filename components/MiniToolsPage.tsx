@@ -551,10 +551,13 @@ type ConvertItem = {
   outputName?: string;
 };
 
+// formats handled by Canvas (client-side) vs Sharp API (server-side)
+const SERVER_FORMATS = ["avif", "tiff"];
+
 function ImageConverter() {
   const [items, setItems] = useState<ConvertItem[]>([]);
-  const [format, setFormat] = useState<"jpeg" | "png" | "webp">("jpeg");
-  const [quality, setQuality] = useState(90);
+  const [format, setFormat] = useState<"jpeg" | "png" | "webp" | "avif" | "tiff">("jpeg");
+  const [quality, setQuality] = useState(80);
   const [converting, setConverting] = useState(false);
   const [dragging, setDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -580,9 +583,11 @@ function ImageConverter() {
 
   const convertAll = async () => {
     setConverting(true);
-    const ext = format === "jpeg" ? "jpg" : format;
+    const extMap: Record<string, string> = { jpeg: "jpg", png: "png", webp: "webp", avif: "avif", tiff: "tiff" };
+    const ext = extMap[format] ?? format;
     const mime = `image/${format}`;
     const q = quality / 100;
+    const useServer = SERVER_FORMATS.includes(format);
 
     setItems(prev => prev.map(it => it.status === "done" ? it : { ...it, status: "converting" }));
 
@@ -592,32 +597,52 @@ function ImageConverter() {
         if (it.status === "done") return {};
         try {
           const file = (it as ConvertItem & { _file: File })._file;
-          const dataUrl: string = await new Promise((res, rej) => {
-            const reader = new FileReader();
-            reader.onload = ev => res(ev.target!.result as string);
-            reader.onerror = rej;
-            reader.readAsDataURL(file);
-          });
-          const outputUrl: string = await new Promise(res => {
-            const img = new Image();
-            img.onload = () => {
-              const canvas = document.createElement("canvas");
-              canvas.width = img.naturalWidth;
-              canvas.height = img.naturalHeight;
-              const ctx = canvas.getContext("2d")!;
-              if (format !== "png") {
-                ctx.fillStyle = "#ffffff";
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-              }
-              ctx.drawImage(img, 0, 0);
-              res(canvas.toDataURL(mime, q));
-            };
-            img.src = dataUrl;
-          });
-          const base64 = outputUrl.split(",")[1];
-          const outputSize = Math.round(base64.length * 0.75);
           const baseName = it.name.replace(/\.[^.]+$/, "");
-          return { id: it.id, status: "done" as const, outputUrl, outputSize, outputName: `${baseName}.${ext}` };
+          const outputName = `${baseName}.${ext}`;
+
+          let outputUrl: string;
+          let outputSize: number;
+
+          if (useServer) {
+            // server-side: send file to /api/img-convert
+            const fd = new FormData();
+            fd.append("file", file);
+            fd.append("format", format);
+            fd.append("quality", String(quality));
+            const res = await fetch("/api/img-convert", { method: "POST", body: fd });
+            if (!res.ok) throw new Error(await res.text());
+            const blob = await res.blob();
+            outputSize = blob.size;
+            outputUrl = URL.createObjectURL(blob);
+          } else {
+            // client-side canvas
+            const dataUrl: string = await new Promise((res, rej) => {
+              const reader = new FileReader();
+              reader.onload = ev => res(ev.target!.result as string);
+              reader.onerror = rej;
+              reader.readAsDataURL(file);
+            });
+            outputUrl = await new Promise(res => {
+              const img = new Image();
+              img.onload = () => {
+                const canvas = document.createElement("canvas");
+                canvas.width = img.naturalWidth;
+                canvas.height = img.naturalHeight;
+                const ctx = canvas.getContext("2d")!;
+                if (format !== "png") {
+                  ctx.fillStyle = "#ffffff";
+                  ctx.fillRect(0, 0, canvas.width, canvas.height);
+                }
+                ctx.drawImage(img, 0, 0);
+                res(canvas.toDataURL(mime, q));
+              };
+              img.src = dataUrl;
+            });
+            const base64 = outputUrl.split(",")[1];
+            outputSize = Math.round(base64.length * 0.75);
+          }
+
+          return { id: it.id, status: "done" as const, outputUrl, outputSize, outputName };
         } catch {
           return { id: it.id, status: "error" as const };
         }
@@ -673,27 +698,28 @@ function ImageConverter() {
       </div>
 
       {/* 转换设置 */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="space-y-2">
         <div>
           <label className="text-xs text-gray-500 mb-1 block">输出格式</label>
-          <div className="flex gap-1">
-            {(["jpeg","png","webp"] as const).map(f => (
+          <div className="flex gap-1 flex-wrap">
+            {(["jpeg","png","webp","avif","tiff"] as const).map(f => (
               <button key={f} onClick={() => setFormat(f)}
-                className={`flex-1 py-1.5 rounded-lg text-xs font-bold uppercase transition-all
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase transition-all
                   ${format === f ? "bg-indigo-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}>
                 {f === "jpeg" ? "JPG" : f.toUpperCase()}
+                {SERVER_FORMATS.includes(f) && <span className="ml-1 text-[9px] opacity-70">服务端</span>}
               </button>
             ))}
           </div>
         </div>
         <div>
           <label className="text-xs text-gray-500 mb-1 block">
-            质量 {format === "png" ? "（PNG无损，无需调整）" : `${quality}%`}
+            质量 {format === "png" ? "（PNG 无损）" : `${quality}%`}
           </label>
           <input type="range" min={10} max={100} step={5} value={quality}
             onChange={e => setQuality(parseInt(e.target.value))}
             disabled={format === "png"}
-            className="w-full mt-1 disabled:opacity-40" />
+            className="w-full disabled:opacity-40" />
         </div>
       </div>
 
@@ -763,7 +789,9 @@ function ImageConverter() {
         </div>
       )}
 
-      <p className="text-[10px] text-gray-400 text-center">所有转换在浏览器本地完成，图片不上传服务器，完全安全</p>
+      <p className="text-[10px] text-gray-400 text-center">
+        JPG/PNG/WebP 本地转换不上传 · AVIF/TIFF 经服务端处理后立即删除
+      </p>
     </div>
   );
 }
