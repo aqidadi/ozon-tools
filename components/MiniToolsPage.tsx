@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 
 // ─── 各工具组件 ────────────────────────────────────────
 
@@ -437,6 +437,7 @@ const TOOLS = [
   { id: "fba", emoji: "📦", title: "FBA费用估算", desc: "亚马逊美国站快速测算", tag: "内置", component: <FBACalc /> },
   { id: "bulk", emoji: "🔗", title: "批量链接采集", desc: "粘贴1688链接批量导入", tag: "新功能", component: <BulkImport /> },
   { id: "imgru", emoji: "🖼️", title: "图片俄化", desc: "一键加俄文+适配Ozon尺寸", tag: "新功能", component: <ImageRussify /> },
+  { id: "imgconv", emoji: "🔄", title: "图片格式转换", desc: "批量转JPG/PNG/WebP", tag: "新功能", component: <ImageConverter /> },
 ];
 
 const TAG_COLORS: Record<string,string> = {
@@ -535,6 +536,234 @@ function BulkImport() {
       <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 text-xs text-blue-600">
         🔌 <strong>更高效的方式：</strong>安装Crossly插件后，在1688商品页直接点"发送到选品工具"，无需复制链接。
       </div>
+    </div>
+  );
+}
+
+// ─── 批量图片格式转换 ────────────────────────────────────
+type ConvertItem = {
+  id: string;
+  name: string;
+  originalSize: number;
+  status: "waiting" | "converting" | "done" | "error";
+  outputUrl?: string;
+  outputSize?: number;
+  outputName?: string;
+};
+
+function ImageConverter() {
+  const [items, setItems] = useState<ConvertItem[]>([]);
+  const [format, setFormat] = useState<"jpeg" | "png" | "webp">("jpeg");
+  const [quality, setQuality] = useState(90);
+  const [converting, setConverting] = useState(false);
+  const [dragging, setDragging] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const addFiles = useCallback((files: FileList | File[]) => {
+    const arr = Array.from(files).filter(f => f.type.startsWith("image/"));
+    if (!arr.length) return;
+    const newItems: ConvertItem[] = arr.map(f => ({
+      id: Math.random().toString(36).slice(2),
+      name: f.name,
+      originalSize: f.size,
+      status: "waiting",
+      _file: f,
+    } as ConvertItem & { _file: File }));
+    setItems(prev => [...prev, ...newItems]);
+  }, []);
+
+  const onDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setDragging(false);
+    addFiles(e.dataTransfer.files);
+  }, [addFiles]);
+
+  const convertAll = async () => {
+    setConverting(true);
+    const ext = format === "jpeg" ? "jpg" : format;
+    const mime = `image/${format}`;
+    const q = quality / 100;
+
+    setItems(prev => prev.map(it => it.status === "done" ? it : { ...it, status: "converting" }));
+
+    const current = items;
+    const results: Partial<ConvertItem>[] = await Promise.all(
+      current.map(async (it) => {
+        if (it.status === "done") return {};
+        try {
+          const file = (it as ConvertItem & { _file: File })._file;
+          const dataUrl: string = await new Promise((res, rej) => {
+            const reader = new FileReader();
+            reader.onload = ev => res(ev.target!.result as string);
+            reader.onerror = rej;
+            reader.readAsDataURL(file);
+          });
+          const outputUrl: string = await new Promise(res => {
+            const img = new Image();
+            img.onload = () => {
+              const canvas = document.createElement("canvas");
+              canvas.width = img.naturalWidth;
+              canvas.height = img.naturalHeight;
+              const ctx = canvas.getContext("2d")!;
+              if (format !== "png") {
+                ctx.fillStyle = "#ffffff";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+              }
+              ctx.drawImage(img, 0, 0);
+              res(canvas.toDataURL(mime, q));
+            };
+            img.src = dataUrl;
+          });
+          const base64 = outputUrl.split(",")[1];
+          const outputSize = Math.round(base64.length * 0.75);
+          const baseName = it.name.replace(/\.[^.]+$/, "");
+          return { id: it.id, status: "done" as const, outputUrl, outputSize, outputName: `${baseName}.${ext}` };
+        } catch {
+          return { id: it.id, status: "error" as const };
+        }
+      })
+    );
+
+    setItems(prev => prev.map(it => {
+      const r = results.find(r => r.id === it.id);
+      return r && r.status ? { ...it, ...r } : it;
+    }));
+    setConverting(false);
+  };
+
+  const download = (item: ConvertItem) => {
+    if (!item.outputUrl || !item.outputName) return;
+    const a = document.createElement("a");
+    a.href = item.outputUrl;
+    a.download = item.outputName;
+    a.click();
+  };
+
+  const downloadAll = () => {
+    items.filter(it => it.status === "done").forEach(it => download(it));
+  };
+
+  const fmtSize = (b: number) =>
+    b > 1024 * 1024 ? `${(b / 1024 / 1024).toFixed(1)}MB` : `${Math.round(b / 1024)}KB`;
+
+  const doneCount = items.filter(it => it.status === "done").length;
+
+  return (
+    <div className="space-y-3">
+      {/* 拖拽上传区 */}
+      <div
+        onDragOver={e => { e.preventDefault(); setDragging(true); }}
+        onDragLeave={() => setDragging(false)}
+        onDrop={onDrop}
+        onClick={() => inputRef.current?.click()}
+        className={`border-2 border-dashed rounded-xl p-5 text-center cursor-pointer transition-all select-none
+          ${dragging ? "border-indigo-400 bg-indigo-50" : "border-gray-200 hover:border-indigo-300 hover:bg-gray-50"}`}
+      >
+        <div className="text-2xl mb-1">🖼️</div>
+        <p className="text-sm font-semibold text-gray-700">点击或拖拽上传图片</p>
+        <p className="text-xs text-gray-400 mt-0.5">支持 JPG / PNG / WebP / GIF · 可批量选择</p>
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          className="hidden"
+          onChange={e => { if (e.target.files) addFiles(e.target.files); e.target.value = ""; }}
+        />
+      </div>
+
+      {/* 转换设置 */}
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="text-xs text-gray-500 mb-1 block">输出格式</label>
+          <div className="flex gap-1">
+            {(["jpeg","png","webp"] as const).map(f => (
+              <button key={f} onClick={() => setFormat(f)}
+                className={`flex-1 py-1.5 rounded-lg text-xs font-bold uppercase transition-all
+                  ${format === f ? "bg-indigo-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}>
+                {f === "jpeg" ? "JPG" : f.toUpperCase()}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div>
+          <label className="text-xs text-gray-500 mb-1 block">
+            质量 {format === "png" ? "（PNG无损，无需调整）" : `${quality}%`}
+          </label>
+          <input type="range" min={10} max={100} step={5} value={quality}
+            onChange={e => setQuality(parseInt(e.target.value))}
+            disabled={format === "png"}
+            className="w-full mt-1 disabled:opacity-40" />
+        </div>
+      </div>
+
+      {/* 文件列表 */}
+      {items.length > 0 && (
+        <div className="space-y-1.5 max-h-52 overflow-y-auto pr-1">
+          {items.map((it, i) => (
+            <div key={it.id}
+              className={`flex items-center gap-2 p-2.5 rounded-xl text-xs border transition-all
+                ${it.status === "done" ? "bg-green-50 border-green-100"
+                : it.status === "error" ? "bg-red-50 border-red-100"
+                : it.status === "converting" ? "bg-indigo-50 border-indigo-100"
+                : "bg-gray-50 border-gray-100"}`}>
+              <span className="flex-shrink-0 text-base">
+                {it.status === "done" ? "✅" : it.status === "error" ? "❌" : it.status === "converting" ? "⏳" : "📄"}
+              </span>
+              <div className="flex-1 min-w-0">
+                <p className="truncate font-medium text-gray-800">{it.name}</p>
+                <p className="text-gray-400">
+                  {fmtSize(it.originalSize)}
+                  {it.outputSize && (
+                    <span className="ml-1 text-green-600">→ {fmtSize(it.outputSize)}</span>
+                  )}
+                </p>
+              </div>
+              <div className="flex items-center gap-1.5 flex-shrink-0">
+                {it.status === "done" && (
+                  <button onClick={() => download(it)}
+                    className="px-2.5 py-1 bg-green-500 text-white rounded-lg font-semibold hover:bg-green-600 transition-all">
+                    下载
+                  </button>
+                )}
+                <button onClick={() => setItems(prev => prev.filter((_, idx) => idx !== i))}
+                  className="px-2 py-1 bg-gray-200 text-gray-500 rounded-lg hover:bg-gray-300 transition-all">
+                  ✕
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* 操作按钮 */}
+      {items.length > 0 && (
+        <div className="flex gap-2">
+          <button
+            onClick={convertAll}
+            disabled={converting || items.every(it => it.status === "done")}
+            className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white disabled:opacity-50 transition-all"
+            style={{ background: "linear-gradient(135deg,#6366f1,#8b5cf6)" }}>
+            {converting
+              ? `⏳ 转换中...`
+              : items.every(it => it.status === "done")
+              ? "✅ 全部转换完成"
+              : `🔄 开始转换 (${items.filter(it => it.status !== "done").length}张)`}
+          </button>
+          {doneCount > 1 && (
+            <button onClick={downloadAll}
+              className="px-4 py-2.5 rounded-xl text-sm font-semibold border-2 border-indigo-400 text-indigo-600 hover:bg-indigo-50 transition-all">
+              ⬇️ 全部下载
+            </button>
+          )}
+          <button onClick={() => setItems([])}
+            className="px-3 py-2.5 rounded-xl text-xs border border-gray-200 text-gray-500 hover:bg-gray-50 transition-all">
+            清空
+          </button>
+        </div>
+      )}
+
+      <p className="text-[10px] text-gray-400 text-center">所有转换在浏览器本地完成，图片不上传服务器，完全安全</p>
     </div>
   );
 }
