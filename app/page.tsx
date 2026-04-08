@@ -24,7 +24,7 @@ import { BatchPublishPanel } from "@/components/BatchPublishPanel";
 import { AddToHomeScreen } from "@/components/AddToHomeScreen";
 import {
   ShoppingBag, Settings2, Download, Plus, TrendingUp,
-  BookOpen, Languages, Bell, BarChart2, Package, Globe, Zap, Shield, Flame, Clock, Wrench
+  BookOpen, Languages, Bell, BarChart2, Globe, Zap, Shield, Flame, Clock, Wrench
 } from "lucide-react";
 
 // ── 实时汇率挂件 hook ──────────────────────────────────
@@ -102,7 +102,6 @@ const NAV_ITEMS = [
   { id: "landing",   label: "首页",        icon: Globe,        color: "blue" },
   { id: "hot",       label: "爆品榜单",    icon: Flame,        color: "red" },
   { id: "picker",    label: "选品参考",    icon: TrendingUp,   color: "orange" },
-  { id: "products",  label: "选品列表",    icon: Package,      color: "blue" },
   { id: "ozon",      label: "Ozon刊登",    icon: Zap,          color: "orange", badge: "核心" },
   { id: "tools",     label: "选品流程",    icon: Zap,          color: "green" },
   { id: "mintools",  label: "实用工具",    icon: Wrench,       color: "teal" },
@@ -514,7 +513,6 @@ export default function Home() {
           { id: "landing",   icon: "🏠", label: "首页" },
           { id: "guide",     icon: "📖", label: "新手" },
           { id: "hot",       icon: "🔥", label: "榜单" },
-          { id: "products",  icon: "📦", label: "选品" },
           { id: "__mine__",  icon: user ? "👤" : "🔑", label: user ? "我的" : "登录" },
           { id: "__more__",  icon: "☰", label: "更多" },
         ].map(item => (
