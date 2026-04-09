@@ -440,6 +440,214 @@ function FBACalc() {
 
 // ─── 主页面 ────────────────────────────────────────────
 
+// ─── Word 转 PDF ─────────────────────────────────────────
+function DocxToPdf() {
+  const [file, setFile] = useState<File | null>(null);
+  const [loading, setLoading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const handleFile = (f: File) => {
+    if (!f.name.endsWith(".docx") && !f.name.endsWith(".doc")) {
+      alert("请上传 .docx 格式文件"); return;
+    }
+    setFile(f);
+  };
+
+  const convert = async () => {
+    if (!file) return;
+    setLoading(true);
+    try {
+      const mammoth = (await import("mammoth")).default;
+      const arrayBuffer = await file.arrayBuffer();
+      const result = await mammoth.convertToHtml({ arrayBuffer });
+      const html = result.value;
+      const win = window.open("", "_blank");
+      if (!win) { alert("请允许弹出窗口后重试"); setLoading(false); return; }
+      win.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8">
+        <title>${file.name.replace(/\.docx?$/, "")}</title>
+        <style>
+          body{font-family:"Times New Roman",SimSun,serif;margin:2cm;font-size:12pt;line-height:1.8;color:#111}
+          img{max-width:100%}table{border-collapse:collapse;width:100%}
+          td,th{border:1px solid #999;padding:4px 8px}
+          @media print{@page{margin:2cm}body{margin:0}}
+        </style>
+      </head><body>${html}</body></html>`);
+      win.document.close();
+      win.focus();
+      setTimeout(() => { win.print(); }, 600);
+    } catch (e) {
+      alert("转换失败，请确认文件格式正确");
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 text-xs text-blue-700">
+        💡 上传 .docx 文件后点击转换，浏览器会打开预览页，选择「打印→另存为PDF」即可保存
+      </div>
+      <div
+        onClick={() => fileRef.current?.click()}
+        onDragOver={e => e.preventDefault()}
+        onDrop={e => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) handleFile(f); }}
+        className="border-2 border-dashed border-gray-200 rounded-xl p-5 text-center cursor-pointer hover:border-blue-400 transition-colors"
+      >
+        {file ? (
+          <p className="text-sm font-medium text-gray-700">📄 {file.name}</p>
+        ) : (
+          <>
+            <p className="text-3xl mb-1">📄</p>
+            <p className="text-sm text-gray-500">点击或拖拽上传 Word 文件</p>
+            <p className="text-xs text-gray-400 mt-0.5">支持 .docx 格式</p>
+          </>
+        )}
+      </div>
+      <input ref={fileRef} type="file" accept=".docx,.doc" className="hidden"
+        onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
+      <button onClick={convert} disabled={!file || loading}
+        className="w-full py-2.5 rounded-xl text-sm font-semibold text-white disabled:opacity-50 transition-all"
+        style={{background:"linear-gradient(135deg,#3b82f6,#6366f1)"}}>
+        {loading ? "转换中..." : "🖨️ 转换并预览 → 另存为 PDF"}
+      </button>
+    </div>
+  );
+}
+
+// ─── PDF 加水印 ───────────────────────────────────────────
+function PdfWatermark() {
+  const [file, setFile] = useState<File | null>(null);
+  const [text, setText] = useState("仅供参考");
+  const [opacity, setOpacity] = useState(0.25);
+  const [fontSize, setFontSize] = useState(60);
+  const [color, setColor] = useState("#ff0000");
+  const [loading, setLoading] = useState(false);
+  const [done, setDone] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const handleFile = (f: File) => {
+    if (!f.name.endsWith(".pdf")) { alert("请上传 .pdf 文件"); return; }
+    setFile(f); setDone(false);
+  };
+
+  // 用 canvas 把文字渲染成透明 PNG，再嵌入 PDF，支持中文
+  const buildWatermarkPng = (text: string, fontSize: number, color: string, opacity: number): Promise<Uint8Array> => {
+    return new Promise(resolve => {
+      const canvas = document.createElement("canvas");
+      const padding = 40;
+      canvas.width = fontSize * text.length * 0.8 + padding * 2;
+      canvas.height = fontSize * 1.6 + padding * 2;
+      const ctx = canvas.getContext("2d")!;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.font = `bold ${fontSize}px sans-serif`;
+      ctx.fillStyle = color;
+      ctx.globalAlpha = opacity;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+      canvas.toBlob(blob => {
+        blob!.arrayBuffer().then(buf => resolve(new Uint8Array(buf)));
+      }, "image/png");
+    });
+  };
+
+  const addWatermark = async () => {
+    if (!file || !text.trim()) return;
+    setLoading(true); setDone(false);
+    try {
+      const { PDFDocument, degrees } = await import("pdf-lib");
+      const pngBytes = await buildWatermarkPng(text, fontSize, color, opacity);
+      const pdfBytes = await file.arrayBuffer();
+      const pdfDoc = await PDFDocument.load(pdfBytes);
+      const pngImage = await pdfDoc.embedPng(pngBytes);
+      const imgW = pngImage.width;
+      const imgH = pngImage.height;
+
+      for (const page of pdfDoc.getPages()) {
+        const { width, height } = page.getSize();
+        // 平铺水印
+        const cols = Math.ceil(width / (imgW * 1.4)) + 1;
+        const rows = Math.ceil(height / (imgH * 1.4)) + 1;
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) {
+            page.drawImage(pngImage, {
+              x: c * imgW * 1.4 - imgW * 0.3,
+              y: height - (r + 1) * imgH * 1.4 + imgH * 0.3,
+              width: imgW,
+              height: imgH,
+              rotate: degrees(30),
+              opacity: 1, // opacity already baked into PNG
+            });
+          }
+        }
+      }
+
+      const out = await pdfDoc.save();
+      const blob = new Blob([out.buffer as ArrayBuffer], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = file.name.replace(".pdf", "_水印.pdf");
+      a.click();
+      URL.revokeObjectURL(url);
+      setDone(true);
+    } catch (e) {
+      alert("处理失败，请确认 PDF 未加密");
+    }
+    setLoading(false);
+  };
+
+  const inputCls = "w-full border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-300";
+
+  return (
+    <div className="space-y-3">
+      <div
+        onClick={() => fileRef.current?.click()}
+        onDragOver={e => e.preventDefault()}
+        onDrop={e => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) handleFile(f); }}
+        className="border-2 border-dashed border-gray-200 rounded-xl p-5 text-center cursor-pointer hover:border-red-400 transition-colors"
+      >
+        {file ? (
+          <p className="text-sm font-medium text-gray-700">📕 {file.name}</p>
+        ) : (
+          <>
+            <p className="text-3xl mb-1">📕</p>
+            <p className="text-sm text-gray-500">点击或拖拽上传 PDF 文件</p>
+          </>
+        )}
+      </div>
+      <input ref={fileRef} type="file" accept=".pdf" className="hidden"
+        onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
+
+      <div>
+        <label className="text-xs text-gray-500 mb-1 block">水印文字</label>
+        <input value={text} onChange={e => setText(e.target.value)} className={inputCls} placeholder="例：仅供参考 / CONFIDENTIAL" />
+      </div>
+
+      <div className="grid grid-cols-3 gap-2 text-xs">
+        <div>
+          <label className="text-gray-500 mb-1 block">字体大小</label>
+          <input type="number" value={fontSize} onChange={e => setFontSize(parseInt(e.target.value)||60)} min={20} max={150} className={inputCls} />
+        </div>
+        <div>
+          <label className="text-gray-500 mb-1 block">颜色</label>
+          <input type="color" value={color} onChange={e => setColor(e.target.value)}
+            className="w-full h-[34px] border border-gray-200 rounded-lg cursor-pointer" />
+        </div>
+        <div>
+          <label className="text-gray-500 mb-1 block">透明度 {Math.round(opacity*100)}%</label>
+          <input type="range" value={opacity} onChange={e => setOpacity(parseFloat(e.target.value))}
+            min={0.05} max={0.8} step={0.05} className="w-full mt-2" />
+        </div>
+      </div>
+
+      <button onClick={addWatermark} disabled={!file || !text.trim() || loading}
+        className="w-full py-2.5 rounded-xl text-sm font-semibold text-white disabled:opacity-50 transition-all"
+        style={{background:"linear-gradient(135deg,#ef4444,#f97316)"}}>
+        {loading ? "处理中..." : done ? "✅ 已下载！再次添加" : "🔏 添加水印并下载"}
+      </button>
+    </div>
+  );
+}
+
 // ─── Ozon 上品模板 ───────────────────────────────────────
 type OzonTag = { ru: string; zh: string };
 const OZON_CATS = [
@@ -714,6 +922,8 @@ const TOOLS = [
   { id: "imgru", emoji: "🖼️", title: "图片俄化", desc: "一键加俄文+适配Ozon尺寸", tag: "新功能", component: <ImageRussify /> },
   { id: "imgconv", emoji: "🔄", title: "图片格式转换", desc: "批量转JPG/PNG/WebP/AVIF", tag: "新功能", component: <ImageConverter /> },
   { id: "ozontemplate", emoji: "📋", title: "Ozon上品模板", desc: "6大类目字段+30个标签", tag: "实用", component: <OzonTemplate /> },
+  { id: "docx2pdf", emoji: "📄", title: "Word转PDF", desc: "docx上传→浏览器打印为PDF", tag: "实用", component: <DocxToPdf /> },
+  { id: "pdfwm", emoji: "🔏", title: "PDF加水印", desc: "批量平铺文字水印，支持中文", tag: "实用", component: <PdfWatermark /> },
 ];
 
 const TAG_COLORS: Record<string,string> = {
