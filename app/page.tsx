@@ -102,7 +102,6 @@ const NAV_ITEMS = [
   { id: "landing",   label: "首页",        icon: Globe,        color: "blue" },
   { id: "hot",       label: "爆品榜单",    icon: Flame,        color: "red" },
   { id: "picker",    label: "选品参考",    icon: TrendingUp,   color: "orange" },
-  { id: "ozon",      label: "Ozon刊登",    icon: Zap,          color: "orange", badge: "核心" },
   { id: "tools",     label: "选品流程",    icon: Zap,          color: "green" },
   { id: "mintools",  label: "实用工具",    icon: Wrench,       color: "teal" },
   { id: "clock",     label: "世界时间",    icon: Clock,        color: "cyan" },
@@ -543,7 +542,6 @@ export default function Home() {
             <p className="text-white/50 text-xs font-bold mb-3 text-center">全部功能</p>
             <div className="grid grid-cols-4 gap-3">
               {[
-                { id: "ozon",      icon: "⚡", label: "Ozon刊登" },
                 { id: "picker",    icon: "🎯", label: "选品参考" },
                 { id: "tools",     icon: "🗺️", label: "选品流程" },
                 { id: "mintools",  icon: "🔧", label: "实用工具" },
