@@ -241,6 +241,12 @@ export function OzonPublishPage({ products, settings, onUpdate }: Props) {
             {testing ? <Loader2 size={13} className="animate-spin"/> : <RefreshCw size={13}/>}
             {testing ? "测试中..." : "测试连接并保存"}
           </button>
+          {(clientId || apiKey) && (
+            <button onClick={() => { setClientId(""); setApiKey(""); setApiOk(null); localStorage.removeItem("ozon-api-config"); }}
+              className="mt-1.5 text-xs text-gray-400 hover:text-red-500 transition-colors">
+              清除已保存的 API
+            </button>
+          )}
         </div>
 
         {/* 定价参数卡 */}
