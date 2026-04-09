@@ -447,24 +447,63 @@ function DocxToPdf() {
   const fileRef = useRef<HTMLInputElement>(null);
 
   const handleFile = (f: File) => {
-    if (!f.name.endsWith(".docx") && !f.name.endsWith(".doc")) {
-      alert("请上传 .docx 格式文件"); return;
-    }
+    const ok = /\.(docx?|odt)$/i.test(f.name);
+    if (!ok) { alert("请上传 .docx 或 .odt 格式文件"); return; }
     setFile(f);
+  };
+
+  // ODT (OpenDocument) → HTML，用 jszip 解压后解析 content.xml
+  const odtToHtml = async (arrayBuffer: ArrayBuffer): Promise<string> => {
+    const JSZip = (await import("jszip")).default;
+    const zip = await JSZip.loadAsync(arrayBuffer);
+    const contentXml = await zip.file("content.xml")?.async("string");
+    if (!contentXml) throw new Error("无法读取 ODT 内容");
+
+    const parser = new DOMParser();
+    const xmlDoc = parser.parseFromString(contentXml, "text/xml");
+
+    const walk = (node: Node): string => {
+      if (node.nodeType === Node.TEXT_NODE) return node.textContent ?? "";
+      if (node.nodeType !== Node.ELEMENT_NODE) return "";
+      const el = node as Element;
+      const name = el.localName;
+      const children = () => Array.from(el.childNodes).map(walk).join("");
+      if (name === "p")          return `<p>${children()}</p>`;
+      if (name === "h")          { const lv = el.getAttribute("text:outline-level") ?? "1"; return `<h${lv}>${children()}</h${lv}>`; }
+      if (name === "span")       return children();
+      if (name === "line-break") return "<br>";
+      if (name === "tab")        return "&nbsp;&nbsp;&nbsp;&nbsp;";
+      if (name === "table")      return `<table>${children()}</table>`;
+      if (name === "table-row")  return `<tr>${children()}</tr>`;
+      if (name === "table-cell") return `<td>${children()}</td>`;
+      if (name === "list")       return `<ul>${children()}</ul>`;
+      if (name === "list-item")  return `<li>${children()}</li>`;
+      return children();
+    };
+
+    const body = xmlDoc.getElementsByTagNameNS("*", "body")[0];
+    return body ? walk(body) : "<p>（无法解析文件内容）</p>";
   };
 
   const convert = async () => {
     if (!file) return;
     setLoading(true);
     try {
-      const mammoth = (await import("mammoth")).default;
       const arrayBuffer = await file.arrayBuffer();
-      const result = await mammoth.convertToHtml({ arrayBuffer });
-      const html = result.value;
+      let html = "";
+
+      if (/\.odt$/i.test(file.name)) {
+        html = await odtToHtml(arrayBuffer);
+      } else {
+        const mammoth = (await import("mammoth")).default;
+        const result = await mammoth.convertToHtml({ arrayBuffer });
+        html = result.value;
+      }
+
       const win = window.open("", "_blank");
       if (!win) { alert("请允许弹出窗口后重试"); setLoading(false); return; }
       win.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8">
-        <title>${file.name.replace(/\.docx?$/, "")}</title>
+        <title>${file.name.replace(/\.(docx?|odt)$/i, "")}</title>
         <style>
           body{font-family:"Times New Roman",SimSun,serif;margin:2cm;font-size:12pt;line-height:1.8;color:#111}
           img{max-width:100%}table{border-collapse:collapse;width:100%}
@@ -475,7 +514,7 @@ function DocxToPdf() {
       win.document.close();
       win.focus();
       setTimeout(() => { win.print(); }, 600);
-    } catch (e) {
+    } catch {
       alert("转换失败，请确认文件格式正确");
     }
     setLoading(false);
@@ -484,7 +523,7 @@ function DocxToPdf() {
   return (
     <div className="space-y-3">
       <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 text-xs text-blue-700">
-        💡 上传 .docx 文件后点击转换，浏览器会打开预览页，选择「打印→另存为PDF」即可保存
+        💡 上传文件后点击转换，浏览器打开预览页，选择「打印→另存为PDF」即可保存
       </div>
       <div
         onClick={() => fileRef.current?.click()}
@@ -497,12 +536,12 @@ function DocxToPdf() {
         ) : (
           <>
             <p className="text-3xl mb-1">📄</p>
-            <p className="text-sm text-gray-500">点击或拖拽上传 Word 文件</p>
-            <p className="text-xs text-gray-400 mt-0.5">支持 .docx 格式</p>
+            <p className="text-sm text-gray-500">点击或拖拽上传文档文件</p>
+            <p className="text-xs text-gray-400 mt-0.5">支持 .docx · .doc · .odt</p>
           </>
         )}
       </div>
-      <input ref={fileRef} type="file" accept=".docx,.doc" className="hidden"
+      <input ref={fileRef} type="file" accept=".docx,.doc,.odt" className="hidden"
         onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
       <button onClick={convert} disabled={!file || loading}
         className="w-full py-2.5 rounded-xl text-sm font-semibold text-white disabled:opacity-50 transition-all"
